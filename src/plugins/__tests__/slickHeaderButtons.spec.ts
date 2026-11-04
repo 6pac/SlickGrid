@@ -115,6 +115,28 @@ describe('SlickHeaderButtons', () => {
     expect(handler).toHaveBeenCalledOnce();
   });
 
+  it('names and activates enabled buttons with the keyboard without activating disabled buttons', () => {
+    const handler = vi.fn();
+    const action = vi.fn();
+    column.header!.buttons![1].handler = handler;
+    column.header!.buttons![1].ariaLabel = 'Show details';
+    column.header!.buttons![0].disabled = true;
+    column.header!.buttons![0].action = action;
+    plugin.init(grid);
+    const { node } = renderHeader();
+    const enabled = node.querySelector<HTMLElement>('.icon-second')!;
+    const disabled = node.querySelector<HTMLElement>('.icon-first')!;
+
+    expect(enabled.getAttribute('aria-label')).toBe('Show details');
+    expect(enabled.tabIndex).toBe(0);
+    enabled.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(handler).toHaveBeenCalledOnce();
+    expect(disabled.getAttribute('aria-disabled')).toBe('true');
+    expect(disabled.tabIndex).toBe(-1);
+    disabled.click();
+    expect(action).not.toHaveBeenCalled();
+  });
+
   it('runs an action and publishes the command when a command button is clicked', () => {
     const action = vi.fn();
     const commandListener = vi.fn();

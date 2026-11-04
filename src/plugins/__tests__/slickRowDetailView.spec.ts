@@ -51,6 +51,7 @@ document.body.appendChild(gridElement);
 const grid = {
   getCanvases: vi.fn(() => [canvas]),
   getCellNodeBox: vi.fn((row: number) => ({ top: row * 25 })),
+  getCellNode: vi.fn(),
   getColumnIndex: vi.fn(() => 0),
   getColumns: vi.fn(() => columns),
   getData: vi.fn(() => dataView),
@@ -69,6 +70,7 @@ const grid = {
   updateRowCount: vi.fn(),
   onBeforeEditCell: new SlickEvent(),
   onClick: new SlickEvent(),
+  onKeyDown: new SlickEvent(),
   onRendered: new SlickEvent(),
   onScroll: new SlickEvent(),
   onSort: new SlickEvent(),
@@ -151,12 +153,28 @@ describe('SlickRowDetailView', () => {
 
     expect(collapsed.className).toContain('detailView-toggle');
     expect(collapsed.className).toContain('expand');
+    expect(collapsed.getAttribute('aria-expanded')).toBe('false');
+    expect(collapsed.getAttribute('aria-label')).toBe('Expand row details');
     expect(item._collapsed).toBe(true);
     expect(formatter(0, 0, null, columns[0], { ...item, _isPadding: true }, grid)).toBe('');
 
     plugin.destroy();
     plugin = new SlickRowDetailView({ ...options, expandableOverride: () => false });
     expect(plugin.getColumnDefinition().formatter!(0, 0, null, columns[0], item, grid)).toBe('');
+  });
+
+  it('activates the row detail toggle from the selector cell with Space', () => {
+    init();
+    const cell = document.createElement('div');
+    const toggle = document.createElement('div');
+    toggle.dataset.rowDetailToggle = '';
+    cell.appendChild(toggle);
+    vi.mocked(grid.getCellNode).mockReturnValue(cell);
+    const click = vi.spyOn(toggle, 'click');
+    const event = Object.assign(new SlickEventData(), { key: ' ', preventDefault: vi.fn(), stopImmediatePropagation: vi.fn() });
+    grid.onKeyDown.notify({ row: 0, cell: 0, grid }, event);
+    expect(click).toHaveBeenCalledOnce();
+    expect(event.preventDefault).toHaveBeenCalledOnce();
   });
 
   it('expands a detail row, inserts padding rows, and starts the async process', () => {

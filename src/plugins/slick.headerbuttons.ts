@@ -141,13 +141,16 @@ export class SlickHeaderButtons implements SlickPlugin {
           button.disabled = isItemUsable ? false : true;
         }
 
-        const btn = document.createElement('div');
-        btn.className = this._options.buttonCssClass || '';
-        btn.ariaLabel = 'Header Button';
-        btn.role = 'button';
+        const btn = Utils.createDomElement('div', {
+          className: this._options.buttonCssClass || '',
+          ariaLabel: button.ariaLabel || button.tooltip || button.command || 'Header Button',
+          role: 'button',
+          tabIndex: button.disabled ? -1 : 0,
+        });
 
         if (button.disabled) {
           btn.classList.add('slick-header-button-disabled');
+          btn.setAttribute('aria-disabled', 'true');
         }
 
         if (button.showOnHover) {
@@ -171,6 +174,13 @@ export class SlickHeaderButtons implements SlickPlugin {
         }
 
         this._bindingEventService.bind(btn, 'click', this.handleButtonClick.bind(this, button, args.column) as EventListener);
+        this._bindingEventService.bind(btn, 'keydown', ((e: KeyboardEvent) => {
+          if (!button.disabled && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            e.stopPropagation();
+            btn.click();
+          }
+        }) as EventListener);
         args.node.appendChild(btn);
       }
     }
@@ -204,7 +214,7 @@ export class SlickHeaderButtons implements SlickPlugin {
     }
 
     // execute action callback when defined
-    if (typeof button.action === 'function') {
+    if (!button.disabled && typeof button.action === 'function') {
       button.action.call(this, e, callbackArgs);
     }
 

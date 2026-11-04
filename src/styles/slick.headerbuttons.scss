@@ -33,6 +33,7 @@
   transition: 0.2s width;
 }
 
-.slick-header-column:hover > .slick-header-button {
+.slick-header-column:hover > .slick-header-button,
+.slick-header-column:focus-within > .slick-header-button {
   width: 15px;
 }

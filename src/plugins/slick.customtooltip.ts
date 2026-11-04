@@ -615,7 +615,7 @@ export class SlickCustomTooltip {
     if (tooltipTriggerElm) {
       this._tooltipTriggerElm = tooltipTriggerElm;
       this._previousAriaDescribedBy = tooltipTriggerElm.getAttribute('aria-describedby');
-      tooltipTriggerElm.setAttribute('aria-describedby', tooltipId);
+      tooltipTriggerElm.setAttribute('aria-describedby', [this._previousAriaDescribedBy, tooltipId].filter(Boolean).join(' '));
     }
     this._tooltipBodyElm = document.createElement('div');
     this._tooltipBodyElm.className = this._cellTooltipOptions.bodyClassName || 'tooltip-body';

@@ -293,6 +293,9 @@
 }
 
 .slick-header-column:hover > .slick-header-menubutton,
+.slick-header-column:focus-within > .slick-header-menubutton,
+.slick-header-column.slick-state-default:focus-within > .slick-header-menubutton,
+.slick-header-column.slick-state-default.slick-header-column-active > .slick-header-menubutton,
 .slick-header-column-active .slick-header-menubutton {
   display: inline-block;
 }

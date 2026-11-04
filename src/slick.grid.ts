@@ -3448,6 +3448,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const numberCols = this._options.numberedMultiColumnSort && this.sortColumns.length > 1;
     this._headers.forEach((header) => {
+      header.querySelectorAll('[aria-sort]').forEach((column) => column.removeAttribute('aria-sort'));
       let indicators = header.querySelectorAll('.slick-header-column-sorted');
       // v8 ignore next
       indicators.forEach((indicator) => indicator.classList.remove('slick-header-column-sorted'));
@@ -3470,6 +3471,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         const column = this.getColumnByIndex(columnIndex);
         if (column) {
           column.classList.add('slick-header-column-sorted');
+          if (i === 1) {
+            column.setAttribute('aria-sort', col.sortAsc ? 'ascending' : 'descending');
+          }
           let indicator = column.querySelector('.slick-sort-indicator');
           indicator?.classList.add(col.sortAsc ? 'slick-sort-indicator-asc' : 'slick-sort-indicator-desc');
 
@@ -4347,6 +4351,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     this.setCellCssStyles(selectedCellCssClass, hash);
+    Object.entries(this.rowsCache).forEach(([row, cache]) => {
+      Object.entries(cache.cellNodesByColumnIdx).forEach(([cell, node]) => {
+        if (this.isCellSelected(Number(row), Number(cell))) {
+          node.setAttribute('aria-selected', 'true');
+        } else {
+          node.removeAttribute('aria-selected');
+        }
+      });
+    });
 
     if (this.selectionBottomRow >= 0 && this.selectionRightCell >= 0 && addDragHandle && showDragHandle !== false) {
       const lowerRightCell = this.getCellNode(this.selectionBottomRow, this.selectionRightCell);
@@ -5304,6 +5317,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   setHeaderRowVisibility(visible?: boolean, animate?: boolean): void {
     this.togglePanelVisibility('showHeaderRow', this._headerRowScroller, visible, animate);
+    this.updateAriaRowIndexes();
   }
 
   /**
@@ -5312,6 +5326,30 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   setColumnHeaderVisibility(visible?: boolean, animate?: boolean): void {
     this.togglePanelVisibility('showColumnHeader', this._headerScroller, visible, animate);
+    this.updateAriaRowIndexes();
+  }
+
+  /** Keep virtual row indexes consistent with the visible header rows and add row. */
+  protected updateAriaRowIndexes(): void {
+    const headerCount = Number(!!this._options.showColumnHeader) + Number(!!this._options.showHeaderRow);
+    this._container.setAttribute('aria-rowcount', String(this.getDataLengthIncludingAddNew() + headerCount));
+    this._headers.forEach((header) => {
+      if (this._options.showColumnHeader) {
+        header.setAttribute('aria-rowindex', '1');
+      } else {
+        header.removeAttribute('aria-rowindex');
+      }
+    });
+    this._headerRows.forEach((header) => {
+      if (this._options.showHeaderRow) {
+        header.setAttribute('aria-rowindex', String(Number(!!this._options.showColumnHeader) + 1));
+      } else {
+        header.removeAttribute('aria-rowindex');
+      }
+    });
+    Object.entries(this.rowsCache).forEach(([row, cache]) => {
+      cache.rowNode?.forEach((node) => node.setAttribute('aria-rowindex', String(Number(row) + headerCount + 1)));
+    });
   }
 
   /**
@@ -5446,7 +5484,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const rowDiv = Utils.createDomElement('div', {
       className: `slick-widget-content ${rowCss}`,
       role: 'row',
-      ariaRowIndex: `${row + 1}`,
+      ariaRowIndex: `${row + 1 + Number(!!this._options.showColumnHeader) + Number(!!this._options.showHeaderRow)}`,
       dataset: { row: `${row}` },
     });
     const rowDocking = this.dockingByRow.get(row);
@@ -5662,6 +5700,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       tabIndex: -1,
       ariaColIndex: `${cell + 1}`,
     });
+    if (this.isCellSelected(row, cell)) {
+      cellDiv.setAttribute('aria-selected', 'true');
+    }
     if (usesStickyTransform) {
       this.applyStickyColumnTransform(cellDiv, cell, 'cell');
     }
@@ -6238,7 +6279,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   updateRowCount(): void {
     if (this.initialized && this._container) {
       const dataLength = this.getDataLength();
-      this._container.setAttribute('aria-rowcount', dataLength.toString());
+      this.updateAriaRowIndexes();
 
       // remap all rowspan cache when necessary
       if (dataLength > 0 && dataLength !== this._prevDataLength) {
@@ -7207,6 +7248,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   updatePagingStatusFromView(pagingInfo: Pick<PagingInfo, 'pageSize' | 'pageNum' | 'totalPages'>): void {
     this.pagingActive = pagingInfo.pageSize !== 0;
     this.pagingIsLastPage = pagingInfo.pageNum === pagingInfo.totalPages - 1;
+    if (this.initialized) {
+      this.updateAriaRowIndexes();
+    }
   }
 
   /**

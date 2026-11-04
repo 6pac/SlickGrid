@@ -228,7 +228,7 @@ describe('SlickCustomTooltip plugin', () => {
 
     const tooltipElm = document.body.querySelector('.slick-custom-tooltip') as HTMLDivElement;
     expect(tooltipElm).toBeTruthy();
-    expect(cellNode.getAttribute('aria-describedby')).toBe(tooltipElm.id);
+    expect(cellNode.getAttribute('aria-describedby')).toBe(`previous-tooltip-id ${tooltipElm.id}`);
 
     plugin.hideTooltip();
 

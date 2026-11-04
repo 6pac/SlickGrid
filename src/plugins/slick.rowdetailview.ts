@@ -189,6 +189,7 @@ export class SlickRowDetailView {
 
     this._eventHandler
       .subscribe(this._grid.onClick, this.handleClick.bind(this))
+      .subscribe(this._grid.onKeyDown, this.handleKeyDown.bind(this))
       .subscribe(this._grid.onScroll, this.handleScroll.bind(this))
       .subscribe(this._grid.onRendered, this.renderOverlayPanels.bind(this));
 
@@ -269,6 +270,18 @@ export class SlickRowDetailView {
   }
 
   /** Handle mouse click event */
+  protected handleKeyDown(e: SlickEventData, args: { row: number; cell: number; }) {
+    if ((e.key !== 'Enter' && e.key !== ' ') || this._grid.getColumns()[args.cell]?.id !== this._options.columnId || this._grid.getEditorLock().isActive()) {
+      return;
+    }
+    const toggle = this._grid.getCellNode(args.row, args.cell)?.querySelector<HTMLElement>('[data-row-detail-toggle]');
+    if (toggle) {
+      toggle.click();
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+  }
+
   protected handleClick(e: SlickEventData, args: { row: number; cell: number; }) {
     const dataContext = this._grid.getDataItem(args.row);
     if (!this.checkExpandableOverride(args.row, dataContext, this._grid)) {
@@ -711,7 +724,7 @@ export class SlickRowDetailView {
         if (this._options.collapsedClass) {
           collapsedClasses += this._options.collapsedClass;
         }
-        return Utils.createDomElement('div', { className: collapsedClasses });
+        return Utils.createDomElement('div', { className: collapsedClasses, role: 'button', ariaLabel: 'Expand row details', ariaExpanded: 'false', dataset: { rowDetailToggle: '' } });
       }
       else {
         let expandedClasses = this._options.cssClass + ' collapse ';
@@ -720,7 +733,7 @@ export class SlickRowDetailView {
         }
 
         return {
-          html: Utils.createDomElement('div', { className: expandedClasses }),
+          html: Utils.createDomElement('div', { className: expandedClasses, role: 'button', ariaLabel: 'Collapse row details', ariaExpanded: 'true', dataset: { rowDetailToggle: '' } }),
         };
       }
     }

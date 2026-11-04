@@ -362,10 +362,10 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
    * @param {Boolean} [checked] - is the input checkbox checked? (defaults to false)
    * @returns
    */
-  createCheckboxElement(inputId: string, checked = false) {
+  createCheckboxElement(inputId: string, checked = false, ariaLabel = this._options.selectAllAriaLabel || this._options.toolTip || 'Select all rows') {
     const fragmentElm = new DocumentFragment();
     fragmentElm.appendChild(
-      Utils.createDomElement('input', { id: inputId, type: 'checkbox', checked, ariaChecked: String(checked) })
+      Utils.createDomElement('input', { id: inputId, type: 'checkbox', checked, ariaLabel })
     );
     fragmentElm.appendChild(
       Utils.createDomElement('label', { htmlFor: inputId })
@@ -402,7 +402,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
         Utils.emptyElement(args.node);
         const spanElm = Utils.createDomElement('span', { id: 'filter-checkbox-selectall-container', ariaChecked: 'false' });
         spanElm.appendChild(
-          Utils.createDomElement('input', { type: 'checkbox', id: `header-filter-selector${this._selectAll_UID}` })
+          Utils.createDomElement('input', { type: 'checkbox', id: `header-filter-selector${this._selectAll_UID}`, ariaLabel: this._options.selectAllAriaLabel || this._options.toolTip || 'Select all rows' })
         );
         spanElm.appendChild(
           Utils.createDomElement('label', { htmlFor: `header-filter-selector${this._selectAll_UID}` })
@@ -423,7 +423,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
   protected checkboxSelectionFormatter(row: number, _cell: number, _val: any, _columnDef: Column, dataContext: any, grid: SlickGrid) {
     if (dataContext && this.checkSelectableOverride(row, dataContext, grid)) {
       const UID = this.createUID() + row;
-      return this.createCheckboxElement(`selector${UID}`, !!this._selectedRowsLookup[row]);
+      return this.createCheckboxElement(`selector${UID}`, !!this._selectedRowsLookup[row], this._options.rowAriaLabel || `Select row ${row + 1}`);
     }
     return null;
   }

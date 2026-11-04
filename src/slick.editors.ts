@@ -5,6 +5,20 @@ import { keyCode as keyCode_, Utils as Utils_ } from './slick.core.js';
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
+function getEditorAriaLabel(args: { column: Column; grid: Pick<EditorArguments['grid'], 'applyHtmlCode'> }): string {
+  if (args.column.editorAriaLabel) {
+    return args.column.editorAriaLabel;
+  }
+  const name = args.column.name;
+  let title = typeof name === 'string' ? name : name?.textContent;
+  if (typeof name === 'string') {
+    const label = document.createElement('span');
+    args.grid.applyHtmlCode(label, name);
+    title = label.textContent;
+  }
+  return title?.trim() || String(args.column.id);
+}
+
 /***
  * Contains basic SlickGrid editors.
  * @module Editors
@@ -22,7 +36,7 @@ export class TextEditor<TData = any, C extends Column<TData> = Column<TData>, O 
 
   init() {
     this.navOnLR = this.args.grid.getOptions().editorCellNavOnLRKeys;
-    this.input = Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, this.args.container);
+    this.input = Utils.createDomElement('input', { type: 'text', className: 'editor-text', ariaLabel: getEditorAriaLabel(this.args) }, this.args.container);
     this.input.addEventListener('keydown', (this.navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav) as EventListener);
     this.input.focus();
     this.input.select();
@@ -115,7 +129,7 @@ export class IntegerEditor<TData = any, C extends Column<TData> = Column<TData>,
 
   init() {
     this.navOnLR = this.args.grid.getOptions().editorCellNavOnLRKeys;
-    this.input = Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, this.args.container);
+    this.input = Utils.createDomElement('input', { type: 'text', className: 'editor-text', ariaLabel: getEditorAriaLabel(this.args) }, this.args.container);
     this.input.addEventListener('keydown', (this.navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav) as EventListener);
     this.input.focus();
     this.input.select();
@@ -213,7 +227,7 @@ export class FloatEditor<TData = any, C extends Column<TData> = Column<TData>, O
 
   init() {
     this.navOnLR = this.args.grid.getOptions().editorCellNavOnLRKeys;
-    this.input = Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, this.args.container);
+    this.input = Utils.createDomElement('input', { type: 'text', className: 'editor-text', ariaLabel: getEditorAriaLabel(this.args) }, this.args.container);
     this.input.addEventListener('keydown', (this.navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav) as EventListener);
     this.input.focus();
     this.input.select();
@@ -340,7 +354,7 @@ export class FlatpickrEditor<TData = any, C extends Column<TData> = Column<TData
   }
 
   init() {
-    this.input = Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, this.args.container);
+    this.input = Utils.createDomElement('input', { type: 'text', className: 'editor-text', ariaLabel: getEditorAriaLabel(this.args) }, this.args.container);
     this.input.focus();
     this.input.select();
     const editorOptions = this.args.column.params?.editorOptions; // i.e.: { id: 'start', params: { editorOptions: {altFormat: 'd/m/Y', dateFormat: 'd/m/Y'}} }
@@ -453,7 +467,7 @@ export class YesNoSelectEditor<TData = any, C extends Column<TData> = Column<TDa
   }
 
   init() {
-    this.select = Utils.createDomElement('select', { tabIndex: 0, className: 'editor-yesno' }, this.args.container);
+    this.select = Utils.createDomElement('select', { tabIndex: 0, className: 'editor-yesno', ariaLabel: getEditorAriaLabel(this.args) }, this.args.container);
     Utils.createDomElement('option', { value: 'yes', textContent: 'Yes' }, this.select);
     Utils.createDomElement('option', { value: 'no', textContent: 'No' }, this.select);
 
@@ -526,7 +540,7 @@ export class CheckboxEditor<TData = any, C extends Column<TData> = Column<TData>
   }
 
   init() {
-    this.input = Utils.createDomElement('input', { className: 'editor-checkbox', type: 'checkbox', value: 'true' }, this.args.container);
+    this.input = Utils.createDomElement('input', { className: 'editor-checkbox', type: 'checkbox', value: 'true', ariaLabel: getEditorAriaLabel(this.args) }, this.args.container);
     this.input.focus();
 
     // trigger onCompositeEditorChange event when input checkbox changes and it's a Composite Editor
@@ -633,7 +647,7 @@ export class PercentCompleteEditor<TData = any, C extends Column<TData> = Column
   }
 
   init() {
-    this.input = Utils.createDomElement('input', { className: 'editor-percentcomplete', type: 'text' }, this.args.container);
+    this.input = Utils.createDomElement('input', { className: 'editor-percentcomplete', type: 'text', ariaLabel: getEditorAriaLabel(this.args) }, this.args.container);
     Utils.width(this.input, this.args.container.clientWidth - 25);
 
     this.picker = Utils.createDomElement('div', { className: 'editor-percentcomplete-picker' }, this.args.container);
@@ -641,7 +655,7 @@ export class PercentCompleteEditor<TData = any, C extends Column<TData> = Column
     const containerHelper = Utils.createDomElement('div', { className: 'editor-percentcomplete-helper' }, this.picker);
     const containerWrapper = Utils.createDomElement('div', { className: 'editor-percentcomplete-wrapper' }, containerHelper);
     Utils.createDomElement('div', { className: 'editor-percentcomplete-slider' }, containerWrapper);
-    this.slider = Utils.createDomElement('input', { className: 'editor-percentcomplete-slider', type: 'range', value: String(this.defaultValue ?? '') }, containerWrapper);
+    this.slider = Utils.createDomElement('input', { className: 'editor-percentcomplete-slider', type: 'range', ariaLabel: getEditorAriaLabel(this.args), value: String(this.defaultValue ?? '') }, containerWrapper);
     const containerButtons = Utils.createDomElement('div', { className: 'editor-percentcomplete-buttons' }, containerWrapper);
     Utils.createDomElement('button', { value: '0', className: 'slick-btn slick-btn-default', textContent: 'Not started' }, containerButtons);
     containerButtons.appendChild(document.createElement('br'));
@@ -742,7 +756,7 @@ export class LongTextEditor<TData = any, C extends Column<TData> = Column<TData>
       this.wrapper.style.position = 'absolute';
     }
 
-    this.input = Utils.createDomElement('textarea', { rows: 5, style: { background: 'white', width: '250px', height: '80px', border: '0', outline: '0' } }, this.wrapper);
+    this.input = Utils.createDomElement('textarea', { rows: 5, ariaLabel: getEditorAriaLabel(this.args), style: { background: 'white', width: '250px', height: '80px', border: '0', outline: '0' } }, this.wrapper);
 
     // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
     if (compositeEditorOptions) {

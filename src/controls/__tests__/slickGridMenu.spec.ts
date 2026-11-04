@@ -181,6 +181,7 @@ describe('SlickGridMenu', () => {
     const commandHandler = vi.fn();
     menu.onCommand.subscribe(commandHandler);
     openMenu();
+    expect(document.querySelector('.slick-gridmenu-item')?.getAttribute('aria-disabled')).toBe('true');
     document.querySelector<HTMLElement>('.slick-gridmenu-item')!.click();
 
     expect(action).not.toHaveBeenCalled();

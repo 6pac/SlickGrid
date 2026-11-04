@@ -24,6 +24,7 @@ describe('Example3 Editing', () => {
     cy.get('.slick-large-editor-text').should('have.length', 1);
 
     cy.get('.slick-large-editor-text textarea')
+      .should('have.attr', 'aria-label', 'Description')
       .type('Something else');
 
     cy.get('.slick-large-editor-text')

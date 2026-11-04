@@ -139,6 +139,7 @@ export class SlickHeaderMenu implements SlickPlugin {
   protected _activeHeaderColumnElm?: HTMLDivElement | null;
   protected _menuElm?: HTMLDivElement | null;
   protected _subMenuParentId = '';
+  protected _menuTrigger?: HTMLElement;
 
   constructor(options: Partial<HeaderMenuOption>) {
     this._options = Utils.extend(true, {}, options, this._defaults);
@@ -219,6 +220,7 @@ export class SlickHeaderMenu implements SlickPlugin {
       this._menuElm = undefined;
     }
     this._activeHeaderColumnElm?.classList.remove('slick-header-column-active');
+    this._menuTrigger?.setAttribute('aria-expanded', 'false');
     this.destroySubMenus();
   }
 
@@ -232,10 +234,14 @@ export class SlickHeaderMenu implements SlickPlugin {
         return;
       }
 
-      const elm = document.createElement('div');
-      elm.className = 'slick-header-menubutton';
-      elm.ariaLabel = 'Header Menu';
-      elm.role = 'button';
+      const elm = Utils.createDomElement('div', {
+        className: 'slick-header-menubutton',
+        ariaLabel: 'Header Menu',
+        role: 'button',
+        tabIndex: 0,
+      });
+      elm.setAttribute('aria-haspopup', 'menu');
+      elm.setAttribute('aria-expanded', 'false');
 
       if (!this._options.buttonCssClass && !this._options.buttonImage) {
         this._options.buttonCssClass = 'caret'; // default when nothing is provided
@@ -257,8 +263,20 @@ export class SlickHeaderMenu implements SlickPlugin {
       }
 
       this._bindingEventService.bind(elm, 'click', ((e: DOMMouseOrTouchEvent<HTMLDivElement>) => {
+        this._menuTrigger?.setAttribute('aria-expanded', 'false');
+        this._activeHeaderColumnElm?.classList.remove('slick-header-column-active');
+        this._menuTrigger = elm;
         this.destroyAllMenus(); // make there's only 1 parent menu opened at a time
         this.createParentMenu(e, menu, args.column);
+        elm.setAttribute('aria-expanded', String(!!this._menuElm?.isConnected));
+      }) as EventListener);
+      this._bindingEventService.bind(elm, 'keydown', ((e: KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          e.stopPropagation();
+          elm.click();
+          this._menuElm?.querySelector<HTMLElement>('[role="menuitem"]:not(.slick-header-menuitem-disabled):not(.slick-header-menuitem-hidden)')?.focus();
+        }
       }) as EventListener);
       args.node.appendChild(elm);
     }
@@ -274,9 +292,10 @@ export class SlickHeaderMenu implements SlickPlugin {
 
   protected addSubMenuTitleWhenExists(item: HeaderMenuCommandItem | 'divider', commandMenuElm: HTMLDivElement) {
     if (item !== 'divider' && item?.subMenuTitle) {
-      const subMenuTitleElm = document.createElement('div');
-      subMenuTitleElm.className = 'slick-menu-title';
-      subMenuTitleElm.textContent = item.subMenuTitle as string;
+      const subMenuTitleElm = Utils.createDomElement('div', {
+        className: 'slick-menu-title',
+        textContent: item.subMenuTitle as string,
+      });
       const subMenuTitleClass = item.subMenuTitleCssClass as string;
       if (subMenuTitleClass) {
         subMenuTitleElm.classList.add(...Utils.classNameToList(subMenuTitleClass));
@@ -305,6 +324,8 @@ export class SlickHeaderMenu implements SlickPlugin {
       containerNode.appendChild(this._menuElm);
     }
     this.repositionMenu(event, this._menuElm);
+    this._activeHeaderColumnElm = this._menuTrigger?.closest('.slick-header-column') as HTMLDivElement | null;
+    this._activeHeaderColumnElm?.classList.add('slick-header-column-active');
 
     if (this.onAfterMenuShow.notify(callbackArgs, event, this).getReturnValue() === false) {
       return;
@@ -339,8 +360,7 @@ export class SlickHeaderMenu implements SlickPlugin {
       this.destroySubMenus();
     }
 
-    const menuElm = document.createElement('div');
-    menuElm.className = menuClasses;
+    const menuElm = Utils.createDomElement('div', { className: menuClasses });
     if (level > 0) {
       menuElm.classList.add('slick-submenu');
       if (subMenuId) {
@@ -384,17 +404,21 @@ export class SlickHeaderMenu implements SlickPlugin {
         (item as HeaderMenuCommandItem).disabled = isItemUsable ? false : true;
       }
 
-      const menuItemElm = document.createElement('div');
-      menuItemElm.className = 'slick-header-menuitem';
-      menuItemElm.role = 'menuitem';
+      const menuItemElm = Utils.createDomElement('div', {
+        className: 'slick-header-menuitem',
+        role: 'menuitem',
+        tabIndex: -1,
+      });
 
       if ((item as HeaderMenuCommandItem).divider || item === 'divider') {
         menuItemElm.classList.add('slick-header-menuitem-divider');
+        menuItemElm.role = 'separator';
         addClickListener = false;
       }
 
       if ((item as HeaderMenuCommandItem).disabled) {
         menuItemElm.classList.add('slick-header-menuitem-disabled');
+        menuItemElm.setAttribute('aria-disabled', 'true');
       }
 
       if ((item as HeaderMenuCommandItem).hidden) {
@@ -409,8 +433,7 @@ export class SlickHeaderMenu implements SlickPlugin {
         menuItemElm.title = (item as HeaderMenuCommandItem).tooltip || '';
       }
 
-      const iconElm = document.createElement('div');
-      iconElm.className = 'slick-header-menuicon';
+      const iconElm = Utils.createDomElement('div', { className: 'slick-header-menuicon' });
       menuItemElm.appendChild(iconElm);
 
       if ((item as HeaderMenuCommandItem).iconCssClass) {
@@ -421,9 +444,10 @@ export class SlickHeaderMenu implements SlickPlugin {
         iconElm.style.backgroundImage = 'url(' + (item as HeaderMenuCommandItem).iconImage + ')';
       }
 
-      const textElm = document.createElement('span');
-      textElm.className = 'slick-header-menucontent';
-      textElm.textContent = (item as HeaderMenuCommandItem).title || '';
+      const textElm = Utils.createDomElement('span', {
+        className: 'slick-header-menucontent',
+        textContent: (item as HeaderMenuCommandItem).title || '',
+      });
       menuItemElm.appendChild(textElm);
 
       if ((item as HeaderMenuCommandItem).textCssClass) {
@@ -434,6 +458,31 @@ export class SlickHeaderMenu implements SlickPlugin {
       if (addClickListener) {
         const eventGroup = isSubMenu ? 'sub-menu' : 'parent-menu';
         this._bindingEventService.bind(menuItemElm, 'click', this.handleMenuItemClick.bind(this, item, columnDef, level) as EventListener, undefined, eventGroup);
+        this._bindingEventService.bind(menuItemElm, 'keydown', ((e: KeyboardEvent) => {
+          const items = Array.from(menuElm.querySelectorAll<HTMLElement>(':scope > [role="menuitem"]:not(.slick-header-menuitem-disabled):not(.slick-header-menuitem-hidden)'));
+          const index = items.indexOf(menuItemElm);
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Home' || e.key === 'End') {
+            const next = e.key === 'Home' ? 0 : e.key === 'End' ? items.length - 1 : (index + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+            items[next]?.focus();
+          } else if (e.key === 'Escape') {
+            this._menuTrigger?.focus();
+            this.hideMenu();
+          } else if (e.key === 'Enter' || e.key === ' ' || (e.key === 'ArrowRight' && (item as HeaderMenuCommandItem).commandItems)) {
+            if (!(item as HeaderMenuCommandItem).commandItems) {
+              this._menuTrigger?.focus();
+            }
+            menuItemElm.click();
+            if ((item as HeaderMenuCommandItem).commandItems) {
+              document.querySelector<HTMLElement>(`.slick-header-menu.slick-menu-level-${level + 1}${this.getGridUidSelector()} [role="menuitem"]:not(.slick-header-menuitem-disabled):not(.slick-header-menuitem-hidden)`)?.focus();
+            } else if (!this._menuElm?.isConnected) {
+              this._menuTrigger?.focus();
+            }
+          } else {
+            return;
+          }
+          e.preventDefault();
+          e.stopPropagation();
+        }) as EventListener, undefined, eventGroup);
       }
 
       // optionally open sub-menu(s) by mouseover
@@ -449,8 +498,8 @@ export class SlickHeaderMenu implements SlickPlugin {
 
       // the option/command item could be a sub-menu if it has another list of commands/options
       if ((item as HeaderMenuCommandItem).commandItems) {
-        const chevronElm = document.createElement('div');
-        chevronElm.className = 'sub-item-chevron';
+        menuItemElm.setAttribute('aria-haspopup', 'menu');
+        const chevronElm = Utils.createDomElement('div', { className: 'sub-item-chevron' });
         if (this._options.subItemChevronClass) {
           chevronElm.classList.add(...Utils.classNameToList(this._options.subItemChevronClass));
         } else {
