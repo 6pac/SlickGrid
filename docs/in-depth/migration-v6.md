@@ -2,6 +2,10 @@
 title: Migrating to v6
 ---
 
+<script setup>
+import { withBase } from 'vitepress';
+</script>
+
 # Migrating to v6
 
 Version 6 is a major release. It removes the last third-party dependency, replaces frozen rows and columns with pinning and sticky docking, and changes how columns are hidden. This page lists the breaking changes and how to update.
@@ -9,6 +13,8 @@ Version 6 is a major release. It removes the last third-party dependency, replac
 ::: tip
 This page describes the upcoming v6 release. Some items come from feature branches that merge at release.
 :::
+
+AI agents can use the <a :href="withBase('/skills/slickgrid-v6-migration/SKILL.md')" target="_self">SlickGrid v6 migration skill</a> alongside this guide.
 
 ## SortableJS is gone
 
@@ -52,6 +58,37 @@ This makes show/hide reversible and keeps each column's settings while it is hid
 ## Copy and paste: the async Clipboard API (PRs [#1242](https://github.com/6pac/SlickGrid/pull/1242), [#1243](https://github.com/6pac/SlickGrid/pull/1243), [#1244](https://github.com/6pac/SlickGrid/pull/1244))
 
 External copy and paste now use the browser's asynchronous Clipboard API (`navigator.clipboard`) instead of the old hidden-textarea approach. The change is implemented in `SlickCellExternalCopyManager`; no grid options or methods changed. The API requires a secure context (HTTPS or localhost), and paste requires clipboard-read permission. Use `clipboardWriteOverride` and `clipboardReadOverride` when the Clipboard API is unavailable or the host application manages the clipboard. See the [CellExternalCopyManager reference](/reference/plugins) for details.
+
+## Accessibility (PR [#1338](https://github.com/6pac/SlickGrid/pull/1338))
+
+The grid and several built-in controls and plugins now expose additional accessible names and state. Most applications do not need configuration changes, but custom accessibility integrations and tests may need updates:
+
+- Grid row indexes and counts include visible column-header and header-filter rows, as well as the add-new row when available. Selected cells expose `aria-selected`, and the primary sorted column exposes `aria-sort`. Update tests that assumed data row indexes always started at 1.
+- Built-in editors use the rendered column title as their accessible name, falling back to the column ID. Set `editorAriaLabel` on a column to provide a different or translated name.
+- The Checkbox Select Column plugin accepts `rowAriaLabel` and `selectAllAriaLabel` options. Header button definitions accept `ariaLabel`. Set these options when the default English labels or the button tooltip/command are not suitable.
+- Header menus, header buttons, pager controls, and row-detail toggles have additional keyboard and accessibility behavior. Optional plugins and controls still need to be loaded and registered as before.
+- The built-in percent bar, checkbox, and checkmark formatters now include accessible text alternatives. In particular, `CheckmarkFormatter` returns an empty element labeled `No` for false values instead of an empty string. Update tests or custom code that compares the exact formatter HTML.
+- Custom tooltips retain an element's existing `aria-describedby` references while the tooltip is shown.
+
+For example, column and plugin options can provide application-specific labels in an IIFE application:
+
+```ts
+const columns = [{
+  id: 'title',
+  name: 'Title',
+  field: 'title',
+  editor: Slick.Editors.Text,
+  editorAriaLabel: 'Edit task title',
+}];
+
+const checkboxSelector = new Slick.CheckboxSelectColumn({
+  rowAriaLabel: 'Select task',
+  selectAllAriaLabel: 'Select all tasks',
+});
+grid.registerPlugin(checkboxSelector);
+```
+
+For ESM, import `TextEditor` and `SlickCheckboxSelectColumn` from `slickgrid` and use those names in place of `Slick.Editors.Text` and `Slick.CheckboxSelectColumn`.
 
 ## Removed deprecated code
 
