@@ -209,11 +209,18 @@ export class SlickPivotPanel {
     }
     this._container = container;
     this._options = Utils.extend(true, {}, this._defaults, options);
+    // a list replaces the default one: the deep merge is by index, so a shorter list would keep the end of the default one
     if (options?.numberFormats) {
       this._options.numberFormats = options.numberFormats;
     }
     if (options?.showAsOptions) {
       this._options.showAsOptions = options.showAsOptions;
+    }
+    if (options?.summarizeByAggregators) {
+      this._options.summarizeByAggregators = options.summarizeByAggregators;
+    }
+    if (options?.autoDateGrouping) {
+      this._options.autoDateGrouping = options.autoDateGrouping;
     }
     this._deferred = this._options.deferLayoutUpdate;
     this._bindingEventService = new BindingEventService();
