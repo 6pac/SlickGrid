@@ -6,6 +6,7 @@
 
 [![Cypress.io](https://img.shields.io/badge/tested%20with-Cypress-04C38E.svg)](https://www.cypress.io/)
 [![npm](https://img.shields.io/npm/v/slickgrid.svg?logo=npm&logoColor=fff&label=npm)](https://npmjs.org/package/slickgrid)
+[![codecov](https://codecov.io/gh/6pac/SlickGrid/branch/master/graph/badge.svg)](https://codecov.io/gh/6pac/SlickGrid)
 [![Actions Status](https://github.com/6pac/SlickGrid/workflows/CI%20Build/badge.svg)](https://github.com/6pac/SlickGrid/actions)
 
 ## This is the 6pac SlickGrid repo

@@ -35,6 +35,10 @@ export class SlickAutoTooltips implements SlickPlugin {
     this._options = Utils.extend(true, {}, this._defaults, options);
   }
 
+  get options(): AutoTooltipOption {
+    return this._options as AutoTooltipOption;
+  }
+
   /**
    * Initialize plugin.
    */

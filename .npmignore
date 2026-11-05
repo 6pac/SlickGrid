@@ -32,3 +32,9 @@ testresult.xml
 tsconfig.json
 tsconfig.tsbuildinfo
 package-lock.json
+
+# test coverage
+coverage/
+.nyc_output/
+lcov.info
+*.lcov

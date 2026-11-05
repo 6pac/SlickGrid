@@ -63,11 +63,11 @@ DataView filtering and aggregation are CSP-safe without runtime code generation.
 
 Subclasses of `SlickDataView` must update references to these protected methods:
 
-| Previous method | Replacement |
-| --- | --- |
-| `compileFilterCSPSafe()` | `filterItems()` |
+| Previous method                     | Replacement                |
+| ----------------------------------- | -------------------------- |
+| `compileFilterCSPSafe()`            | `filterItems()`            |
 | `compileFilterWithCachingCSPSafe()` | `filterItemsWithCaching()` |
-| `compileAccumulatorLoopCSPSafe()` | `compileAccumulatorLoop()` |
+| `compileAccumulatorLoopCSPSafe()`   | `compileAccumulatorLoop()` |
 
 ### Menu and column picker options
 
@@ -83,7 +83,7 @@ Subclasses of `SlickDataView` must update references to these protected methods:
 The IE-specific `fastSort(field, ascending)` method has been removed. Use `sort(comparer, ascending)` instead. For example, to sort a string field:
 
 ```ts
-dataView.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0, true);
+dataView.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0), true);
 ```
 
 Choose a comparator that matches your data and desired ordering. `reSort()` continues to reapply the comparator and direction passed to `sort()`.
@@ -182,12 +182,12 @@ Since we dropped jQueryUI back in v4, there is no need to keep references to `.u
 - The custom tooltip plugin can now show tooltips on elements outside the grid. Enable `observeAllTooltips` to observe `title` and `data-slick-tooltip` attributes. Observation defaults to the document body; set `observeTooltipContainer` to limit it to selected containers.
 
 ```ts
-import { SlickCustomTooltip, SlickGrid } from "slickgrid";
+import { SlickCustomTooltip, SlickGrid } from 'slickgrid';
 
-const grid = new SlickGrid("#myGrid", data, columns, {
+const grid = new SlickGrid('#myGrid', data, columns, {
   customTooltip: {
     observeAllTooltips: true,
-    observeTooltipContainer: ".toolbar, #dialog", // optional; defaults to body
+    observeTooltipContainer: '.toolbar, #dialog', // optional; defaults to body
   },
 });
 grid.registerPlugin(new SlickCustomTooltip());
@@ -215,7 +215,7 @@ body {
 }
 ```
 
-### Column autosizing (PR #1328)
+### Column autosizing (PR [#1328](https://github.com/6pac/SlickGrid/pull/1328))
 
 - Content autosizing samples the first 200 rows by default, in every column mode (`autoSize.rowSelectionCount` was 100).
 - `ContentIntelligent` number and string columns used to read every row. They now read the rows chosen by the column's own `rowSelectionMode` / `rowSelectionCount`, so the first 200 by default. Set `autoSize.rowSelectionMode: RowSelectionMode.AllRows` on a column to read every row again.
@@ -236,7 +236,7 @@ The per-cell `onBeforeAppendCell` event and `OnBeforeAppendCellEventArgs` type w
 ```ts
 const formatter = (_row, _cell, value) => ({
   text: String(value),
-  addClasses: value > 50 ? "high-value" : "",
+  addClasses: value > 50 ? 'high-value' : '',
 });
 ```
 

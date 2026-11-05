@@ -1,17 +1,20 @@
 // -- 1. modern SASS approach with @use
-// the Alpine Theme must be @use before the icon any other SlickGrid styles imported
+// Load the theme before other SlickGrid styles. Its colors are overridden below
+// through the CSS custom properties exposed by the Alpine theme.
+@use 'slickgrid/dist/styles/sass/slick-alpine-theme.scss' as alpine;
 @use 'slickgrid/dist/styles/sass/slick.contextmenu.scss' as cm;
 @use 'slickgrid/dist/styles/sass/slick.columnpicker.scss' as picker;
 @use 'slickgrid/dist/styles/sass/slick.gridmenu.scss' as gm;
 @use 'slickgrid/dist/styles/sass/slick.headermenu.scss' as hm;
 @use 'slickgrid/dist/styles/sass/slick.pager.scss' as pager;
 @use 'slickgrid/dist/styles/sass/example-demo.scss' as demo;
-@use 'slickgrid/dist/styles/sass/slick-alpine-theme.scss' with (
-  $slick-row-mouse-hover-color: rgb(245, 254, 234),
-  $slick-cell-selected-bg-color: rgb(223, 234, 214),
-);
 // @use of icons must be last because the @forward is defined in the Alpine Theme
 @use 'slickgrid/dist/styles/sass/slick-icons.scss' as icons;
+
+:root {
+  --slick-row-mouse-hover-color: rgb(245, 254, 234);
+  --slick-cell-selected-bg-color: rgb(223, 234, 214);
+}
 
 // -- 2. legacy SASS approach with @import
 // $slick-row-mouse-hover-color: rgb(247, 254, 234);

@@ -50,6 +50,7 @@ describe('Grid Menu flex layout', () => {
           const handleRect = handle.getBoundingClientRect();
           const columnRect = handle.parentElement.getBoundingClientRect();
           expect(handleRect.width).to.be.at.least(6);
+          expect(win.getComputedStyle(handle, '::before').width, 'visible separator remains thin').to.eq('2px');
           expect(handleRect.left).to.be.at.least(columnRect.left);
           expect(handleRect.right).to.be.at.most(columnRect.right);
           expect(root.ownerDocument.elementFromPoint(handleRect.left + handleRect.width / 2, handleRect.top + handleRect.height / 2)).to.eq(handle);
