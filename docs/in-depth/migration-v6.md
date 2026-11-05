@@ -65,7 +65,7 @@ The grid and several built-in controls and plugins now expose additional accessi
 
 - Grid row indexes and counts include visible column-header and header-filter rows, as well as the add-new row when available. Selected cells expose `aria-selected`, and the primary sorted column exposes `aria-sort`. Update tests that assumed data row indexes always started at 1.
 - Built-in editors use the rendered column title as their accessible name, falling back to the column ID. Set `editorAriaLabel` on a column to provide a different or translated name.
-- The Checkbox Select Column plugin accepts `rowAriaLabel` and `selectAllAriaLabel` options. Header button definitions accept `ariaLabel`. Set these options when the default English labels or the button tooltip/command are not suitable.
+- The Checkbox Select Column plugin accepts `rowAriaLabel` and `selectAllAriaLabel` options; `rowAriaLabel` names every row checkbox alike, in place of the default `Select row N`. Header button definitions accept `ariaLabel`. Set these options when the default English labels or the button tooltip/command are not suitable.
 - Header menus, header buttons, pager controls, and row-detail toggles have additional keyboard and accessibility behavior. Optional plugins and controls still need to be loaded and registered as before.
 - The built-in percent bar, checkbox, and checkmark formatters now include accessible text alternatives. In particular, `CheckmarkFormatter` returns an empty element labeled `No` for false values instead of an empty string. Update tests or custom code that compares the exact formatter HTML.
 - Custom tooltips retain an element's existing `aria-describedby` references while the tooltip is shown.
@@ -85,10 +85,14 @@ const checkboxSelector = new Slick.CheckboxSelectColumn({
   rowAriaLabel: 'Select task',
   selectAllAriaLabel: 'Select all tasks',
 });
+columns.unshift(checkboxSelector.getColumnDefinition()); // the plugin's own column holds the checkboxes
+
+const grid = new Slick.Grid('#myGrid', data, columns, { editable: true, enableCellNavigation: true });
+grid.setSelectionModel(new Slick.RowSelectionModel({ selectActiveRow: false }));
 grid.registerPlugin(checkboxSelector);
 ```
 
-For ESM, import `TextEditor` and `SlickCheckboxSelectColumn` from `slickgrid` and use those names in place of `Slick.Editors.Text` and `Slick.CheckboxSelectColumn`.
+For ESM, import `SlickGrid`, `TextEditor`, `SlickRowSelectionModel` and `SlickCheckboxSelectColumn` from `slickgrid` and use those names in place of `Slick.Grid`, `Slick.Editors.Text`, `Slick.RowSelectionModel` and `Slick.CheckboxSelectColumn`.
 
 ## Removed deprecated code
 

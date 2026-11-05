@@ -269,9 +269,13 @@ export class SlickRowDetailView {
     return -1;
   }
 
-  /** Handle mouse click event */
+  /** Toggle the row detail with Enter or Space while the active cell is the row detail selector cell */
   protected handleKeyDown(e: SlickEventData, args: { row: number; cell: number; }) {
     if ((e.key !== 'Enter' && e.key !== ' ') || this._grid.getColumns()[args.cell]?.id !== this._options.columnId || this._grid.getEditorLock().isActive()) {
+      return;
+    }
+    // the detail panels live in the grid canvas, so the keys typed in their own inputs and buttons reach this handler as well: leave those alone
+    if (e.target?.closest?.('.slick-row-detail-container')) {
       return;
     }
     const toggle = this._grid.getCellNode(args.row, args.cell)?.querySelector<HTMLElement>('[data-row-detail-toggle]');
@@ -282,6 +286,7 @@ export class SlickRowDetailView {
     }
   }
 
+  /** Handle mouse click event */
   protected handleClick(e: SlickEventData, args: { row: number; cell: number; }) {
     const dataContext = this._grid.getDataItem(args.row);
     if (!this.checkExpandableOverride(args.row, dataContext, this._grid)) {

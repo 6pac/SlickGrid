@@ -34,6 +34,27 @@ describe('Example - Header Menu', () => {
     cy.focused().blur();
   });
 
+  it('reaches the menu button with the Tab key', () => {
+    cy.get('#myGrid .slick-header-column').first().focus();
+    cy.realPress('Tab');
+    cy.focused().should('have.class', 'slick-header-menubutton').and('be.visible');
+    cy.focused().blur();
+  });
+
+  it('shows the menu button of a header while the pointer is over it, and no longer once the pointer has left after a click', () => {
+    cy.get('#myGrid .slick-header-column').eq(2).find('.slick-header-menubutton').should('not.be.visible');
+    cy.get('#myGrid .slick-header-column').eq(2).realHover();
+    cy.get('#myGrid .slick-header-column').eq(2).find('.slick-header-menubutton').should('be.visible');
+    cy.get('h2.title').realHover();
+    cy.get('#myGrid .slick-header-column').eq(2).find('.slick-header-menubutton').should('not.be.visible');
+
+    // the "Title" column is not sortable, a click only gives it the focus
+    cy.get('#myGrid .slick-header-column').first().realClick();
+    cy.get('h2.title').realHover();
+    cy.get('#myGrid .slick-header-column').first().find('.slick-header-menubutton').should('not.be.visible');
+    cy.focused().blur();
+  });
+
   it('should open the Header Menu on the "Title" column and expect onBeforeMenuShow then onAfterMenuShow to show in the console log', () => {
     cy.get('#myGrid')
       .find('.slick-header-column')

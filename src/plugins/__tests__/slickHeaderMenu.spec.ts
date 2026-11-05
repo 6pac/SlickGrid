@@ -19,9 +19,12 @@ const column: Column = {
 };
 
 const grid = {
+  focus: vi.fn(),
+  getColumnIndex: vi.fn(() => 0),
   getColumns: vi.fn(() => [column]),
   getContainerNode: vi.fn(),
   getGridPosition: vi.fn(() => ({ width: 800, left: 0, right: 800, top: 0, bottom: 600 })),
+  getHeaderColumn: vi.fn(),
   getPubSubService: vi.fn(),
   getUID: () => 'slickgrid12345',
   setColumns: vi.fn(),
@@ -59,6 +62,7 @@ describe('SlickHeaderMenu', () => {
     container.appendChild(header);
     document.body.appendChild(container);
     vi.mocked(grid.getContainerNode).mockReturnValue(container);
+    vi.mocked(grid.getHeaderColumn).mockReturnValue(header);
     plugin = new SlickHeaderMenu({});
   });
 
@@ -204,6 +208,209 @@ describe('SlickHeaderMenu', () => {
     menu.querySelector<HTMLElement>('.slick-submenu-item')!.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
     expect(document.body.querySelector('.slick-header-menu.slick-submenu .slick-header-menucontent')?.textContent).toBe('Nested command');
+  });
+
+  describe('keyboard and focus', () => {
+    const subMenuItems = (): Array<HeaderMenuCommandItem | 'divider'> => [
+      { command: 'more', title: 'More', commandItems: [{ command: 'nested', title: 'Nested command' }] },
+      { command: 'last', title: 'Last command' },
+    ];
+    const pressKey = (target: HTMLElement, key: string) => {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      target.dispatchEvent(event);
+      return event;
+    };
+    const openMenuWithKeyboard = () => {
+      renderHeader();
+      const button = header.querySelector<HTMLElement>('.slick-header-menubutton')!;
+      button.focus();
+      pressKey(button, 'Enter');
+      return { button, menu: container.querySelector<HTMLDivElement>('.slick-header-menu.slick-menu-level-0')! };
+    };
+    const boundListeners = () => (plugin as any)._bindingEventService.getBoundedEvents() as unknown[];
+
+    it('clears the active state of the header after a sub-menu was opened', () => {
+      column.header!.menu!.commandItems = subMenuItems();
+      plugin.init(grid);
+      const menu = openMenu();
+      expect(header.classList.contains('slick-header-column-active')).toBe(true);
+      menu.querySelector<HTMLElement>('.slick-submenu-item')!.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+      expect(document.body.querySelector('.slick-header-menu.slick-submenu')).toBeTruthy();
+
+      plugin.hideMenu();
+
+      expect(header.classList.contains('slick-header-column-active')).toBe(false);
+    });
+
+    it('gives the focus back to the menu button when a command closes the menu', () => {
+      plugin.init(grid);
+      const { button, menu } = openMenuWithKeyboard();
+      const item = menu.querySelector<HTMLElement>('.slick-header-menuitem')!;
+      expect(document.activeElement).toBe(item);
+
+      pressKey(item, 'Enter');
+
+      expect(container.querySelector('.slick-header-menu')).toBeNull();
+      expect(document.activeElement).toBe(button);
+      expect(button.getAttribute('aria-expanded')).toBe('false');
+      expect(header.classList.contains('slick-header-column-active')).toBe(false);
+    });
+
+    it('leaves the focus where a command put it', () => {
+      const input = document.body.appendChild(document.createElement('input'));
+      (column.header!.menu!.commandItems![0] as HeaderMenuCommandItem).action = () => input.focus();
+      plugin.init(grid);
+      const { menu } = openMenuWithKeyboard();
+
+      pressKey(menu.querySelector<HTMLElement>('.slick-header-menuitem')!, 'Enter');
+
+      expect(container.querySelector('.slick-header-menu')).toBeNull();
+      expect(document.activeElement).toBe(input);
+    });
+
+    it('keeps the focus in a menu that a command keeps open', () => {
+      (column.header!.menu!.commandItems![0] as HeaderMenuCommandItem).action = (e) => e.preventDefault();
+      plugin.init(grid);
+      const { menu } = openMenuWithKeyboard();
+      const item = menu.querySelector<HTMLElement>('.slick-header-menuitem')!;
+
+      pressKey(item, 'Enter');
+
+      expect(menu.isConnected).toBe(true);
+      expect(document.activeElement).toBe(item);
+    });
+
+    it('ignores Enter on a disabled item and reaches the enabled items from it with the arrow keys', () => {
+      column.header!.menu!.commandItems = [
+        { command: 'first', title: 'First command' },
+        { command: 'disabled', title: 'Disabled command', disabled: true },
+        { command: 'last', title: 'Last command' },
+      ];
+      const commandListener = vi.fn();
+      plugin.init(grid);
+      plugin.onCommand.subscribe(commandListener);
+      const { menu } = openMenuWithKeyboard();
+      const [first, disabled, last] = Array.from(menu.querySelectorAll<HTMLElement>('.slick-header-menuitem'));
+      disabled.focus(); // a mouse click on a disabled item gives it the focus
+
+      pressKey(disabled, 'Enter');
+      expect(commandListener).not.toHaveBeenCalled();
+      expect(menu.isConnected).toBe(true);
+      expect(document.activeElement).toBe(disabled);
+
+      pressKey(disabled, 'ArrowUp');
+      expect(document.activeElement).toBe(last);
+      disabled.focus();
+      pressKey(disabled, 'ArrowDown');
+      expect(document.activeElement).toBe(first);
+    });
+
+    it('closes the menu when Tab is pressed on an item and lets the focus move on from the menu button', () => {
+      plugin.init(grid);
+      const { button, menu } = openMenuWithKeyboard();
+
+      const event = pressKey(menu.querySelector<HTMLElement>('.slick-header-menuitem')!, 'Tab');
+
+      expect(menu.isConnected).toBe(false);
+      expect(button.getAttribute('aria-expanded')).toBe('false');
+      expect(document.activeElement).toBe(button);
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('leaves only the sub-menu on Escape or ArrowLeft and goes back to the item that opened it', () => {
+      column.header!.menu!.commandItems = subMenuItems();
+      plugin.init(grid);
+      const { menu } = openMenuWithKeyboard();
+      const parentItem = menu.querySelector<HTMLElement>('.slick-submenu-item')!;
+
+      for (const key of ['Escape', 'ArrowLeft']) {
+        pressKey(parentItem, 'ArrowRight');
+        const nestedItem = document.body.querySelector<HTMLElement>('.slick-header-menu.slick-submenu .slick-header-menuitem')!;
+        expect(document.activeElement).toBe(nestedItem);
+
+        pressKey(nestedItem, key);
+
+        expect(document.body.querySelector('.slick-header-menu.slick-submenu')).toBeNull();
+        expect(menu.isConnected).toBe(true);
+        expect(document.activeElement).toBe(parentItem);
+      }
+    });
+
+    it('closes the menu with Escape on the menu button', () => {
+      plugin.init(grid);
+      const { button, menu } = openMenuWithKeyboard();
+      button.focus();
+
+      pressKey(button, 'Escape');
+
+      expect(menu.isConnected).toBe(false);
+      expect(button.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('does not make a divider focusable', () => {
+      column.header!.menu!.commandItems = [{ command: 'first', title: 'First command' }, 'divider', { command: 'last', title: 'Last command' }];
+      plugin.init(grid);
+      const menu = openMenu();
+      const divider = menu.querySelector<HTMLElement>('.slick-header-menuitem-divider')!;
+
+      expect(divider.getAttribute('role')).toBe('separator');
+      expect(divider.hasAttribute('tabindex')).toBe(false);
+      expect(menu.querySelector('.slick-header-menuitem:not(.slick-header-menuitem-divider)')?.getAttribute('tabindex')).toBe('-1');
+    });
+
+    it('finds the menu button again after a command rendered its header cell anew', () => {
+      (column.header!.menu!.commandItems![0] as HeaderMenuCommandItem).action = () => {
+        // what `grid.setColumns()` does to a header cell
+        grid.onBeforeHeaderCellDestroy.notify({ column, node: header, grid }, new SlickEventData());
+        grid.onHeaderCellRendered.notify({ column, node: header, grid }, new SlickEventData());
+      };
+      plugin.init(grid);
+      const { button, menu } = openMenuWithKeyboard();
+
+      pressKey(menu.querySelector<HTMLElement>('.slick-header-menuitem')!, 'Enter');
+      const newButton = header.querySelector<HTMLElement>('.slick-header-menubutton')!;
+
+      expect(button.isConnected).toBe(false);
+      expect(newButton).not.toBe(button);
+      expect(document.activeElement).toBe(newButton);
+      expect(newButton.getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('focuses the grid when the column of the menu is gone after the command', () => {
+      (column.header!.menu!.commandItems![0] as HeaderMenuCommandItem).action = () => {
+        grid.onBeforeHeaderCellDestroy.notify({ column, node: header, grid }, new SlickEventData());
+        vi.mocked(grid.getHeaderColumn).mockReturnValue(undefined as any);
+      };
+      plugin.init(grid);
+      const { menu } = openMenuWithKeyboard();
+
+      pressKey(menu.querySelector<HTMLElement>('.slick-header-menuitem')!, 'Enter');
+
+      expect(grid.focus).toHaveBeenCalledOnce();
+    });
+
+    it('releases the listeners of a menu button when its header cell is destroyed', () => {
+      plugin.init(grid);
+      const args = renderHeader();
+      const boundAfterFirstRender = boundListeners().length;
+
+      for (let i = 0; i < 5; i++) {
+        grid.onBeforeHeaderCellDestroy.notify(args, new SlickEventData());
+        grid.onHeaderCellRendered.notify(args, new SlickEventData());
+      }
+
+      expect(boundListeners()).toHaveLength(boundAfterFirstRender);
+    });
+
+    it('forgets the menu button when the plugin is destroyed', () => {
+      plugin.init(grid);
+      openMenuWithKeyboard();
+
+      plugin.destroy();
+
+      expect((plugin as any)._menuTrigger).toBeUndefined();
+      expect(header.classList.contains('slick-header-column-active')).toBe(false);
+    });
   });
 
   it('destroys the menu and removes its event subscriptions', () => {

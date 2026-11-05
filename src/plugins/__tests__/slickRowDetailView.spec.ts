@@ -177,6 +177,27 @@ describe('SlickRowDetailView', () => {
     expect(event.preventDefault).toHaveBeenCalledOnce();
   });
 
+  it('leaves Space and Enter alone when they are typed inside a row detail panel', () => {
+    init();
+    const cell = document.createElement('div');
+    const toggle = document.createElement('div');
+    toggle.dataset.rowDetailToggle = '';
+    cell.appendChild(toggle);
+    vi.mocked(grid.getCellNode).mockReturnValue(cell);
+    const click = vi.spyOn(toggle, 'click');
+    const panel = document.createElement('div');
+    panel.className = 'slick-row-detail-container row-detail-0';
+    const input = panel.appendChild(document.createElement('input'));
+
+    for (const key of [' ', 'Enter']) {
+      const event = Object.assign(new SlickEventData(), { key, target: input, preventDefault: vi.fn(), stopImmediatePropagation: vi.fn() });
+      grid.onKeyDown.notify({ row: 0, cell: 0, grid }, event);
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      expect(event.stopImmediatePropagation).not.toHaveBeenCalled();
+    }
+    expect(click).not.toHaveBeenCalled();
+  });
+
   it('expands a detail row, inserts padding rows, and starts the async process', () => {
     init();
 

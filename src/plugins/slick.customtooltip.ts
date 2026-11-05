@@ -96,7 +96,6 @@ export class SlickCustomTooltip {
   protected _tooltipElm?: HTMLDivElement;
   protected _tooltipBodyElm?: HTMLDivElement;
   protected _tooltipTriggerElm?: HTMLElement | null;
-  protected _previousAriaDescribedBy?: string | null;
   protected _observableSubscription?: TooltipSubscription;
   protected _mouseTarget?: HTMLElement | null;
   protected _cellType: CellType = 'slick-cell';
@@ -499,13 +498,15 @@ export class SlickCustomTooltip {
     this._observableSubscription?.unsubscribe?.();
     this._observableSubscription = undefined;
     if (this._tooltipTriggerElm) {
-      if (this._previousAriaDescribedBy) {
-        this._tooltipTriggerElm.setAttribute('aria-describedby', this._previousAriaDescribedBy);
+      // take only the id of this tooltip back out: the element may have other descriptions, set before or while the tooltip was shown
+      const tooltipId = this._tooltipElm?.id;
+      const describedBy = (this._tooltipTriggerElm.getAttribute('aria-describedby') || '').split(/\s+/).filter((id) => id && id !== tooltipId);
+      if (describedBy.length) {
+        this._tooltipTriggerElm.setAttribute('aria-describedby', describedBy.join(' '));
       } else {
         this._tooltipTriggerElm.removeAttribute('aria-describedby');
       }
       this._tooltipTriggerElm = null;
-      this._previousAriaDescribedBy = undefined;
     }
     if (this._hideTooltipTimeout) {
       clearTimeout(this._hideTooltipTimeout);
@@ -614,8 +615,8 @@ export class SlickCustomTooltip {
     const tooltipTriggerElm = this._mouseTarget || this._cellNodeElm;
     if (tooltipTriggerElm) {
       this._tooltipTriggerElm = tooltipTriggerElm;
-      this._previousAriaDescribedBy = tooltipTriggerElm.getAttribute('aria-describedby');
-      tooltipTriggerElm.setAttribute('aria-describedby', [this._previousAriaDescribedBy, tooltipId].filter(Boolean).join(' '));
+      const describedBy = tooltipTriggerElm.getAttribute('aria-describedby');
+      tooltipTriggerElm.setAttribute('aria-describedby', describedBy ? `${describedBy} ${tooltipId}` : tooltipId);
     }
     this._tooltipBodyElm = document.createElement('div');
     this._tooltipBodyElm.className = this._cellTooltipOptions.bodyClassName || 'tooltip-body';

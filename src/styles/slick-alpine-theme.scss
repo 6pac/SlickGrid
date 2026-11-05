@@ -292,9 +292,12 @@
   }
 }
 
+// shown while the column is hovered, while the keyboard focus is on the column or inside it, and while its menu is open
+// (see slick.headermenu.scss); the `.slick-state-default` variants outweigh the `display: none` of the nested rule below
 .slick-header-column:hover > .slick-header-menubutton,
-.slick-header-column:focus-within > .slick-header-menubutton,
-.slick-header-column.slick-state-default:focus-within > .slick-header-menubutton,
+.slick-header-column.slick-state-default:hover > .slick-header-menubutton,
+.slick-header-column.slick-state-default:focus-visible > .slick-header-menubutton,
+.slick-header-column.slick-state-default:not(:focus):focus-within > .slick-header-menubutton,
 .slick-header-column.slick-state-default.slick-header-column-active > .slick-header-menubutton,
 .slick-header-column-active .slick-header-menubutton {
   display: inline-block;

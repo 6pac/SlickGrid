@@ -49,6 +49,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
    *    image:        Relative button image path.
    *    disabled:     Whether the item is disabled.
    *    tooltip:      Button tooltip.
+   *    ariaLabel:    Accessible name of the button, defaults to its tooltip or command.
    *    showOnHover:  Only show the button on hover.
    *    handler:      Button click handler.
    *    command:      A command identifier to be passed to the onCommand event handlers.
@@ -121,6 +122,18 @@ export class SlickHeaderButtons implements SlickPlugin {
     const column = args.column;
 
     if (column.header?.buttons) {
+      // every listener bound for this header cell is released again when the cell is destroyed, see handleBeforeHeaderCellDestroy()
+      const eventGroup = this.getHeaderEventGroup(column);
+
+      // Tabbing to a button that the float layout pushed below the header box makes the browser scroll the header cell:
+      // bring the column title back into view as soon as the focus leaves the cell.
+      this._bindingEventService.bind(args.node, 'focusout', ((e: FocusEvent) => {
+        if (!args.node.contains(e.relatedTarget as Node | null)) {
+          args.node.scrollTop = 0;
+          args.node.scrollLeft = 0;
+        }
+      }) as EventListener, undefined, eventGroup);
+
       // Append buttons in reverse order since they are floated to the right.
       let i = column.header.buttons.length;
       while (i--) {
@@ -170,17 +183,25 @@ export class SlickHeaderButtons implements SlickPlugin {
         }
 
         if (button.handler && !button.disabled) {
-          this._bindingEventService.bind(btn, 'click', button.handler);
+          this._bindingEventService.bind(btn, 'click', button.handler, undefined, eventGroup);
         }
 
-        this._bindingEventService.bind(btn, 'click', this.handleButtonClick.bind(this, button, args.column) as EventListener);
+        this._bindingEventService.bind(btn, 'click', this.handleButtonClick.bind(this, button, args.column) as EventListener, undefined, eventGroup);
         this._bindingEventService.bind(btn, 'keydown', ((e: KeyboardEvent) => {
           if (!button.disabled && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             e.stopPropagation();
+            const buttonSelector = this.getButtonSelector();
+            const buttonIndex = buttonSelector ? Array.from(args.node.querySelectorAll(buttonSelector)).indexOf(btn) : -1;
             btn.click();
+
+            // a command renders the header cell again (see handleButtonClick) and that replaces this button: keep the keyboard focus on its replacement
+            if (!btn.parentNode && buttonIndex >= 0) {
+              const headerElm = args.node.querySelector(buttonSelector) ? args.node : this.getHeaderElement(column);
+              headerElm?.querySelectorAll<HTMLElement>(buttonSelector)[buttonIndex]?.focus();
+            }
           }
-        }) as EventListener);
+        }) as EventListener, undefined, eventGroup);
         args.node.appendChild(btn);
       }
     }
@@ -191,14 +212,29 @@ export class SlickHeaderButtons implements SlickPlugin {
     const column = args.column;
 
     if (column.header?.buttons) {
-      // Removing buttons via jQuery will also clean up any event handlers and data.
-      // NOTE: If you attach event handlers directly or using a different framework,
-      //       you must also clean them up here to avoid memory leaks.
-      const buttonCssClass = (this._options.buttonCssClass || '').replace(/(\s+)/g, '.');
-      if (buttonCssClass) {
-        args.node.querySelectorAll(`.${buttonCssClass}`).forEach(elm => elm.remove());
+      // Release the listeners that were bound for this header cell, then remove its buttons.
+      this._bindingEventService.unbindAll(this.getHeaderEventGroup(column));
+      const buttonSelector = this.getButtonSelector();
+      if (buttonSelector) {
+        args.node.querySelectorAll(buttonSelector).forEach(elm => elm.remove());
       }
     }
+  }
+
+  /** Selector of the buttons added by this plugin, an empty string when no button CSS class is configured. */
+  protected getButtonSelector(): string {
+    const buttonCssClass = (this._options.buttonCssClass || '').replace(/(\s+)/g, '.');
+    return buttonCssClass ? `.${buttonCssClass}` : '';
+  }
+
+  protected getHeaderEventGroup(column: Column): string {
+    return `header-buttons-${column.id}`;
+  }
+
+  /** Returns the header cell of a column as it is now, `setColumns()` replaces the cell that was given to the render callback. */
+  protected getHeaderElement(column: Column): HTMLElement | undefined {
+    const columnIdx = this._grid.getColumnIndex(column.id);
+    return Utils.isDefined(columnIdx) ? this._grid.getHeaderColumn(columnIdx) : undefined;
   }
 
   protected handleButtonClick(button: HeaderButtonItem, columnDef: Column, e: DOMEvent<HTMLDivElement>) {

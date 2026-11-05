@@ -135,7 +135,7 @@ Three more plugins support selection. Register these with `registerPlugin`:
 
 | Plugin | `pluginName` | What it does |
 | --- | --- | --- |
-| [`SlickCheckboxSelectColumn`](/reference/plugins) | `CheckboxSelectColumn` | Add a checkbox column with a select-all header. Pair it with a selection model and add its `getColumnDefinition()` to your columns. |
+| [`SlickCheckboxSelectColumn`](/reference/plugins) | `CheckboxSelectColumn` | Add a checkbox column with a select-all header. Pair it with a selection model and add its `getColumnDefinition()` to your columns. Name its checkboxes with `rowAriaLabel` and `selectAllAriaLabel`. |
 | [`SlickCellRangeSelector`](/reference/plugins) | `CellRangeSelector` | Drag a rubber-band rectangle to select a range. The cell and row models use it internally. |
 | [`SlickCellRangeDecorator`](/reference/plugins) | `CellRangeDecorator` | Draw the border overlay around a selected range. A helper used by the selectors. |
 

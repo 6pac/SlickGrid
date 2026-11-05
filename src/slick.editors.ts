@@ -10,11 +10,14 @@ function getEditorAriaLabel(args: { column: Column; grid: Pick<EditorArguments['
     return args.column.editorAriaLabel;
   }
   const name = args.column.name;
-  let title = typeof name === 'string' ? name : name?.textContent;
-  if (typeof name === 'string') {
+  let title: string | null | undefined;
+  if (typeof name === 'string' && /[<&]/.test(name) && typeof args.grid?.applyHtmlCode === 'function') {
+    // render the title the way the column header does, then keep its text only
     const label = document.createElement('span');
     args.grid.applyHtmlCode(label, name);
     title = label.textContent;
+  } else {
+    title = typeof name === 'string' ? name : name?.textContent;
   }
   return title?.trim() || String(args.column.id);
 }
@@ -354,7 +357,8 @@ export class FlatpickrEditor<TData = any, C extends Column<TData> = Column<TData
   }
 
   init() {
-    this.input = Utils.createDomElement('input', { type: 'text', className: 'editor-text', ariaLabel: getEditorAriaLabel(this.args) }, this.args.container);
+    const ariaLabel = getEditorAriaLabel(this.args);
+    this.input = Utils.createDomElement('input', { type: 'text', className: 'editor-text', ariaLabel }, this.args.container);
     this.input.focus();
     this.input.select();
     const editorOptions = this.args.column.params?.editorOptions; // i.e.: { id: 'start', params: { editorOptions: {altFormat: 'd/m/Y', dateFormat: 'd/m/Y'}} }
@@ -386,6 +390,9 @@ export class FlatpickrEditor<TData = any, C extends Column<TData> = Column<TData
         }
       },
     });
+
+    // with `altInput`, Flatpickr hides the original input and shows one of its own: that visible input is the one that needs the accessible name
+    this.flatpickrInstance?.altInput?.setAttribute('aria-label', ariaLabel);
 
     if (!this.args.compositeEditorOptions) {
       window.setTimeout(() => {

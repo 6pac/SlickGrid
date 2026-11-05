@@ -835,6 +835,42 @@ describe('SlickGrid core file', () => {
       expect(grid.getCellNode(0, 0)?.getAttribute('aria-selected')).toBeNull();
     });
 
+    it('clears aria-selected and the selected class on a row that was rendered after the selection was made', () => {
+      const selectionModel = new SlickHybridSelectionModel({ selectionType: 'cell' });
+      grid = new SlickGrid<any, Column>(container, data, columns, defaultOptions);
+      grid.setSelectionModel(selectionModel);
+      grid.render();
+      grid.invalidateRow(1);
+      selectionModel.setSelectedRanges([new SlickRange(0, 0, 1, 0)]);
+      grid.render();
+      // read the DOM only: getCellNode() indexes the cell nodes of the row, which is the step a selection change must not depend on
+      const cellOfRow1 = () => container.querySelector<HTMLElement>('.slick-row[data-row="1"] .slick-cell')!;
+      expect(cellOfRow1().getAttribute('aria-selected')).toBe('true');
+      expect(cellOfRow1().classList.contains('selected')).toBe(true);
+
+      selectionModel.setSelectedRanges([]);
+
+      expect(cellOfRow1().getAttribute('aria-selected')).toBeNull();
+      expect(cellOfRow1().classList.contains('selected')).toBe(false);
+      expect(grid.getSelectedRows()).toEqual([]);
+    });
+
+    it('exposes aria-selected when no selected cell class is configured', () => {
+      const selectionModel = new SlickHybridSelectionModel({ selectionType: 'cell' });
+      grid = new SlickGrid<any, Column>(container, data, columns, { ...defaultOptions, selectedCellCssClass: '' });
+      grid.setSelectionModel(selectionModel);
+      grid.render();
+
+      selectionModel.setSelectedRanges([new SlickRange(0, 0)]);
+      expect(grid.getCellNode(0, 0)?.getAttribute('aria-selected')).toBe('true');
+      grid.invalidateRow(0);
+      grid.render();
+      expect(grid.getCellNode(0, 0)?.getAttribute('aria-selected')).toBe('true');
+
+      selectionModel.setSelectedRanges([]);
+      expect(grid.getCellNode(0, 0)?.getAttribute('aria-selected')).toBeNull();
+    });
+
     describe('Cell selection drag handle', () => {
       it.each([
         { showDragHandle: undefined, expectedClass: false, expectedHandle: true, label: 'default' },
@@ -2926,6 +2962,33 @@ describe('SlickGrid core file', () => {
         expect(container.getAttribute('aria-rowcount')).toBe('13');
         grid.setOptions({ enableAddRow: false });
         expect(container.getAttribute('aria-rowcount')).toBe('12');
+      });
+
+      it('gives aria-sort to the first sorted column that has a header', () => {
+        const sortableColumns = [
+          { id: 'firstName', field: 'firstName', name: 'First Name', sortable: true, hidden: true },
+          { id: 'lastName', field: 'lastName', name: 'Last Name', sortable: true },
+          { id: 'age', field: 'age', name: 'Age', sortable: true },
+        ] as Column[];
+        grid = new SlickGrid<any, Column>(container, items, sortableColumns, { ...defaultOptions, multiColumnSort: true });
+
+        grid.setSortColumns([{ columnId: 'firstName', sortAsc: true }, { columnId: 'lastName', sortAsc: false }, { columnId: 'age', sortAsc: true }]);
+
+        const sortedHeaders = container.querySelectorAll('.slick-header-column[aria-sort]');
+        expect(sortedHeaders).toHaveLength(1);
+        expect(sortedHeaders[0].textContent).toContain('Last Name');
+        expect(sortedHeaders[0].getAttribute('aria-sort')).toBe('descending');
+      });
+
+      it('reports the column for a key pressed on a control inside its header cell', () => {
+        grid = new SlickGrid<any, Column>(container, items, columns, defaultOptions);
+        const headerControl = container.querySelector<HTMLElement>('.slick-header-column')!.appendChild(document.createElement('div'));
+        const reportedColumns: unknown[] = [];
+        grid.onHeaderKeyDown.subscribe((_e, args) => reportedColumns.push(args.column));
+
+        headerControl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+
+        expect(reportedColumns).toEqual([grid.getColumns()[0]]);
       });
 
       it('should expect the header structure to have required ARIA rowgroup/row roles', () => {
