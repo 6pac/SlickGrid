@@ -319,6 +319,7 @@ export class SlickColumnPicker {
 }
 
 // extend Slick namespace on window object when building as iife
+/* v8 ignore next -- IIFE_ONLY is compiled as false in the unit-test build. */
 if (IIFE_ONLY && window.Slick) {
   window.Slick.Controls = window.Slick.Controls || {};
   window.Slick.Controls.ColumnPicker = SlickColumnPicker;

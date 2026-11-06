@@ -913,6 +913,7 @@ export const Editors = {
 };
 
 // extend Slick namespace on window object when building as iife
+/* v8 ignore next -- IIFE_ONLY is compiled as false in the unit-test build. */
 if (IIFE_ONLY && window.Slick) {
   Utils.extend(Slick, {
     Editors
