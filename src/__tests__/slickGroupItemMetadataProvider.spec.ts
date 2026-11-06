@@ -29,6 +29,32 @@ describe('SlickGroupItemMetadataProvider', () => {
     expect(formatter(0, 0, null, {} as any, group, grid)).toBe('Group');
   });
 
+  it('formats group checkbox state and appends an HTMLElement title', () => {
+    provider.setOptions({ checkboxSelect: true });
+    group.selectChecked = true;
+    const title = document.createElement('strong');
+    title.textContent = 'HTML title';
+
+    const checked = provider.getOptions().groupFormatter!(0, 0, null, {} as any, { ...group, title }, grid) as DocumentFragment;
+    expect(checked.querySelector('.slick-group-select-checkbox')?.classList.contains('checked')).toBe(true);
+    expect(checked.querySelector('.slick-group-title strong')).toBe(title);
+
+    group.selectChecked = false;
+    const unchecked = provider.getOptions().groupFormatter!(0, 0, null, {} as any, { ...group, title }, grid) as DocumentFragment;
+    expect(unchecked.querySelector('.slick-group-select-checkbox')?.classList.contains('unchecked')).toBe(true);
+  });
+
+  it('unsubscribes grid events when destroyed and handles destroy before initialization', () => {
+    const clickUnsubscribe = vi.spyOn(grid.onClick, 'unsubscribe');
+    const keyDownUnsubscribe = vi.spyOn(grid.onKeyDown, 'unsubscribe');
+    provider.destroy();
+    expect(clickUnsubscribe).toHaveBeenCalledOnce();
+    expect(keyDownUnsubscribe).toHaveBeenCalledOnce();
+
+    const uninitializedProvider = new SlickGroupItemMetadataProvider();
+    expect(() => uninitializedProvider.destroy()).not.toThrow();
+  });
+
   it('provides group and totals metadata and delegates the totals formatter', () => {
     const metadata = provider.getGroupRowMetadata(group as any);
     expect(metadata).toMatchObject({ selectable: false, focusable: true, cssClasses: 'slick-group slick-group-level-2', columns: { 0: { colspan: '*' } } });
