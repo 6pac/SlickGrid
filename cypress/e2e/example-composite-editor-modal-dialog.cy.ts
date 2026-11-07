@@ -187,14 +187,12 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
   });
 
   it('Should expect an Alert about missing row selection before executing Mass Selection', () => {
-    cy.window().then((win) => {
-      cy.stub(win, 'alert').as('missingSelectionAlert');
-    });
-
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('missingSelectionAlert'));
     cy.get('[data-test="mass-selection-button"]')
-      .click();
-
-    cy.get('@missingSelectionAlert').should('have.been.calledOnceWith', 'You must select some rows before trying to apply new value(s)');
+      .click()
+      .then(() => {
+        cy.get('@missingSelectionAlert').should('have.been.calledWith',`You must select some rows before trying to apply new value(s)`);
+      });
   });
 
   it('Should select row 2 and 3 and change ', () => {

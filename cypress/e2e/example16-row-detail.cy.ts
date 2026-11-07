@@ -93,11 +93,9 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
   });
 
   it('should click on "click me" and expect an Alert to show the Help text', () => {
-    cy.on('window:alert', (str) => {
-      expect(str).to.contain('Assignee is');
-    });
+    cy.window().then((win) => cy.stub(win, 'alert').as('alertStub'));
 
-    cy.contains('Click Me')
-      .click();
+    cy.contains('Click Me').click();
+    cy.get('@alertStub').should('have.been.calledWithMatch', 'Assignee is');
   });
 });

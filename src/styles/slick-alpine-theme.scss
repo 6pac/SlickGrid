@@ -244,7 +244,17 @@
   width: 6px;
   border: 0;
   z-index: 4;
-  box-shadow: var(--slick-header-resizable-handle-box-shadow, v.$slick-header-resizable-handle-box-shadow);
+
+  // Keep the visible separator thin while retaining a wider resize target.
+  &::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: 2px;
+    box-shadow: var(--slick-header-resizable-handle-box-shadow, v.$slick-header-resizable-handle-box-shadow);
+    pointer-events: none;
+  }
 
   // The hover pill is a pseudo-element so the handle's own hit box never changes while it is hovered
   // (a rule that shrinks the hovered element drops the hover as soon as the cursor is on the shrunk part).
