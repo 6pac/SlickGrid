@@ -60,6 +60,7 @@ export type * from './menuOptionItemCallbackArgs.interface.js';
 export type * from './mouseOffsetViewport.interface.js';
 export type * from './multiColumnSort.interface.js';
 export type * from './pagingInfo.interface.js';
+export type * from './pivot.interface.js';
 export type * from './position.interface.js';
 export type * from './positionMethod.type.js';
 export type * from './resizerOption.interface.js';

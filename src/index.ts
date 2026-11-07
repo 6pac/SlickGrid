@@ -9,5 +9,6 @@ export * from './slick.formatters.js';
 export * from './slick.grid.js';
 export * from './slick.groupitemmetadataprovider.js';
 export * from './slick.interactions.js';
+export * from './slick.pivotengine.js';
 export * from './slick.remotemodel-yahoo.js';
 export * from './slick.remotemodel.js';

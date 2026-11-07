@@ -1,0 +1,765 @@
+/**
+ * Styles of the SlickPivot plugin (pivot grid) and of the SlickPivotPanel control (PivotTable Fields pane).
+ * Every color can be overridden with the `--slick-pivot-*` CSS variables, which fall back to the grid theme variables.
+ */
+@use './mixins' as m;
+@use './variables' as v;
+
+$pivot-filter-icon-path: "M14,12V19.88C14.04,20.18 13.94,20.5 13.71,20.71C13.32,21.1 12.69,21.1 12.3,20.71L10.29,18.7C10.06,18.47 9.96,18.16 10,17.87V12H9.97L4.21,4.62C3.87,4.19 3.95,3.56 4.38,3.22C4.57,3.08 4.78,3 5,3V3H19V3C19.22,3 19.43,3.08 19.62,3.22C20.05,3.56 20.13,4.19 19.79,4.62L14.03,12H14Z";
+$pivot-columns-icon-path: "M16,5V18H21V5M4,18H9V5H4M10,18H15V5H10V18Z";
+$pivot-rows-icon-path: "M3,4H21V8H3V4M3,10H21V14H3V10M3,16H21V20H3V16Z";
+$pivot-values-icon-path: "M18,6H8.83L14.83,12L8.83,18H18V20H6V18L12,12L6,6V4H18V6Z";
+$pivot-grip-icon-path: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7M9,11H11V13H9V11M13,11H15V13H13V11M9,15H11V17H9V15M13,15H15V17H13V15M9,19H11V21H9V19M13,19H15V21H13V19Z";
+
+// --
+// pivot grid
+// -----------------
+
+.slick-pivot {
+  --slick-pivot-header-bg: var(--slick-header-bg-color, #{v.$slick-header-bg-color});
+  --slick-pivot-header-color: var(--slick-header-color, #{v.$slick-header-color});
+  --slick-pivot-border-color: var(--slick-border-color, #{v.$slick-border-color});
+  --slick-pivot-group-bg: #f3f6fa;
+  --slick-pivot-subtotal-bg: #eef3f9;
+  --slick-pivot-grand-total-bg: #e1eaf4;
+  --slick-pivot-total-column-bg: rgba(225, 234, 244, 0.55);
+
+  .slick-pivot-header-groups {
+    position: relative;
+    display: block;
+    background: var(--slick-pivot-header-bg);
+  }
+
+  .slick-pivot-header-row {
+    display: flex;
+    box-sizing: border-box;
+  }
+
+  .slick-pivot-header-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 0 6px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--slick-pivot-header-color);
+    font-weight: var(--slick-header-font-weight, #{v.$slick-header-font-weight});
+    background: var(--slick-pivot-header-bg);
+    border-inline-end: 1px solid var(--slick-pivot-border-color);
+    border-bottom: 1px solid var(--slick-pivot-border-color);
+  }
+
+  .slick-pivot-header-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .slick-pivot-header-group-empty {
+    border-bottom-color: transparent;
+  }
+
+  .slick-pivot-header-caption {
+    font-weight: normal;
+    font-style: italic;
+  }
+
+  // the group cells of pinned and sticky columns stay above the scrolling ones, which the pre-header
+  // translates with the grid: the scroll offset cancels that translation and the dock offset (measured
+  // from the header cells) moves the cell to its band
+  .slick-pivot-header-group-docked {
+    z-index: 2;
+    transform: translate3d(calc(var(--slick-pivot-scroll-left, 0px) + var(--slick-pivot-dock-offset, 0px)), 0, 0);
+  }
+
+  .slick-pivot-column-toggle {
+    flex: 0 0 auto;
+    margin-inline-start: 0;
+    margin-inline-end: 4px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .slick-column-name .slick-pivot-column-toggle {
+    vertical-align: text-bottom;
+  }
+
+  // numbers align with the end of the cell: the right, or the left in a right-to-left grid
+  .slick-cell.slick-pivot-value {
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+  }
+
+  // a value that can be typed into (write-back)
+  .slick-cell.slick-pivot-editable {
+    cursor: text;
+  }
+
+  .slick-cell.slick-pivot-editable.editable {
+    text-align: start;
+  }
+
+  .slick-cell.slick-pivot-total-column {
+    background-color: var(--slick-pivot-total-column-bg);
+    font-weight: 600;
+  }
+
+  .slick-cell.slick-pivot-row-header {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .slick-pivot-toggle {
+    flex: 0 0 auto;
+    margin-inline-start: 0;
+    margin-inline-end: 4px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+
+  .slick-pivot-toggle-spacer {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 19px;
+  }
+
+  .slick-pivot-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .slick-row.slick-pivot-group .slick-cell {
+    background-color: var(--slick-pivot-group-bg);
+    font-weight: 600;
+  }
+
+  .slick-row.slick-pivot-subtotal .slick-cell {
+    background-color: var(--slick-pivot-subtotal-bg);
+    font-weight: 600;
+  }
+
+  .slick-row.slick-pivot-grand-total .slick-cell {
+    background-color: var(--slick-pivot-grand-total-bg);
+    border-top: 1px solid var(--slick-pivot-border-color);
+    font-weight: 700;
+  }
+
+  &.slick-pivot-loading .grid-canvas {
+    opacity: 0.55;
+    transition: opacity 0.15s;
+  }
+}
+
+// --
+// PivotTable Fields panel
+// -----------------
+
+.slick-pivot-panel {
+  --slick-pivot-panel-bg: var(--slick-grid-bgcolor, #{v.$slick-grid-bgcolor});
+  --slick-pivot-panel-color: var(--slick-font-color, #{v.$slick-font-color});
+  --slick-pivot-panel-muted: #687480;
+  --slick-pivot-panel-border: var(--slick-border-color, #{v.$slick-border-color});
+  --slick-pivot-panel-area-bg: #f7f9fb;
+  --slick-pivot-panel-accent: var(--slick-button-primary-color, #{v.$slick-button-primary-color});
+  --slick-pivot-panel-pill-bg: #ffffff;
+  --slick-pivot-panel-pill-hover-bg: #eef5fd;
+  --slick-pivot-panel-menu-shadow: 0 4px 16px rgba(18, 31, 46, 0.18);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 100%;
+  min-width: 240px;
+  padding: 10px;
+  overflow: auto;
+  color: var(--slick-pivot-panel-color);
+  font-family: var(--slick-font-family, #{v.$slick-font-family});
+  font-size: var(--slick-font-size, #{v.$slick-font-size});
+  background: var(--slick-pivot-panel-bg);
+  border: 1px solid var(--slick-pivot-panel-border);
+  container-type: inline-size;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &.slick-pivot-panel-busy {
+    cursor: progress;
+  }
+}
+
+.slick-pivot-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slick-pivot-panel-title {
+  font-size: 1.15em;
+  font-weight: 600;
+}
+
+.slick-pivot-panel-close {
+  width: 26px;
+  height: 26px;
+  font-size: 18px;
+  line-height: 1;
+  background: none;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--slick-pivot-panel-pill-hover-bg);
+  }
+}
+
+.slick-pivot-search-input,
+.slick-pivot-filter-search,
+.slick-pivot-dialog input[type='text'],
+.slick-pivot-dialog select {
+  width: 100%;
+  height: 28px;
+  padding: 2px 8px;
+  font: inherit;
+  color: inherit;
+  background: var(--slick-pivot-panel-pill-bg);
+  border: 1px solid var(--slick-pivot-panel-border);
+  border-radius: 4px;
+
+  &:focus {
+    outline: 2px solid var(--slick-pivot-panel-accent);
+    outline-offset: -1px;
+  }
+}
+
+.slick-pivot-field-list {
+  flex: 1 1 auto;
+  min-height: 120px;
+  overflow: auto;
+  padding: 4px 0 !important;
+  border: 1px solid var(--slick-pivot-panel-border);
+  border-radius: 4px;
+}
+
+.slick-pivot-field-group {
+  padding: 6px 8px 2px;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--slick-pivot-panel-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.slick-pivot-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-block: 2px;
+  padding-inline: 8px 6px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+
+  &:hover {
+    background: var(--slick-pivot-panel-pill-hover-bg);
+  }
+
+  &.slick-pivot-field-used .slick-pivot-field-name {
+    font-weight: 600;
+  }
+
+  // a level of the date hierarchy listed below its date field
+  &.slick-pivot-field-level {
+    padding-inline-start: 26px;
+    font-size: 0.95em;
+  }
+}
+
+.slick-pivot-field-label {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  cursor: inherit;
+
+  input {
+    margin: 0;
+    cursor: pointer;
+  }
+}
+
+.slick-pivot-field-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.slick-pivot-field-type {
+  flex: 0 0 auto;
+  padding: 0 4px;
+  font-size: 0.75em;
+  line-height: 16px;
+  color: var(--slick-pivot-panel-muted);
+  border: 1px solid var(--slick-pivot-panel-border);
+  border-radius: 3px;
+}
+
+.slick-pivot-field-empty {
+  padding: 6px 8px;
+  color: var(--slick-pivot-panel-muted);
+  font-style: italic;
+}
+
+.slick-pivot-field-menu-button,
+.slick-pivot-pill-menu-button {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  line-height: 1;
+  background: none;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+  opacity: 0.65;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.07);
+  }
+}
+
+.slick-pivot-filtered-icon {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  color: var(--slick-pivot-panel-accent);
+  background-color: currentColor;
+  @include m.createSvgStyle('slick-pivot-filter-icon-svg', $pivot-filter-icon-path);
+}
+
+.slick-pivot-areas-hint {
+  color: var(--slick-pivot-panel-muted);
+  font-size: 0.9em;
+}
+
+.slick-pivot-areas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  flex: 0 0 auto;
+
+  @container (max-width: 230px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.slick-pivot-area {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  &.slick-pivot-area-disallowed .slick-pivot-area-list {
+    opacity: 0.45;
+  }
+
+  &.slick-pivot-area-over .slick-pivot-area-list {
+    border-color: var(--slick-pivot-panel-accent);
+    box-shadow: 0 0 0 1px var(--slick-pivot-panel-accent) inset;
+  }
+}
+
+.slick-pivot-area-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.slick-pivot-area-icon {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  background-color: currentColor;
+  opacity: 0.7;
+
+  &.slick-pivot-area-icon-filters {
+    @include m.createSvgStyle('slick-pivot-area-filters-icon-svg', $pivot-filter-icon-path);
+  }
+  &.slick-pivot-area-icon-columns {
+    @include m.createSvgStyle('slick-pivot-area-columns-icon-svg', $pivot-columns-icon-path);
+  }
+  &.slick-pivot-area-icon-rows {
+    @include m.createSvgStyle('slick-pivot-area-rows-icon-svg', $pivot-rows-icon-path);
+  }
+  &.slick-pivot-area-icon-values {
+    @include m.createSvgStyle('slick-pivot-area-values-icon-svg', $pivot-values-icon-path);
+  }
+}
+
+.slick-pivot-area-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 72px;
+  padding: 5px !important;
+  background: var(--slick-pivot-panel-area-bg);
+  border: 1px solid var(--slick-pivot-panel-border);
+  border-radius: 4px;
+}
+
+.slick-pivot-area-empty {
+  margin: auto;
+  padding: 8px 4px;
+  color: var(--slick-pivot-panel-muted);
+  font-size: 0.9em;
+  text-align: center;
+}
+
+.slick-pivot-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 26px;
+  padding: 2px 2px 2px 4px;
+  background: var(--slick-pivot-panel-pill-bg);
+  border: 1px solid var(--slick-pivot-panel-border);
+  border-radius: 4px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+
+  &:hover {
+    background: var(--slick-pivot-panel-pill-hover-bg);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--slick-pivot-panel-accent);
+    outline-offset: 1px;
+  }
+
+  &.slick-pivot-pill-values {
+    font-style: italic;
+  }
+
+  &.slick-pivot-pill-hidden .slick-pivot-pill-label {
+    opacity: 0.55;
+    text-decoration: line-through;
+  }
+
+  &.slick-pivot-dragging {
+    opacity: 0.4;
+  }
+}
+
+.slick-pivot-pill-grip {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 14px;
+  background-color: currentColor;
+  opacity: 0.35;
+  @include m.createSvgStyle('slick-pivot-grip-icon-svg', $pivot-grip-icon-path);
+}
+
+.slick-pivot-pill-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.slick-pivot-pill-summary {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--slick-pivot-panel-muted);
+  font-size: 0.9em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.slick-pivot-drop-marker {
+  flex: 0 0 auto;
+  height: 3px;
+  margin: -1px 0;
+  background: var(--slick-pivot-panel-accent);
+  border-radius: 2px;
+}
+
+.slick-pivot-drag-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10000;
+  max-width: 220px;
+  padding: 4px 10px;
+  overflow: hidden;
+  font-family: var(--slick-font-family, #{v.$slick-font-family});
+  font-size: var(--slick-font-size, #{v.$slick-font-size});
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #fff;
+  background: var(--slick-pivot-panel-accent, #{v.$slick-button-primary-color});
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+
+.slick-pivot-body-dragging,
+.slick-pivot-body-dragging * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
+.slick-pivot-panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.slick-pivot-defer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.slick-pivot-update-button,
+.slick-pivot-dialog-buttons button {
+  min-width: 64px;
+  height: 26px;
+  padding: 0 10px;
+  background: var(--slick-pivot-panel-pill-bg);
+  border: 1px solid var(--slick-pivot-panel-border);
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--slick-pivot-panel-pill-hover-bg);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+}
+
+.slick-pivot-update-button.slick-pivot-update-pending,
+.slick-pivot-dialog-buttons .slick-pivot-dialog-ok {
+  color: #fff;
+  background: var(--slick-pivot-panel-accent);
+  border-color: var(--slick-pivot-panel-accent);
+
+  &:hover:not(:disabled) {
+    background: var(--slick-pivot-panel-accent);
+    filter: brightness(1.08);
+  }
+}
+
+.slick-pivot-panel-status {
+  display: none;
+  padding: 6px 8px;
+  font-size: 0.9em;
+  color: #6a4b00;
+  background: #fff6db;
+  border: 1px solid #f2d98b;
+  border-radius: 4px;
+
+  &.slick-pivot-panel-status-visible {
+    display: block;
+  }
+}
+
+.slick-pivot-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+// menus, dialogs & filter dropdowns
+
+.slick-pivot-menu,
+.slick-pivot-filter-popup {
+  position: absolute;
+  z-index: 20;
+  min-width: 180px;
+  padding: 4px;
+  background: var(--slick-pivot-panel-bg);
+  border: 1px solid var(--slick-pivot-panel-border);
+  border-radius: 6px;
+  box-shadow: var(--slick-pivot-panel-menu-shadow);
+}
+
+.slick-pivot-menu-item {
+  display: block;
+  width: 100%;
+  padding: 5px 10px;
+  text-align: start;
+  white-space: nowrap;
+  background: none;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+
+  &:hover:not(:disabled),
+  &:focus {
+    background: var(--slick-pivot-panel-pill-hover-bg);
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.45;
+  }
+
+  &[role="menuitemradio"] {
+    position: relative;
+    padding-inline-start: 26px;
+  }
+
+  &[aria-checked="true"]::before {
+    content: '✓';
+    position: absolute;
+    inset-inline-start: 10px;
+    color: var(--slick-pivot-panel-accent);
+    font-weight: bold;
+  }
+}
+
+.slick-pivot-menu-heading {
+  padding: 5px 10px 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--slick-pivot-panel-muted);
+}
+
+.slick-pivot-menu-separator {
+  height: 1px;
+  margin: 4px 2px;
+  background: var(--slick-pivot-panel-border);
+}
+
+.slick-pivot-filter-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(280px, calc(100% - 8px));
+  padding: 8px;
+}
+
+.slick-pivot-filter-list {
+  max-height: 220px;
+  overflow: auto;
+  border: 1px solid var(--slick-pivot-panel-border);
+  border-radius: 4px;
+}
+
+.slick-pivot-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--slick-pivot-panel-pill-hover-bg);
+  }
+
+  span:first-of-type {
+    flex: 1 1 auto;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  &.slick-pivot-filter-all {
+    font-weight: 600;
+  }
+}
+
+.slick-pivot-filter-count {
+  color: var(--slick-pivot-panel-muted);
+  font-size: 0.85em;
+}
+
+.slick-pivot-filter-note {
+  color: var(--slick-pivot-panel-muted);
+  font-size: 0.85em;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.slick-pivot-dialog-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 10px 10px;
+  background: rgba(20, 30, 40, 0.25);
+}
+
+.slick-pivot-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  padding: 12px;
+  background: var(--slick-pivot-panel-bg);
+  border: 1px solid var(--slick-pivot-panel-border);
+  border-radius: 6px;
+  box-shadow: var(--slick-pivot-panel-menu-shadow);
+}
+
+.slick-pivot-dialog-title {
+  font-weight: 600;
+}
+
+.slick-pivot-dialog-source {
+  color: var(--slick-pivot-panel-muted);
+}
+
+.slick-pivot-dialog-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.slick-pivot-dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
