@@ -17,7 +17,9 @@ const column: Column = {
 };
 
 const grid = {
+  getColumnIndex: vi.fn(() => 0),
   getColumns: vi.fn(() => [column]),
+  getHeaderColumn: vi.fn(),
   getPubSubService: vi.fn(),
   setColumns: vi.fn(),
   updateColumnHeader: vi.fn(),
@@ -113,6 +115,78 @@ describe('SlickHeaderButtons', () => {
     node.querySelector<HTMLElement>('.icon-second')!.click();
 
     expect(handler).toHaveBeenCalledOnce();
+  });
+
+  it('names and activates enabled buttons with the keyboard without activating disabled buttons', () => {
+    const handler = vi.fn();
+    const action = vi.fn();
+    column.header!.buttons![1].handler = handler;
+    column.header!.buttons![1].ariaLabel = 'Show details';
+    column.header!.buttons![0].disabled = true;
+    column.header!.buttons![0].action = action;
+    plugin.init(grid);
+    const { node } = renderHeader();
+    const enabled = node.querySelector<HTMLElement>('.icon-second')!;
+    const disabled = node.querySelector<HTMLElement>('.icon-first')!;
+
+    expect(enabled.getAttribute('aria-label')).toBe('Show details');
+    expect(enabled.tabIndex).toBe(0);
+    enabled.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(handler).toHaveBeenCalledOnce();
+    expect(disabled.getAttribute('aria-disabled')).toBe('true');
+    expect(disabled.tabIndex).toBe(-1);
+    disabled.click();
+    expect(action).not.toHaveBeenCalled();
+  });
+
+  it('keeps the keyboard focus on a command button when the command renders its header cell again', () => {
+    plugin.init(grid);
+    const { node, args } = renderHeader();
+    document.body.appendChild(node);
+    // what `grid.updateColumnHeader()` does: the content of the header cell is destroyed, then rendered again
+    vi.mocked(grid.updateColumnHeader).mockImplementationOnce(() => {
+      grid.onBeforeHeaderCellDestroy.notify(args, new SlickEventData());
+      grid.onHeaderCellRendered.notify(args, new SlickEventData());
+    });
+    const button = node.querySelector<HTMLElement>('.icon-second')!;
+    button.focus();
+
+    button.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    const newButton = node.querySelector<HTMLElement>('.icon-second')!;
+
+    expect(grid.updateColumnHeader).toHaveBeenCalledWith(column.id);
+    expect(button.isConnected).toBe(false);
+    expect(newButton).not.toBe(button);
+    expect(document.activeElement).toBe(newButton);
+    node.remove();
+  });
+
+  it('releases the listeners of a header cell when the cell is destroyed', () => {
+    plugin.init(grid);
+    const { args } = renderHeader();
+    const boundListeners = () => (plugin as any)._bindingEventService.getBoundedEvents() as unknown[];
+    const boundAfterFirstRender = boundListeners().length;
+
+    for (let i = 0; i < 5; i++) {
+      grid.onBeforeHeaderCellDestroy.notify(args, new SlickEventData());
+      grid.onHeaderCellRendered.notify(args, new SlickEventData());
+    }
+
+    expect(boundListeners()).toHaveLength(boundAfterFirstRender);
+  });
+
+  it('scrolls the header cell back once the focus has left it', () => {
+    plugin.init(grid);
+    const { node } = renderHeader();
+    const outside = document.createElement('button');
+    const [firstButton, secondButton] = Array.from(node.querySelectorAll<HTMLElement>('.slick-header-button'));
+    node.scrollTop = 120;
+
+    firstButton.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: secondButton }));
+    expect(node.scrollTop).toBe(120); // the focus is still inside the cell
+
+    secondButton.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: outside }));
+    expect(node.scrollTop).toBe(0);
   });
 
   it('runs an action and publishes the command when a command button is clicked', () => {

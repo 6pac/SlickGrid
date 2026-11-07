@@ -23,6 +23,9 @@ describe('SlickGrid formatters', () => {
     expect(format(CheckboxFormatter, true)).toContain('sgi-checkbox-intermediate');
     expect(format(CheckboxFormatter, false)).toContain('sgi-checkbox-blank-outline');
     expect(format(CheckmarkFormatter, true)).toContain('sgi-check');
-    expect(format(CheckmarkFormatter, false)).toBe('');
+    const falseCheckmark = document.createElement('div');
+    falseCheckmark.innerHTML = format(CheckmarkFormatter, false);
+    expect(falseCheckmark.querySelector('.sgi-check')).toBeNull();
+    expect(falseCheckmark.firstElementChild?.getAttribute('aria-label')).toBe('No');
   });
 });

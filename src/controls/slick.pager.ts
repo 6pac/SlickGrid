@@ -121,6 +121,18 @@ export class SlickGridPager {
         : selectorOrElm;
   }
 
+  protected makeKeyboardButton(element: HTMLElement) {
+    element.role = 'button';
+    element.tabIndex = 0;
+    this._bindingEventService.bind(element, 'keydown', ((event: KeyboardEvent) => {
+      if ((event.key === 'Enter' || event.key === ' ') && element.getAttribute('aria-disabled') !== 'true') {
+        event.preventDefault();
+        event.stopPropagation();
+        element.click();
+      }
+    }) as EventListener);
+  }
+
   protected constructPagerUI() {
     // the container might be a string, a jQuery object or a native element
     const container = this.getContainerElement(this._container) as HTMLElement | HTMLElement[];
@@ -134,6 +146,7 @@ export class SlickGridPager {
 
     this._statusElm = document.createElement('span');
     this._statusElm.className = 'slick-pager-status';
+    this._statusElm.setAttribute('aria-live', 'polite');
 
     const pagerSettingsElm = document.createElement('span');
     pagerSettingsElm.className = 'slick-pager-settings-expanded';
@@ -146,6 +159,7 @@ export class SlickGridPager {
       anchorElm.textContent = p.name;
       anchorElm.ariaLabel = p.ariaLabel;
       anchorElm.dataset.val = String(p.data);
+      this.makeKeyboardButton(anchorElm);
       pagerSettingsElm.appendChild(anchorElm);
 
       this._bindingEventService.bind(anchorElm, 'click', ((e: any) => {
@@ -170,13 +184,15 @@ export class SlickGridPager {
     const displayIconElm = document.createElement('span');
     displayPaginationContainer.className = 'sgi-container';
     displayIconElm.ariaLabel = 'Show Pagination Options';
-    displayIconElm.role = 'button';
+    this.makeKeyboardButton(displayIconElm);
+    displayIconElm.setAttribute('aria-expanded', String(this._options.showPageSizes));
     displayIconElm.className = 'sgi sgi-lightbulb';
     displayPaginationContainer.appendChild(displayIconElm);
 
     this._bindingEventService.bind(displayIconElm, 'click', () => {
       const styleDisplay = pagerSettingsElm.style.display;
       pagerSettingsElm.style.display = styleDisplay === 'none' ? 'inline-flex' : 'none';
+      displayIconElm.setAttribute('aria-expanded', String(pagerSettingsElm.style.display !== 'none'));
     });
     settingsElm.appendChild(displayPaginationContainer);
 
@@ -192,7 +208,7 @@ export class SlickGridPager {
       iconElm.className = 'sgi-container';
 
       const innerIconElm = document.createElement('span');
-      innerIconElm.role = 'button';
+      this.makeKeyboardButton(innerIconElm);
       innerIconElm.ariaLabel = pageBtn.ariaLabel;
       innerIconElm.className = `sgi sgi-chevron-${pageBtn.key}`;
       this._bindingEventService.bind(innerIconElm, 'click', pageBtn.callback.bind(this));
@@ -232,6 +248,9 @@ export class SlickGridPager {
     if (!state.canGotoPrev) {
       this._container!.querySelector('.sgi-chevron-left')?.classList.add('sgi-state-disabled');
     }
+    this._container.querySelectorAll<HTMLElement>('.slick-pager-nav [role="button"]').forEach((button) => {
+      button.setAttribute('aria-disabled', String(button.classList.contains('sgi-state-disabled')));
+    });
 
     if (pagingInfo.pageSize === 0) {
       this._statusElm.textContent = (this._options.showAllText.replace('{rowCount}', pagingInfo.totalRows + '').replace('{pageCount}', pagingInfo.totalPages + ''));

@@ -98,6 +98,14 @@ describe('SlickCheckboxSelectColumn', () => {
     }));
   });
 
+  it('gives selection checkboxes configurable accessible names', () => {
+    plugin = new SlickCheckboxSelectColumn({ selectAllAriaLabel: 'Select all records', rowAriaLabel: 'Select record' });
+    const column = plugin.getColumnDefinition();
+    expect((column.name as DocumentFragment).querySelector('input')?.getAttribute('aria-label')).toBe('Select all records');
+    const row = column.formatter!(2, 0, null, column as Column, {}, gridStub) as DocumentFragment;
+    expect(row.querySelector('input')?.getAttribute('aria-label')).toBe('Select record');
+  });
+
   it('shows the configured name without a header checkbox when the header checkbox is hidden', () => {
     plugin = new SlickCheckboxSelectColumn({ name: 'Selection', hideSelectAllCheckbox: true });
 

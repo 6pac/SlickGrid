@@ -33,6 +33,12 @@
   transition: 0.2s width;
 }
 
-.slick-header-column:hover > .slick-header-button {
+/*
+ * A hover-only button is shown while the column is hovered and while the keyboard focus is on the column or inside it,
+ * a column that only has the focus from a mouse click does not count (it is `:focus` without being `:focus-visible`).
+ */
+.slick-header-column:hover > .slick-header-button,
+.slick-header-column:focus-visible > .slick-header-button,
+.slick-header-column:not(:focus):focus-within > .slick-header-button {
   width: 15px;
 }

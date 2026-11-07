@@ -87,6 +87,9 @@ export interface Column<TData = any> {
   /** Any inline editor function that implements Editor for the cell value or ColumnEditor */
   editor?: Editor | EditorConstructor | null;
 
+  /** Accessible name for the built-in editor; defaults to the column title. */
+  editorAriaLabel?: string;
+
   /** Editor number fixed decimal places */
   editorFixedDecimalPlaces?: number;
 

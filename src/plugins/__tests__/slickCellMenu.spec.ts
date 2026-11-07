@@ -110,6 +110,7 @@ describe('CellMenu Plugin', () => {
     });
 
     expect(menu?.querySelector('.slick-cell-menu-item')?.classList.contains('slick-cell-menu-item-disabled')).toBe(true);
+    expect(menu?.querySelector('.slick-cell-menu-item')?.getAttribute('aria-disabled')).toBe('true');
   });
 
   it('applies disabled and hidden command flags', () => {
@@ -133,6 +134,7 @@ describe('CellMenu Plugin', () => {
 
     expect(menu?.querySelectorAll('.slick-cell-menu-item')).toHaveLength(3);
     expect(menu?.querySelector('.slick-cell-menu-item-divider')).not.toBeNull();
+    expect(menu?.querySelector('.slick-cell-menu-item-divider')?.getAttribute('role')).toBe('separator');
   });
 
   it('opens a command submenu on mouseover', () => {

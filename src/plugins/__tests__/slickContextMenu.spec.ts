@@ -129,6 +129,7 @@ describe('ContextMenu Plugin', () => {
     });
 
     expect(menu?.querySelector('.slick-context-menu-item')?.classList.contains('slick-context-menu-item-disabled')).toBe(true);
+    expect(menu?.querySelector('.slick-context-menu-item')?.getAttribute('aria-disabled')).toBe('true');
   });
 
   it('applies disabled and hidden command flags', () => {
@@ -176,6 +177,7 @@ describe('ContextMenu Plugin', () => {
 
     expect(menu?.querySelectorAll('.slick-context-menu-item')).toHaveLength(3);
     expect(menu?.querySelector('.slick-context-menu-item-divider')).not.toBeNull();
+    expect(menu?.querySelector('.slick-context-menu-item-divider')?.getAttribute('role')).toBe('separator');
   });
 
   it('hides the command section when configured', () => {

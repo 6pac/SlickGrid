@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CheckboxEditor, FloatEditor, IntegerEditor, PercentCompleteEditor, TextEditor, YesNoSelectEditor } from '../slick.editors';
+import { CheckboxEditor, FlatpickrEditor, FloatEditor, IntegerEditor, PercentCompleteEditor, TextEditor, YesNoSelectEditor } from '../slick.editors';
 
 describe('SlickGrid editors', () => {
   let container: HTMLDivElement;
@@ -33,6 +33,31 @@ describe('SlickGrid editors', () => {
     expect(editor.validate()).toEqual({ valid: true, msg: null });
     editor.applyValue(args.item, editor.serializeValue());
     expect(args.item.value).toBe('new');
+  });
+
+  it('names an editor after a plain column title without asking the grid to render it', () => {
+    args.column.name = 'Value';
+    editor = new TextEditor(args);
+
+    expect(container.querySelector('input')?.getAttribute('aria-label')).toBe('Value');
+  });
+
+  it('puts the accessible name on the input that Flatpickr shows in place of the original one', () => {
+    const altInput = document.createElement('input');
+    vi.stubGlobal('flatpickr', vi.fn(() => ({ altInput, close: vi.fn(), destroy: vi.fn(), open: vi.fn(), setDate: vi.fn() })));
+    vi.useFakeTimers();
+    args.column.name = 'Start';
+
+    try {
+      editor = new FlatpickrEditor(args);
+
+      expect(altInput.getAttribute('aria-label')).toBe('Start');
+    } finally {
+      editor?.destroy();
+      editor = undefined;
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
   });
 
   it('validates integer input and serializes valid values', () => {

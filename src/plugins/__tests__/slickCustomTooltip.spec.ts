@@ -228,12 +228,35 @@ describe('SlickCustomTooltip plugin', () => {
 
     const tooltipElm = document.body.querySelector('.slick-custom-tooltip') as HTMLDivElement;
     expect(tooltipElm).toBeTruthy();
-    expect(cellNode.getAttribute('aria-describedby')).toBe(tooltipElm.id);
+    expect(cellNode.getAttribute('aria-describedby')).toBe(`previous-tooltip-id ${tooltipElm.id}`);
 
     plugin.hideTooltip();
 
     expect(cellNode.getAttribute('aria-describedby')).toBe('previous-tooltip-id');
     expect(document.body.querySelector('.slick-custom-tooltip')).toBeFalsy();
+  });
+
+  it('should keep a description that was added to the trigger while the tooltip was shown', () => {
+    const cellNode = document.createElement('div');
+    cellNode.className = 'slick-cell l2 r2';
+    cellNode.setAttribute('title', 'accessible tooltip text');
+    cellNode.setAttribute('aria-describedby', 'previous-tooltip-id');
+    const mockColumns = [{ id: 'firstName', field: 'firstName' }] as Column[];
+    vi.spyOn(gridStub, 'getCellFromEvent').mockReturnValue({ cell: 0, row: 1 });
+    vi.spyOn(gridStub, 'getCellNode').mockReturnValue(cellNode);
+    vi.spyOn(gridStub, 'getColumns').mockReturnValue(mockColumns);
+    vi.spyOn(dataviewStub, 'getItem').mockReturnValue({ firstName: 'John', lastName: 'Doe' });
+
+    plugin.init(gridStub);
+    plugin.setOptions({ useRegularTooltip: true });
+    gridStub.onMouseEnter.notify({ grid: gridStub } as any, { ...new SlickEventData(), target: cellNode } as any);
+    const tooltipElm = document.body.querySelector('.slick-custom-tooltip') as HTMLDivElement;
+    cellNode.setAttribute('aria-describedby', `app-error-message ${cellNode.getAttribute('aria-describedby')}`);
+
+    plugin.hideTooltip();
+
+    expect(cellNode.getAttribute('aria-describedby')).toBe('app-error-message previous-tooltip-id');
+    expect(cellNode.getAttribute('aria-describedby')).not.toContain(tooltipElm.id);
   });
 
   it('should remove aria-describedby from the trigger when tooltip is hidden and no previous value existed', () => {

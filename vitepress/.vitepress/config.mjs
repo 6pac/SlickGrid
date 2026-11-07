@@ -20,7 +20,7 @@ export default defineConfig({
     // Vue resolvable from the standalone vitepress/ dependency directory.
     resolve: { alias: { vue: vuePath } },
   },
-  srcExclude: ['README.md', '_legacy/**'],
+  srcExclude: ['README.md', '_legacy/**', 'public/**'], // `public/` holds static files (e.g. the migration skill), not pages
   themeConfig: {
     search: { provider: 'local' },
     nav: [
