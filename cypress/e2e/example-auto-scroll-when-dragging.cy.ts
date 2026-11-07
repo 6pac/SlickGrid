@@ -140,7 +140,17 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
         const start = performance.now();
         cy.get(selector + ' .slick-row:not(.slick-group) .cell-unselectable')
           .contains('16', { timeout: 10000 }) // actually #15 will be selected
-          .should('not.be.hidden');
+          .should(($cell) => {
+            const viewport = Cypress.$(viewportSelector)[0] as HTMLElement;
+            const cellRect = $cell[0].getBoundingClientRect();
+            const viewportRect = viewport.getBoundingClientRect();
+
+            // Cypress 16 no longer treats content clipped by the grid's overflow viewport as hidden.
+            // Wait until the target cell actually enters the grid viewport before measuring the scroll interval.
+            expect(cellRect.bottom).to.be.greaterThan(viewportRect.top);
+            expect(cellRect.top).to.be.lessThan(viewportRect.bottom);
+          });
+
         return cy.get(viewportSelector).invoke('scrollTop').then((scrollAfter: any) => {
           return cy.dragEnd(selector).then(() => {
             const interval = performance.now() - start;
@@ -379,13 +389,12 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     });
 
     it('should reject a pinned-column boundary wider than the available grid', () => {
-      const stub = cy.stub();
-      cy.on('window:alert', stub);
+      cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
       cy.get('#pinned-column-boundary').clear().type('12');
       cy.get('[data-test="set-pinned-columns-btn"]')
         .click()
         .then(() => {
-          expect(stub.getCall(0)).to.be.calledWith(
+          cy.get('@alertStub').should('have.been.calledWith',
             '[SlickGrid] Cannot pin these columns because they exceed the available grid width.'
           );
 

@@ -52,14 +52,13 @@ describe('Example - Header Menu', () => {
   });
 
   it(`should be still be able to click on the Help button and expect an alert`, () => {
-    const alertStub = cy.stub();
-    cy.on('window:alert', alertStub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('.slick-header-menuitem.bold')
       .find('.slick-header-menucontent.blue')
       .contains('Help')
       .click()
-      .then(() => expect(alertStub.getCall(0)).to.be.calledWith('Command: help'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Command: help'));
 
     cy.window().then((win) => {
       expect(win.console.log).to.have.callCount(1);
@@ -174,8 +173,7 @@ describe('Example - Header Menu', () => {
 
   it('should open Pinning sub-menu with 2 options expect it to be aligned to left then trigger alert when command is clicked', () => {
     const subCommands = ['Pin Columns', 'Unpin all Columns'];
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('.slick-header-menuitem.slick-header-menuitem')
       .contains('Pinning')
@@ -191,16 +189,15 @@ describe('Example - Header Menu', () => {
       .find('.slick-header-menuitem')
       .contains('Pin Columns')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command: pin-columns'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Command: pin-columns'));
   });
 
   it('should open Pinning sub-menu and expect 2 options, then open Feedback->ContactUs sub-menus and expect previous Pinning menu to no longer exists', () => {
     const subCommands1 = ['Pin Columns', 'Unpin all Columns'];
     const subCommands2 = ['Column is great', 'Column is not useful', '', 'Contact Us'];
     const subCommands2_1 = ['Email us', 'Chat with us', 'Book an appointment'];
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
 
     cy.get('#myGrid')
       .find('.slick-header-column:nth(5)')
@@ -251,7 +248,7 @@ describe('Example - Header Menu', () => {
       .find('.slick-header-menuitem')
       .contains('Chat with us')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command: contact-chat'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Command: contact-chat'));
 
     cy.get('.slick-submenu').should('have.length', 0);
   });
