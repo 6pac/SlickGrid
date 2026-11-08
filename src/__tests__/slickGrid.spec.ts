@@ -2953,6 +2953,24 @@ describe('SlickGrid core file', () => {
         expect(grid.getContainerNode().getAttribute('aria-rowcount')).toBe('12');
       });
 
+      it('updates only aria-rowcount when the row count changes, and the row indexes when a header row is toggled', () => {
+        grid = new SlickGrid<any, Column>(container, items, columns, defaultOptions);
+        const firstRow = () => container.querySelector<HTMLElement>('.slick-row')!;
+        expect(firstRow().getAttribute('aria-rowindex')).toBe('2');
+        const setAttribute = vi.spyOn(firstRow(), 'setAttribute');
+
+        grid.updateRowCount();
+        grid.updatePagingStatusFromView({ pageSize: 0, pageNum: 0, totalPages: 1 });
+        grid.setHeaderRowVisibility(false, false); // already hidden: nothing changes
+        expect(setAttribute).not.toHaveBeenCalledWith('aria-rowindex', expect.anything());
+        expect(container.getAttribute('aria-rowcount')).toBe('12');
+
+        grid.setHeaderRowVisibility(true, false);
+        expect(firstRow().getAttribute('aria-rowindex')).toBe('3');
+        expect(container.querySelector('.slick-headerrow-columns')?.getAttribute('aria-rowindex')).toBe('2');
+        expect(container.getAttribute('aria-rowcount')).toBe('13');
+      });
+
       it('includes the add row in the accessible row count', () => {
         grid = new SlickGrid<any, Column>(container, items, columns, { ...defaultOptions, enableAddRow: true, editable: true });
         expect(container.getAttribute('aria-rowcount')).toBe('13');

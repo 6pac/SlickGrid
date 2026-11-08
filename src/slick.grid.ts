@@ -1018,6 +1018,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.setupColumnSort();
       this.createCssRules();
       this.resizeCanvas();
+      this.updateAriaRowIndexes();
 
       if (this._options.autoHeaderHeight) {
         this.recalculateHeaderHeight();
@@ -5311,8 +5312,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Boolean} [visible] - optionally set if header row panel is visible or not
    */
   setHeaderRowVisibility(visible?: boolean, animate?: boolean): void {
+    const wasVisible = this._options.showHeaderRow;
     this.togglePanelVisibility('showHeaderRow', this._headerRowScroller, visible, animate);
-    this.updateAriaRowIndexes();
+    if (this._options.showHeaderRow !== wasVisible) {
+      this.updateAriaRowIndexes();
+    }
   }
 
   /**
@@ -5320,14 +5324,30 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Boolean} [visible] - optionally set if column header is visible or not
    */
   setColumnHeaderVisibility(visible?: boolean, animate?: boolean): void {
+    const wasVisible = this._options.showColumnHeader;
     this.togglePanelVisibility('showColumnHeader', this._headerScroller, visible, animate);
-    this.updateAriaRowIndexes();
+    if (this._options.showColumnHeader !== wasVisible) {
+      this.updateAriaRowIndexes();
+    }
   }
 
-  /** Keep virtual row indexes consistent with the visible header rows and add row. */
+  /** Number of visible header rows (column headers and header-filter row) that come before the data rows in `aria-rowindex`. */
+  protected getAriaHeaderRowCount(): number {
+    return Number(!!this._options.showColumnHeader) + Number(!!this._options.showHeaderRow);
+  }
+
+  /** Updates `aria-rowcount` for the data rows, the add-new row and the visible header rows. */
+  protected updateAriaRowCount(): void {
+    this._container.setAttribute('aria-rowcount', String(this.getDataLengthIncludingAddNew() + this.getAriaHeaderRowCount()));
+  }
+
+  /**
+   * Updates `aria-rowcount` and every `aria-rowindex`. The index of a rendered row only changes when a header row
+   * is shown or hidden; rows rendered later get theirs in `appendRowHtml()`.
+   */
   protected updateAriaRowIndexes(): void {
-    const headerCount = Number(!!this._options.showColumnHeader) + Number(!!this._options.showHeaderRow);
-    this._container.setAttribute('aria-rowcount', String(this.getDataLengthIncludingAddNew() + headerCount));
+    const headerCount = this.getAriaHeaderRowCount();
+    this.updateAriaRowCount();
     this._headers.forEach((header) => {
       if (this._options.showColumnHeader) {
         header.setAttribute('aria-rowindex', '1');
@@ -5337,7 +5357,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     });
     this._headerRows.forEach((header) => {
       if (this._options.showHeaderRow) {
-        header.setAttribute('aria-rowindex', String(Number(!!this._options.showColumnHeader) + 1));
+        header.setAttribute('aria-rowindex', String(headerCount));
       } else {
         header.removeAttribute('aria-rowindex');
       }
@@ -5479,7 +5499,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const rowDiv = Utils.createDomElement('div', {
       className: `slick-widget-content ${rowCss}`,
       role: 'row',
-      ariaRowIndex: `${row + 1 + Number(!!this._options.showColumnHeader) + Number(!!this._options.showHeaderRow)}`,
+      ariaRowIndex: `${row + 1 + this.getAriaHeaderRowCount()}`,
       dataset: { row: `${row}` },
     });
     const rowDocking = this.dockingByRow.get(row);
@@ -6276,7 +6296,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   updateRowCount(): void {
     if (this.initialized && this._container) {
       const dataLength = this.getDataLength();
-      this.updateAriaRowIndexes();
+      this.updateAriaRowCount();
 
       // remap all rowspan cache when necessary
       if (dataLength > 0 && dataLength !== this._prevDataLength) {
@@ -7246,7 +7266,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.pagingActive = pagingInfo.pageSize !== 0;
     this.pagingIsLastPage = pagingInfo.pageNum === pagingInfo.totalPages - 1;
     if (this.initialized) {
-      this.updateAriaRowIndexes();
+      this.updateAriaRowCount();
     }
   }
 

@@ -313,16 +313,13 @@ export class SlickHeaderMenu implements SlickPlugin {
         elm.setAttribute('aria-expanded', String(!!this._menuElm?.isConnected));
       }) as EventListener, undefined, eventGroup);
       this._bindingEventService.bind(elm, 'keydown', ((e: KeyboardEvent) => {
-        if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
-          elm.click();
+        if (Utils.clickOnActivationKey(e, elm, ['ArrowDown'])) {
           this._menuElm?.querySelector<HTMLElement>(MENU_ITEM_SELECTOR)?.focus();
         } else if (e.key === 'Escape' && this._menuElm?.isConnected) {
+          e.preventDefault();
+          e.stopPropagation();
           this.hideMenu();
-        } else {
-          return;
         }
-        e.preventDefault();
-        e.stopPropagation();
       }) as EventListener, undefined, eventGroup);
       args.node.appendChild(elm);
     }

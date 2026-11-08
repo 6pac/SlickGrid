@@ -124,13 +124,8 @@ export class SlickGridPager {
   protected makeKeyboardButton(element: HTMLElement) {
     element.role = 'button';
     element.tabIndex = 0;
-    this._bindingEventService.bind(element, 'keydown', ((event: KeyboardEvent) => {
-      if ((event.key === 'Enter' || event.key === ' ') && element.getAttribute('aria-disabled') !== 'true') {
-        event.preventDefault();
-        event.stopPropagation();
-        element.click();
-      }
-    }) as EventListener);
+    // a disabled navigation button stays focusable; its click handler does nothing when the page cannot change
+    this._bindingEventService.bind(element, 'keydown', ((event: KeyboardEvent) => { Utils.clickOnActivationKey(event, element); }) as EventListener);
   }
 
   protected constructPagerUI() {

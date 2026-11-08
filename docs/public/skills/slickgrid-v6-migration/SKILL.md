@@ -11,15 +11,12 @@ Inspect the application's dependencies, script tags or imports, grid and column 
 
 ## Migration decisions
 
-- Remove SortableJS imports, script tags, and global assignments. Column reordering and draggable grouping use native drag and drop.
-- Replace frozen panes with `pinning`: `frozenColumn: N` becomes `pinning: { columns: { left: N } }` with the same boundary, now counting visible columns. Convert `frozenRow: N` to `pinning.rows.top` with indexes `0` through `N - 1`; with `frozenBottom`, use the relevant last-row indexes in `pinning.rows.bottom`. Migrate saved settings too. Do not enable sticky docking unless requested.
-- Keep columns in the array and use `hidden` to hide them. `getColumns()` includes hidden columns; use `getVisibleColumns()` when only visible ones are wanted.
-- External clipboard operations use the async Clipboard API. Preserve application-provided overrides when needed, and account for secure-context and permission requirements.
-- Remove `inlineFilters`, `useCSPSafeFilter`, and `rowTopOffsetRenderType`. Follow the guide for removed DataView methods, menu option renames, column picker options, and the `fastSort()` replacement.
-- Update custom pane selectors for the single viewport and Row Detail selectors to `.slick-row-detail-container` or `.row-detail-{id}`. Ordinary rows use transforms; RowSpan rows retain internal top positioning. Preserve application styles and check its DOM-dependent tests.
-- Replace removed `onBeforeAppendCell` subscriptions with formatter `addClasses` output. Plain strings without `<` or `&` bypass the sanitizer; do not use a sanitizer as a general plain-text transformation.
-- Review grid menu slot sizing, renamed Alpine Sass/CSS variables, and content autosizing sampling where the application relies on those behaviors.
-- For accessibility, review ARIA row indexes and counts, formatter HTML comparisons, and custom labels. Built-in editor columns accept `editorAriaLabel`; Checkbox Select Column accepts `rowAriaLabel` and `selectAllAriaLabel`; header button items accept `ariaLabel`. False checkmark output is now an element labeled `No`, not an empty string.
+Take every mapping, renamed option and code sample from the guide; this skill does not repeat them. Work through the guide section by section and apply only the sections that match what the application uses. In addition:
+
+- Migrate saved or persisted settings (for example stored frozen-pane or column-visibility state) along with the code.
+- Do not turn on new behaviour the application did not ask for, such as sticky docking.
+- Keep the application's own styles and labels; where a v6 default label is English, keep the application's translated or custom one through the new options the guide lists.
+- Expect DOM-dependent tests to change (row positioning, Row Detail selectors, ARIA row indexes, formatter HTML) and update them rather than the behaviour.
 
 ## Validate
 

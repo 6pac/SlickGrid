@@ -14,7 +14,8 @@ One skill is published with the documentation site instead, because it is meant 
 applications that use SlickGrid rather than on this repository:
 
 - [`docs/public/skills/slickgrid-v6-migration/SKILL.md`](../../docs/public/skills/slickgrid-v6-migration/SKILL.md)
-  — migrating an application to v6. It condenses `docs/in-depth/migration-v6.md`; keep the two in agreement.
+  — migrating an application to v6. It defers every mapping to `docs/in-depth/migration-v6.md` and only adds
+  working rules, so it needs no update for a new section of the guide.
 
 Project implementation plans live under `.agents/plans/`:
 

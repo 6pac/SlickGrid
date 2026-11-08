@@ -955,6 +955,21 @@ export class Utils {
     return size;
   }
 
+  /**
+   * Gives an element that acts as a button (`role="button"`) the keyboard behaviour of a native button:
+   * Enter and Space, plus any `extraKeys`, click it. Call it from a `keydown` listener.
+   * @returns `true` when the key clicked the element, the event is then consumed (default prevented, propagation stopped)
+   */
+  public static clickOnActivationKey(e: KeyboardEvent, element: HTMLElement, extraKeys: string[] = []): boolean {
+    if (e.key === 'Enter' || e.key === ' ' || extraKeys.includes(e.key)) {
+      e.preventDefault();
+      e.stopPropagation();
+      element.click();
+      return true;
+    }
+    return false;
+  }
+
   public static isDefined<T>(value: T | undefined | null): value is T {
     return <T>value !== undefined && <T>value !== null && <T>value !== '';
   }

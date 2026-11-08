@@ -188,13 +188,10 @@ export class SlickHeaderButtons implements SlickPlugin {
 
         this._bindingEventService.bind(btn, 'click', this.handleButtonClick.bind(this, button, args.column) as EventListener, undefined, eventGroup);
         this._bindingEventService.bind(btn, 'keydown', ((e: KeyboardEvent) => {
-          if (!button.disabled && (e.key === 'Enter' || e.key === ' ')) {
-            e.preventDefault();
-            e.stopPropagation();
-            const buttonSelector = this.getButtonSelector();
-            const buttonIndex = buttonSelector ? Array.from(args.node.querySelectorAll(buttonSelector)).indexOf(btn) : -1;
-            btn.click();
-
+          const buttonSelector = this.getButtonSelector();
+          const buttonIndex = buttonSelector ? Array.from(args.node.querySelectorAll(buttonSelector)).indexOf(btn) : -1;
+          // a disabled button is out of the tab order and its click does nothing (see handleButtonClick)
+          if (Utils.clickOnActivationKey(e, btn)) {
             // a command renders the header cell again (see handleButtonClick) and that replaces this button: keep the keyboard focus on its replacement
             if (!btn.parentNode && buttonIndex >= 0) {
               const headerElm = args.node.querySelector(buttonSelector) ? args.node : this.getHeaderElement(column);

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-11-05T04:11:53.330Z",
+    "generatedAt": "2026-11-08T05:14:52.760Z",
     "repo": "/home/ghislainb/sourcecode/SlickGrid",
     "counts": {
       "gridOptions": 115,
@@ -8115,6 +8115,33 @@
               ],
               "returns": "",
               "description": ""
+            },
+            {
+              "name": "clickOnActivationKey",
+              "group": "",
+              "signature": "clickOnActivationKey(e: KeyboardEvent, element: HTMLElement, extraKeys?: string[]): boolean",
+              "params": [
+                {
+                  "name": "e",
+                  "type": "KeyboardEvent",
+                  "optional": false,
+                  "description": ""
+                },
+                {
+                  "name": "element",
+                  "type": "HTMLElement",
+                  "optional": false,
+                  "description": ""
+                },
+                {
+                  "name": "extraKeys",
+                  "type": "string[]",
+                  "optional": true,
+                  "description": ""
+                }
+              ],
+              "returns": "boolean",
+              "description": "Gives an element that acts as a button (`role=\"button\"`) the keyboard behaviour of a native button:\nEnter and Space, plus any `extraKeys`, click it. Call it from a `keydown` listener."
             },
             {
               "name": "isDefined",
