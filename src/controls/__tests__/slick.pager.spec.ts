@@ -118,4 +118,13 @@ describe('SlickGridPager', () => {
     expect(dataView.setPagingOptions).toHaveBeenCalledWith({ pageSize: 0 });
     expect(container.innerHTML).toBe('');
   });
+
+  it('unsubscribes from the DataView paging changes when destroyed', () => {
+    createPager();
+    expect(dataView.onPagingInfoChanged.subscriberCount).toBe(1);
+
+    pager.destroy();
+
+    expect(dataView.onPagingInfoChanged.subscriberCount).toBe(0);
+  });
 });

@@ -128,6 +128,21 @@ describe('SlickRowSelectionModel Plugin', () => {
     expect(unsubscribeSpy).toHaveBeenCalled();
   });
 
+  it('should unsubscribe its grid and range selector handlers when calling destroy', () => {
+    const cellRangeSelector = new SlickCellRangeSelector({ selectionCss: { border: 'none' } as CSSStyleDeclaration });
+    plugin.getOptions().cellRangeSelector = cellRangeSelector;
+    const keyDownCount = gridStub.onKeyDown.subscriberCount;
+    plugin.init(gridStub);
+    expect(cellRangeSelector.onCellRangeSelected.subscriberCount).toBe(1);
+
+    plugin.destroy();
+
+    expect(gridStub.onKeyDown.subscriberCount).toBe(keyDownCount);
+    expect(cellRangeSelector.onCellRangeSelecting.subscriberCount).toBe(0);
+    expect(cellRangeSelector.onCellRangeSelected.subscriberCount).toBe(0);
+    expect(cellRangeSelector.onBeforeCellRangeSelected.subscriberCount).toBe(0);
+  });
+
   it('should create the plugin and initialize it', () => {
     plugin.init(gridStub);
 

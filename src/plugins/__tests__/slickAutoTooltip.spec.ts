@@ -58,6 +58,19 @@ describe("AutoTooltip Plugin", () => {
     });
   });
 
+  it("should unsubscribe its grid handlers when destroyed", () => {
+    const mouseEnterCount = gridStub.onMouseEnter.subscriberCount;
+    const headerMouseEnterCount = gridStub.onHeaderMouseEnter.subscriberCount;
+    plugin.init(gridStub);
+    expect(gridStub.onMouseEnter.subscriberCount).toBe(mouseEnterCount + 1);
+    expect(gridStub.onHeaderMouseEnter.subscriberCount).toBe(headerMouseEnterCount + 1);
+
+    plugin.destroy();
+
+    expect(gridStub.onMouseEnter.subscriberCount).toBe(mouseEnterCount);
+    expect(gridStub.onHeaderMouseEnter.subscriberCount).toBe(headerMouseEnterCount);
+  });
+
   describe("plugins - autotooltips - header", () => {
     beforeEach(() => {
       plugin.init(gridStub);

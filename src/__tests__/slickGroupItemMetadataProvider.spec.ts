@@ -44,12 +44,18 @@ describe('SlickGroupItemMetadataProvider', () => {
     expect(unchecked.querySelector('.slick-group-select-checkbox')?.classList.contains('unchecked')).toBe(true);
   });
 
-  it('unsubscribes grid events when destroyed and handles destroy before initialization', () => {
-    const clickUnsubscribe = vi.spyOn(grid.onClick, 'unsubscribe');
-    const keyDownUnsubscribe = vi.spyOn(grid.onKeyDown, 'unsubscribe');
+  it('unsubscribes its grid handlers when destroyed and handles destroy before initialization', () => {
+    const clickSpy = vi.fn();
+    grid.onClick.subscribe(clickSpy);
+    expect(grid.onClick.subscriberCount).toBe(2);
+    expect(grid.onKeyDown.subscriberCount).toBe(1);
+
     provider.destroy();
-    expect(clickUnsubscribe).toHaveBeenCalledOnce();
-    expect(keyDownUnsubscribe).toHaveBeenCalledOnce();
+    grid.onClick.notify({ row: 0, cell: 0, grid });
+
+    expect(grid.onClick.subscriberCount).toBe(1);
+    expect(grid.onKeyDown.subscriberCount).toBe(0);
+    expect(clickSpy).toHaveBeenCalledOnce();
 
     const uninitializedProvider = new SlickGroupItemMetadataProvider();
     expect(() => uninitializedProvider.destroy()).not.toThrow();

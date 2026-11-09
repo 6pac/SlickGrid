@@ -1,10 +1,11 @@
 import type { PagingInfo } from '../models/index.js';
-import { BindingEventService as BindingEventService_, SlickGlobalEditorLock as SlickGlobalEditorLock_, Utils as Utils_ } from '../slick.core.js';
+import { BindingEventService as BindingEventService_, SlickEventHandler as SlickEventHandler_, SlickGlobalEditorLock as SlickGlobalEditorLock_, Utils as Utils_ } from '../slick.core.js';
 import type { SlickDataView } from '../slick.dataview.js';
 import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
+const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const SlickGlobalEditorLock = IIFE_ONLY ? Slick.GlobalEditorLock : SlickGlobalEditorLock_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
@@ -26,6 +27,7 @@ export class SlickGridPager {
   protected _container: HTMLElement; // the container might be a string, a jQuery object or a native element
   protected _statusElm!: HTMLElement;
   protected _bindingEventService: BindingEventService_;
+  protected _eventHandler = new SlickEventHandler();
   protected _options: GridPagerOption;
   protected _defaults: GridPagerOption = {
     showAllText: 'Showing all {rowCount} rows',
@@ -52,7 +54,7 @@ export class SlickGridPager {
   init() {
     this.constructPagerUI();
     this.updatePager(this.dataView.getPagingInfo());
-    this.dataView.onPagingInfoChanged.subscribe((_e, pagingInfo) => {
+    this._eventHandler.subscribe(this.dataView.onPagingInfoChanged, (_e, pagingInfo) => {
       this.updatePager(pagingInfo);
     });
   }
@@ -60,6 +62,7 @@ export class SlickGridPager {
   /** Destroy function when element is destroyed */
   destroy() {
     this.setPageSize(0);
+    this._eventHandler.unsubscribeAll();
     this._bindingEventService.unbindAll();
     Utils.emptyElement(this._container);
   }

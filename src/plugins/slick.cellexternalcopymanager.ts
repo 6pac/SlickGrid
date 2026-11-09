@@ -1,9 +1,10 @@
 import type { Column, CssStyleHash, ExcelCopyBufferOption, ExternalCopyClipCommand, SlickPlugin } from '../models/index.js';
 import type { SlickGrid } from '../slick.grid.js';
-import { SlickEvent as SlickEvent_, type SlickEventData, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core.js';
+import { SlickEvent as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
@@ -44,6 +45,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
 
   // --
   // protected props
+  protected _eventHandler = new SlickEventHandler();
   protected _grid!: SlickGrid;
   protected _copiedRanges: SlickRange_[] | null = null;
   protected _clearCopyTI?: number;
@@ -64,7 +66,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
   init(grid: SlickGrid) {
     this._grid = grid;
     Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
-    this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
+    this._eventHandler.subscribe(this._grid.onKeyDown, this.handleKeyDown.bind(this));
 
     // we need a cell selection model
     const cellSelectionModel = grid.getSelectionModel();
@@ -73,7 +75,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
     }
     // we give focus on the grid when a selection is done on it.
     // without this, if the user selects a range of cell without giving focus on a particular cell, the grid doesn't get the focus and key stroke handles (ctrl+c) don't work
-    cellSelectionModel.onSelectedRangesChanged.subscribe(() => {
+    this._eventHandler.subscribe(cellSelectionModel.onSelectedRangesChanged, () => {
       if (!this._grid.getEditorLock().isActive()) {
         this._grid.focus();
       }
@@ -81,7 +83,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
   }
 
   destroy() {
-    this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this));
+    this._eventHandler.unsubscribeAll();
   }
 
   protected getHeaderValueForColumn(columnDef: Column): string {

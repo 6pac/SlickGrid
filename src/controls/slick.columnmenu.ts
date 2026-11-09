@@ -1,10 +1,11 @@
-import { BindingEventService as BindingEventService_, Event as SlickEvent_, type SlickEventData, Utils as Utils_ } from '../slick.core.js';
+import { BindingEventService as BindingEventService_, Event as SlickEvent_, EventHandler as SlickEventHandler_, type SlickEventData, Utils as Utils_ } from '../slick.core.js';
 import type { Column, ColumnPickerOption, DOMMouseOrTouchEvent, GridOption, OnColumnsChangedArgs } from '../models/index.js';
 import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 /***
@@ -45,6 +46,7 @@ export class SlickColumnMenu {
   protected _menuElm!: HTMLElement;
   protected _columnCheckboxes: HTMLInputElement[] = [];
   protected _bindingEventService = new BindingEventService();
+  protected _eventHandler = new SlickEventHandler();
   protected _options: GridOption;
   protected _defaults: ColumnPickerOption = {
     fadeSpeed: 250,
@@ -65,8 +67,9 @@ export class SlickColumnMenu {
 
   init(grid: SlickGrid) {
     Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
-    grid.onHeaderContextMenu.subscribe(this.handleHeaderContextMenu.bind(this));
-    grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this));
+    this._eventHandler
+      .subscribe(grid.onHeaderContextMenu, this.handleHeaderContextMenu.bind(this))
+      .subscribe(grid.onColumnsReordered, this.updateColumnOrder.bind(this));
 
     this._menuElm = document.createElement('div');
     this._menuElm.className = `slick-columnpicker ${this._gridUid}`;
@@ -108,8 +111,7 @@ export class SlickColumnMenu {
   }
 
   destroy() {
-    this.grid.onHeaderContextMenu.unsubscribe(this.handleHeaderContextMenu.bind(this));
-    this.grid.onColumnsReordered.unsubscribe(this.updateColumnOrder.bind(this));
+    this._eventHandler.unsubscribeAll();
     this._bindingEventService.unbindAll();
     this._listElm?.remove();
     this._menuElm?.remove();

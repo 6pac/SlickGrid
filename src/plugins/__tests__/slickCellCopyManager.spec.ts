@@ -51,12 +51,14 @@ describe('SlickCellCopyManager', () => {
   });
 
   it('unsubscribes from key events when destroyed', () => {
-    const unsubscribeSpy = vi.spyOn(gridStub.onKeyDown, 'unsubscribe');
+    const keyDownSpy = vi.fn();
+    gridStub.onKeyDown.subscribe(keyDownSpy);
     plugin.init(gridStub);
+    expect(gridStub.onKeyDown.subscriberCount).toBe(2);
 
     plugin.destroy();
 
-    expect(unsubscribeSpy).toHaveBeenCalledWith(expect.any(Function));
+    expect(gridStub.onKeyDown.subscriberCount).toBe(1);
   });
 
   it('marks selected cells and emits onCopyCells for Ctrl+C', () => {

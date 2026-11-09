@@ -2234,6 +2234,20 @@ describe('SlickGrid core file', () => {
       expect(rowSelectSpy).toHaveBeenCalled();
     });
 
+    it('should unsubscribe from the previous selection model onSelectedRangesChanged event when calling setSelectionModel() with a different model', () => {
+      const hybridSelectionModel = new SlickHybridSelectionModel({ selectionType: 'row' });
+      const cellSelectionModel = new SlickHybridSelectionModel({ selectionType: 'cell' });
+
+      grid = new SlickGrid<any, Column>(container, [], columns, defaultOptions);
+      grid.setSelectionModel(hybridSelectionModel);
+      expect(hybridSelectionModel.onSelectedRangesChanged.subscriberCount).toBe(1);
+
+      grid.setSelectionModel(cellSelectionModel);
+
+      expect(hybridSelectionModel.onSelectedRangesChanged.subscriberCount).toBe(0);
+      expect(cellSelectionModel.onSelectedRangesChanged.subscriberCount).toBe(1);
+    });
+
     it('should change border color for darkMode', () => {
       const cellSelectionModel = new SlickHybridSelectionModel({ selectionType: 'cell' });
 
