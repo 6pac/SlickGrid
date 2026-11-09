@@ -33,6 +33,8 @@ export class TextEditor<TData = any, C extends Column<TData> = Column<TData>, O 
   protected defaultValue?: number | string;
   protected navOnLR?: boolean;
 
+  protected readonly changeHandler = this.onChange.bind(this);
+
   constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
   }
@@ -46,7 +48,7 @@ export class TextEditor<TData = any, C extends Column<TData> = Column<TData>, O 
 
     // don't show Save/Cancel when it's a Composite Editor and also trigger a onCompositeEditorChange event when input changes
     if (this.args.compositeEditorOptions) {
-      this.input.addEventListener('change', this.onChange.bind(this));
+      this.input.addEventListener('change', this.changeHandler);
     }
   }
 
@@ -71,7 +73,7 @@ export class TextEditor<TData = any, C extends Column<TData> = Column<TData>, O 
 
   destroy() {
     this.input.removeEventListener('keydown', (this.navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav) as EventListener);
-    this.input.removeEventListener('change', this.onChange.bind(this));
+    this.input.removeEventListener('change', this.changeHandler);
     this.input.remove();
   }
 
@@ -88,7 +90,7 @@ export class TextEditor<TData = any, C extends Column<TData> = Column<TData>, O 
   }
 
   loadValue(item: any) {
-    this.defaultValue = item[this.args.column.field] || '';
+    this.defaultValue = item[this.args.column.field] ?? '';
     this.input.value = String(this.defaultValue ?? '');
     this.input.defaultValue = String(this.defaultValue ?? '');
     this.input.select();
@@ -103,7 +105,7 @@ export class TextEditor<TData = any, C extends Column<TData> = Column<TData>, O 
   }
 
   isValueChanged() {
-    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
+    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== String(this.defaultValue ?? ''));
   }
 
   validate() {
@@ -126,6 +128,8 @@ export class IntegerEditor<TData = any, C extends Column<TData> = Column<TData>,
   protected defaultValue?: string | number;
   protected navOnLR?: boolean;
 
+  protected readonly changeHandler = this.onChange.bind(this);
+
   constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
   }
@@ -139,7 +143,7 @@ export class IntegerEditor<TData = any, C extends Column<TData> = Column<TData>,
 
     // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
     if (this.args.compositeEditorOptions) {
-      this.input.addEventListener('change', this.onChange.bind(this));
+      this.input.addEventListener('change', this.changeHandler);
     }
   }
 
@@ -164,7 +168,7 @@ export class IntegerEditor<TData = any, C extends Column<TData> = Column<TData>,
 
   destroy() {
     this.input.removeEventListener('keydown', (this.navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav) as EventListener);
-    this.input.removeEventListener('change', this.onChange.bind(this));
+    this.input.removeEventListener('change', this.changeHandler);
     this.input.remove();
   }
 
@@ -188,7 +192,7 @@ export class IntegerEditor<TData = any, C extends Column<TData> = Column<TData>,
   }
 
   isValueChanged() {
-    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
+    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== String(this.defaultValue ?? ''));
   }
 
   validate() {
@@ -224,6 +228,8 @@ export class FloatEditor<TData = any, C extends Column<TData> = Column<TData>, O
   /** Should we allow empty value when using FloatEditor */
   static AllowEmptyValue = false;
 
+  protected readonly changeHandler = this.onChange.bind(this);
+
   constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
   }
@@ -237,7 +243,7 @@ export class FloatEditor<TData = any, C extends Column<TData> = Column<TData>, O
 
     // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
     if (this.args.compositeEditorOptions) {
-      this.input.addEventListener('change', this.onChange.bind(this));
+      this.input.addEventListener('change', this.changeHandler);
     }
   };
 
@@ -262,7 +268,7 @@ export class FloatEditor<TData = any, C extends Column<TData> = Column<TData>, O
 
   destroy() {
     this.input.removeEventListener('keydown', (this.navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav) as EventListener);
-    this.input.removeEventListener('change', this.onChange.bind(this));
+    this.input.removeEventListener('change', this.changeHandler);
     this.input.remove();
   };
 
@@ -319,7 +325,7 @@ export class FloatEditor<TData = any, C extends Column<TData> = Column<TData>, O
   }
 
   isValueChanged() {
-    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
+    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== String(this.defaultValue ?? ''));
   }
 
   validate() {
@@ -350,10 +356,10 @@ export class FlatpickrEditor<TData = any, C extends Column<TData> = Column<TData
   protected flatpickrInstance: any;
 
   constructor(protected readonly args: EditorArguments<TData, C, O>) {
-    this.init();
     if (typeof flatpickr === 'undefined') {
       throw new Error('Flatpickr not loaded but required in SlickGrid.Editors, refer to Flatpickr documentation: https://flatpickr.js.org/getting-started/');
     }
+    this.init();
   }
 
   init() {
@@ -447,7 +453,7 @@ export class FlatpickrEditor<TData = any, C extends Column<TData> = Column<TData
   }
 
   isValueChanged() {
-    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
+    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== String(this.defaultValue ?? ''));
   }
 
   validate() {
@@ -469,6 +475,8 @@ export class YesNoSelectEditor<TData = any, C extends Column<TData> = Column<TDa
   protected select!: HTMLSelectElement;
   protected defaultValue?: string | number;
 
+  protected readonly changeHandler = this.onChange.bind(this);
+
   constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
   }
@@ -482,7 +490,7 @@ export class YesNoSelectEditor<TData = any, C extends Column<TData> = Column<TDa
 
     // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
     if (this.args.compositeEditorOptions) {
-      this.select.addEventListener('change', this.onChange.bind(this));
+      this.select.addEventListener('change', this.changeHandler);
     }
   }
 
@@ -506,7 +514,7 @@ export class YesNoSelectEditor<TData = any, C extends Column<TData> = Column<TDa
   }
 
   destroy() {
-    this.select.removeEventListener('change', this.onChange.bind(this));
+    this.select.removeEventListener('change', this.changeHandler);
     this.select.remove();
   }
 
@@ -527,7 +535,7 @@ export class YesNoSelectEditor<TData = any, C extends Column<TData> = Column<TDa
   }
 
   isValueChanged() {
-    return this.select.value !== this.defaultValue;
+    return this.select.value !== (this.defaultValue ? 'yes' : 'no');
   }
 
   validate() {
@@ -542,6 +550,8 @@ export class CheckboxEditor<TData = any, C extends Column<TData> = Column<TData>
   protected input!: HTMLInputElement;
   protected defaultValue?: boolean;
 
+  protected readonly changeHandler = this.onChange.bind(this);
+
   constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
   }
@@ -552,7 +562,7 @@ export class CheckboxEditor<TData = any, C extends Column<TData> = Column<TData>
 
     // trigger onCompositeEditorChange event when input checkbox changes and it's a Composite Editor
     if (this.args.compositeEditorOptions) {
-      this.input.addEventListener('change', this.onChange.bind(this));
+      this.input.addEventListener('change', this.changeHandler);
     }
   };
 
@@ -576,7 +586,7 @@ export class CheckboxEditor<TData = any, C extends Column<TData> = Column<TData>
   };
 
   destroy() {
-    this.input.removeEventListener('change', this.onChange.bind(this));
+    this.input.removeEventListener('change', this.changeHandler);
     this.input.remove();
   };
 
@@ -622,6 +632,10 @@ export class PercentCompleteEditor<TData = any, C extends Column<TData> = Column
   protected defaultValue?: number;
   protected picker!: HTMLDivElement;
   protected slider!: HTMLInputElement | null;
+
+  protected readonly clickHandler = this.onClick.bind(this);
+  protected readonly boundSliderInputHandler = this.sliderInputHandler.bind(this);
+  protected readonly boundSliderChangeHandler = this.sliderChangeHandler.bind(this);
 
   constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
@@ -673,12 +687,12 @@ export class PercentCompleteEditor<TData = any, C extends Column<TData> = Column
     this.input.focus();
     this.input.select();
 
-    this.slider.addEventListener('input', this.sliderInputHandler.bind(this) as EventListener);
-    this.slider.addEventListener('change', this.sliderChangeHandler.bind(this));
+    this.slider.addEventListener('input', this.boundSliderInputHandler as EventListener);
+    this.slider.addEventListener('change', this.boundSliderChangeHandler);
 
     const buttons = this.picker.querySelectorAll('.editor-percentcomplete-buttons button');
     [].forEach.call(buttons, (button: HTMLButtonElement) => {
-      button.addEventListener('click', this.onClick.bind(this) as EventListener);
+      button.addEventListener('click', this.clickHandler as EventListener);
     });
   };
 
@@ -688,10 +702,10 @@ export class PercentCompleteEditor<TData = any, C extends Column<TData> = Column
   };
 
   destroy() {
-    this.slider?.removeEventListener('input', this.sliderInputHandler.bind(this) as EventListener);
-    this.slider?.removeEventListener('change', this.sliderChangeHandler.bind(this));
+    this.slider?.removeEventListener('input', this.boundSliderInputHandler as EventListener);
+    this.slider?.removeEventListener('change', this.boundSliderChangeHandler);
     this.picker.querySelectorAll('.editor-percentcomplete-buttons button')
-      .forEach(button => button.removeEventListener('click', this.onClick.bind(this) as EventListener));
+      .forEach(button => button.removeEventListener('click', this.clickHandler as EventListener));
     this.input.remove();
     this.picker.remove();
   };
@@ -703,7 +717,7 @@ export class PercentCompleteEditor<TData = any, C extends Column<TData> = Column
   loadValue(item: any) {
     this.defaultValue = item[this.args.column.field];
     this.slider!.value = String(this.defaultValue ?? '');
-    this.input.value = String(this.defaultValue);
+    this.input.value = String(this.defaultValue ?? '');
     this.input.select();
   };
 
@@ -743,7 +757,11 @@ export class LongTextEditor<TData = any, C extends Column<TData> = Column<TData>
   protected input!: HTMLTextAreaElement;
   protected wrapper!: HTMLDivElement;
   protected defaultValue?: string;
-  protected selectionStart = 0;
+
+  protected readonly changeHandler = this.onChange.bind(this);
+  protected readonly saveHandler = this.save.bind(this);
+  protected readonly cancelHandler = this.cancel.bind(this);
+  protected readonly keyDownHandler = this.handleKeyDown.bind(this);
 
   constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
@@ -767,15 +785,15 @@ export class LongTextEditor<TData = any, C extends Column<TData> = Column<TData>
 
     // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
     if (compositeEditorOptions) {
-      this.input.addEventListener('change', this.onChange.bind(this));
+      this.input.addEventListener('change', this.changeHandler);
     } else {
       const btnContainer = Utils.createDomElement('div', { style: 'text-align:right' }, this.wrapper);
       Utils.createDomElement('button', { id: 'save', className: 'slick-btn slick-btn-primary', textContent: 'Save' }, btnContainer);
       Utils.createDomElement('button', { id: 'cancel', className: 'slick-btn slick-btn-default', textContent: 'Cancel' }, btnContainer);
 
-      this.wrapper.querySelector('#save')!.addEventListener('click', this.save.bind(this));
-      this.wrapper.querySelector('#cancel')!.addEventListener('click', this.cancel.bind(this));
-      this.input.addEventListener('keydown', this.handleKeyDown.bind(this) as EventListener);
+      this.wrapper.querySelector('#save')!.addEventListener('click', this.saveHandler);
+      this.wrapper.querySelector('#cancel')!.addEventListener('click', this.cancelHandler);
+      this.input.addEventListener('keydown', this.keyDownHandler as EventListener);
       this.position(this.args.position as ElementPosition);
     }
 
@@ -816,12 +834,12 @@ export class LongTextEditor<TData = any, C extends Column<TData> = Column<TData>
       this.args.grid.navigateNext();
     } else if (e.which === keyCode.LEFT || e.which === keyCode.RIGHT) {
       if (this.args.grid.getOptions().editorCellNavOnLRKeys) {
-        const cursorPosition = this.selectionStart;
+        const cursorPosition = e.target.selectionStart ?? 0;
         const textLength = e.target.value.length;
         if (e.keyCode === keyCode.LEFT && cursorPosition === 0) {
           this.args.grid.navigatePrev();
         }
-        if (e.keyCode === keyCode.RIGHT && cursorPosition >= textLength - 1) {
+        if (e.keyCode === keyCode.RIGHT && cursorPosition >= textLength) {
           this.args.grid.navigateNext();
         }
       }
@@ -857,11 +875,11 @@ export class LongTextEditor<TData = any, C extends Column<TData> = Column<TData>
 
   destroy() {
     if (this.args.compositeEditorOptions) {
-      this.input.removeEventListener('change', this.onChange.bind(this));
+      this.input.removeEventListener('change', this.changeHandler);
     } else {
-      this.wrapper.querySelector('#save')!.removeEventListener('click', this.save.bind(this));
-      this.wrapper.querySelector('#cancel')!.removeEventListener('click', this.cancel.bind(this));
-      this.input.removeEventListener('keydown', this.handleKeyDown.bind(this) as EventListener);
+      this.wrapper.querySelector('#save')!.removeEventListener('click', this.saveHandler);
+      this.wrapper.querySelector('#cancel')!.removeEventListener('click', this.cancelHandler);
+      this.input.removeEventListener('keydown', this.keyDownHandler as EventListener);
     }
     this.wrapper.remove();
   };
@@ -884,7 +902,7 @@ export class LongTextEditor<TData = any, C extends Column<TData> = Column<TData>
   };
 
   isValueChanged() {
-    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
+    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== String(this.defaultValue ?? ''));
   };
 
   validate() {
@@ -907,11 +925,12 @@ export class LongTextEditor<TData = any, C extends Column<TData> = Column<TData>
  * Navigate to the cell on the left if the cursor is at the beginning of the input string
  * and to the right cell if it's at the end. Otherwise, move the cursor within the text
  */
-function handleKeydownLRNav(e: KeyboardEvent & { target: HTMLInputElement; selectionStart: number; }) {
-  const cursorPosition = e.selectionStart;
+/** keep Left/Right inside the input unless the cursor is already at its start (Left) or its end (Right), then let the grid navigate */
+function handleKeydownLRNav(e: KeyboardEvent & { target: HTMLInputElement; }) {
+  const cursorPosition = e.target.selectionStart ?? 0;
   const textLength = e.target.value.length;
   if ((e.keyCode === keyCode.LEFT && cursorPosition > 0) ||
-    e.keyCode === keyCode.RIGHT && cursorPosition < textLength - 1) {
+    e.keyCode === keyCode.RIGHT && cursorPosition < textLength) {
     e.stopImmediatePropagation();
   }
 }

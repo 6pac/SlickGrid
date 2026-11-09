@@ -265,6 +265,21 @@ describe('SlickCustomTooltip plugin', () => {
     expect(cellNode.getAttribute('aria-describedby')).not.toContain(tooltipElm.id);
   });
 
+  it('does not throw when the hovered cell has no node to position the tooltip against', () => {
+    const target = document.createElement('div');
+    target.className = 'slick-cell l0 r0';
+    const mockColumns = [{ id: 'firstName', field: 'firstName' }] as Column[];
+    vi.spyOn(gridStub, 'getCellFromEvent').mockReturnValue({ cell: 0, row: 1 });
+    vi.spyOn(gridStub, 'getCellNode').mockReturnValue(null);
+    vi.spyOn(gridStub, 'getColumns').mockReturnValue(mockColumns);
+    vi.spyOn(dataviewStub, 'getItem').mockReturnValue({ firstName: 'John', lastName: 'Doe' });
+
+    plugin.init(gridStub);
+    plugin.setOptions({ formatter: () => 'tooltip text' });
+
+    expect(() => gridStub.onMouseEnter.notify({ grid: gridStub } as any, { ...new SlickEventData(), target } as any)).not.toThrow();
+  });
+
   it('should remove aria-describedby from the trigger when tooltip is hidden and no previous value existed', () => {
     const cellNode = document.createElement('div');
     cellNode.className = 'slick-cell l2 r2';

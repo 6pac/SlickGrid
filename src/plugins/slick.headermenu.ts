@@ -147,7 +147,7 @@ export class SlickHeaderMenu implements SlickPlugin {
   protected _subMenuRootItemElm?: HTMLElement | null;
 
   constructor(options: Partial<HeaderMenuOption>) {
-    this._options = Utils.extend(true, {}, options, this._defaults);
+    this._options = Utils.extend(true, {}, this._defaults, options);
   }
 
   init(grid: SlickGrid) {

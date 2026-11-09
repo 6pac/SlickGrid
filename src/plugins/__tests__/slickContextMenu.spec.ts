@@ -259,6 +259,21 @@ describe('ContextMenu Plugin', () => {
     expect(onAfterMenuShow).toHaveBeenCalledOnce();
   });
 
+  it('dismisses the menu it just showed when onAfterMenuShow returns false', () => {
+    plugin = new SlickContextMenu({ commandItems: [{ command: 'edit', title: 'Edit' }] });
+    plugin.onAfterMenuShow.subscribe(() => false);
+    plugin.init(grid);
+    const cell = document.createElement('div');
+    cell.className = 'slick-cell';
+    document.body.appendChild(cell);
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'target', { configurable: true, value: cell });
+
+    grid.onContextMenu.notify({} as any, event, grid);
+
+    expect(document.body.querySelector('.slick-context-menu')).toBeNull();
+  });
+
   it('closes the menu when the grid scrolls when hideMenuOnScroll is enabled', () => {
     openMenu({ commandItems: [{ command: 'edit', title: 'Edit' }], hideMenuOnScroll: true });
 

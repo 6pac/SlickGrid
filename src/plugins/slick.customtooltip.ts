@@ -532,6 +532,10 @@ export class SlickCustomTooltip {
   protected reposition(cell: { row: number; cell: number; }) {
     if (this._tooltipElm) {
       this._cellNodeElm = (this._cellNodeElm || this._grid.getCellNode(cell.row, cell.cell)) as HTMLDivElement;
+      // the cell may have no node, e.g. when it was scrolled out of view, then there's nothing to position against
+      if (!this._cellNodeElm) {
+        return;
+      }
       const cellPosition = this.getHtmlElementOffset(this._cellNodeElm);
       const cellContainerWidth = this._cellNodeElm.offsetWidth;
       const calculatedTooltipHeight = this._tooltipElm.getBoundingClientRect().height;

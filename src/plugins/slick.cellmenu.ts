@@ -263,6 +263,9 @@ export class SlickCellMenu implements SlickPlugin {
       row: this._currentRow,
       grid: this._grid
     }, e, this).getReturnValue() === false) {
+      // dismiss the menu that was just shown, so it does not stay in the page without any reference to close it later
+      this.destroyAllMenus();
+      this._menuElm = null;
       return;
     }
 
