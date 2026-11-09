@@ -9,12 +9,13 @@ import type {
   MenuCommandItem,
   onGridMenuColumnsChangedCallbackArgs
 } from '../models/index.js';
-import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, Utils as Utils_ } from '../slick.core.js';
+import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core.js';
 import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 /**
@@ -140,6 +141,7 @@ export class SlickGridMenu {
   // --
   // protected props
   protected _bindingEventService: BindingEventService_;
+  protected _eventHandler = new SlickEventHandler();
   protected _gridOptions: GridOption;
   protected _gridUid: string;
   protected _isMenuOpen = false;
@@ -183,7 +185,7 @@ export class SlickGridMenu {
     this.createGridMenu();
 
     // subscribe to the grid, when it's destroyed, we should also destroy the Grid Menu
-    grid.onBeforeDestroy.subscribe(this.destroy.bind(this));
+    this._eventHandler.subscribe(grid.onBeforeDestroy, this.destroy.bind(this));
   }
 
   setOptions(newOptions: GridMenuOption) {
@@ -344,9 +346,7 @@ export class SlickGridMenu {
     this.onMenuClose.unsubscribe();
     this.onCommand.unsubscribe();
     this.onColumnsChanged.unsubscribe();
-    this.grid.onColumnsReordered.unsubscribe(this.updateColumnOrder.bind(this));
-    this.grid.onBeforeDestroy.unsubscribe();
-    this.grid.onSetOptions.unsubscribe();
+    this._eventHandler.unsubscribeAll();
     this._bindingEventService.unbindAll();
     this._menuElm?.remove();
     this.deleteMenu();
@@ -493,7 +493,7 @@ export class SlickGridMenu {
 
   /** Build the column picker, the code comes almost untouched from the file "slick.columnpicker.js" */
   protected populateColumnPicker() {
-    this.grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this));
+    this._eventHandler.subscribe(this.grid.onColumnsReordered, this.updateColumnOrder.bind(this));
 
     // user could pass a title on top of the columns list
     if (this._gridMenuOptions?.columnTitle) {

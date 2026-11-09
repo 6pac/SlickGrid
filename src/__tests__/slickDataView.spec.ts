@@ -2257,6 +2257,60 @@ describe('SlickDatView core file', () => {
       expect(unsubscribeCellCssStyleSpy).toHaveBeenCalled();
       expect(unsubscribeRowOrCountSpy).toHaveBeenCalledWith(expect.any(Function));
     });
+
+    it('should not restore CSS styles removed from the grid when the rows change afterward, and still notify the next onCellCssStylesChanged subscriber', () => {
+      const columns = [
+        { id: 'name', field: 'name', name: 'Name' },
+        { id: 'age', field: 'age', name: 'Age' },
+      ];
+      const gridOptions = { enableCellNavigation: true, multiSelect: false } as GridOption;
+      dv = new SlickDataView({});
+      const grid = new SlickGrid<any, any, any>('#myGrid', dv, columns, gridOptions);
+      const cssStylesChangedSpy = vi.fn();
+
+      dv.setItems(items);
+      dv.syncGridCellCssStyles(grid, 'age_highlight');
+      grid.onCellCssStylesChanged.subscribe(cssStylesChangedSpy);
+      grid.setCellCssStyles('age_highlight', { 0: { age: 'highlight' } });
+      grid.removeCellCssStyles('age_highlight');
+      dv.sort((a, b) => SortComparers.numeric(a.id, b.id), true);
+
+      expect(grid.getCellCssStyles('age_highlight')).toBeUndefined();
+      expect(cssStylesChangedSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('should only drop the grid handlers of the DataView when calling destroy()', () => {
+      const columns = [
+        { id: 'name', field: 'name', name: 'Name' },
+        { id: 'age', field: 'age', name: 'Age' },
+      ];
+      const gridOptions = { enableCellNavigation: true, multiSelect: true } as GridOption;
+      dv = new SlickDataView({});
+      const grid = new SlickGrid<any, any, any>('#myGrid', dv, columns, gridOptions);
+      grid.setSelectionModel(new SlickHybridSelectionModel({ selectActiveRow: false, selectionType: 'row' }));
+      const selectedRowsChangedCount = grid.onSelectedRowsChanged.subscriberCount;
+      const cssStylesChangedCount = grid.onCellCssStylesChanged.subscriberCount;
+      const selectedRowsChangedSpy = vi.fn();
+      const cssStylesChangedSpy = vi.fn();
+      const selectedRowIdsChangedSpy = vi.fn();
+
+      dv.setItems(items);
+      dv.syncGridSelection(grid, false);
+      dv.syncGridCellCssStyles(grid, 'age_highlight');
+      dv.onSelectedRowIdsChanged.subscribe(selectedRowIdsChangedSpy);
+      grid.onSelectedRowsChanged.subscribe(selectedRowsChangedSpy);
+      grid.onCellCssStylesChanged.subscribe(cssStylesChangedSpy);
+      dv.destroy();
+      grid.setSelectedRows([0, 1]);
+      grid.setCellCssStyles('age_highlight', { 0: { age: 'highlight' } });
+
+      expect(grid.onSelectedRowsChanged.subscriberCount).toBe(selectedRowsChangedCount + 1);
+      expect(grid.onCellCssStylesChanged.subscriberCount).toBe(cssStylesChangedCount + 1);
+      expect(dv.onRowsOrCountChanged.subscriberCount).toBe(0);
+      expect(selectedRowsChangedSpy).toHaveBeenCalledTimes(1);
+      expect(cssStylesChangedSpy).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ key: 'age_highlight' }));
+      expect(selectedRowIdsChangedSpy).not.toHaveBeenCalled();
+    });
   });
 
 });

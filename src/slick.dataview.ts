@@ -22,6 +22,7 @@ import {
   type BasePubSub,
   SlickEvent as SlickEvent_,
   SlickEventData as SlickEventData_,
+  SlickEventHandler as SlickEventHandler_,
   SlickGroup as SlickGroup_,
   SlickGroupTotals as SlickGroupTotals_,
   Utils as Utils_,
@@ -32,6 +33,7 @@ import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } fro
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
 const SlickEventData = IIFE_ONLY ? Slick.EventData : SlickEventData_;
+const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const SlickGroup = IIFE_ONLY ? Slick.Group : SlickGroup_;
 const SlickGroupTotals = IIFE_ONLY ? Slick.GroupTotals : SlickGroupTotals_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
@@ -81,6 +83,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected filteredItems: TData[] = [];
   protected filterCache: any[] = [];
   protected _grid?: SlickGridModel; // grid object will be defined only after using "syncGridSelection()" method"
+  protected _eventHandler = new SlickEventHandler(); // grid events subscribed by the "syncGrid...()" methods
 
   // grouping
   protected groupingInfoDefaults: Grouping = {
@@ -168,10 +171,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     this.filterCache = [];
     this.filteredItems = [];
 
-    if (this._grid && this._grid.onSelectedRowsChanged && this._grid.onCellCssStylesChanged) {
-      this._grid.onSelectedRowsChanged.unsubscribe();
-      this._grid.onCellCssStylesChanged.unsubscribe();
-    }
+    // only drop our own grid handlers, the grid events might also be subscribed by other code
+    this._eventHandler.unsubscribeAll();
     if (this.onRowsOrCountChanged) {
       this.onRowsOrCountChanged.unsubscribe();
     }
@@ -1275,7 +1276,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       }
     };
 
-    grid.onSelectedRowsChanged.subscribe((_e: SlickEventData_, args: { rows: number[]; caller?: string; }) => {
+    this._eventHandler.subscribe(grid.onSelectedRowsChanged, (_e: SlickEventData_, args: { rows: number[]; caller?: string; }) => {
       if (!inHandler) {
         const newSelectedRowIds = this.mapRowsToIds(args.rows);
         const selectedRowsChangedArgs = {
@@ -1462,18 +1463,19 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       }
     };
 
-    grid.onCellCssStylesChanged.subscribe((_e: SlickEventData_, args: any) => {
+    const handleCellCssStylesChanged = (_e: SlickEventData_, args: any) => {
       if (inHandler) { return; }
       if (key !== args.key) { return; }
       if (args.hash) {
         storeCellCssStyles(args.hash);
       } else {
-        grid.onCellCssStylesChanged.unsubscribe();
+        this._eventHandler.unsubscribe(grid.onCellCssStylesChanged, handleCellCssStylesChanged);
         this.onRowsOrCountChanged.unsubscribe(update);
       }
-    });
+    };
+    this._eventHandler.subscribe(grid.onCellCssStylesChanged, handleCellCssStylesChanged);
 
-    this.onRowsOrCountChanged.subscribe(update.bind(this));
+    this.onRowsOrCountChanged.subscribe(update);
   }
 }
 

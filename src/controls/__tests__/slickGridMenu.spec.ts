@@ -246,4 +246,34 @@ describe('SlickGridMenu', () => {
     expect(container.querySelector('.slick-gridmenu-button')).toBeNull();
     expect(document.querySelector('.slick-gridmenu.grid-test')).toBeNull();
   });
+
+  it('drops the subscribers of its own events but only its own grid handlers when destroyed', () => {
+    const commandSpy = vi.fn();
+    const columnsReorderedSpy = vi.fn();
+    const beforeDestroySpy = vi.fn();
+    const setOptionsSpy = vi.fn();
+    menu.onCommand.subscribe(commandSpy);
+    grid.onColumnsReordered.subscribe(columnsReorderedSpy);
+    grid.onBeforeDestroy.subscribe(beforeDestroySpy);
+    grid.onSetOptions.subscribe(setOptionsSpy);
+
+    menu.destroy();
+
+    expect(menu.onCommand.subscriberCount).toBe(0);
+    expect(grid.onColumnsReordered.subscriberCount).toBe(1);
+    expect(grid.onBeforeDestroy.subscriberCount).toBe(1);
+    expect(grid.onSetOptions.subscriberCount).toBe(1);
+  });
+
+  it('still notifies the next onBeforeDestroy subscriber when the grid destroy triggers its own destroy', () => {
+    const beforeDestroySpy = vi.fn();
+    grid.onBeforeDestroy.subscribe(beforeDestroySpy);
+    expect(grid.onBeforeDestroy.subscriberCount).toBe(2);
+
+    grid.onBeforeDestroy.notify({ grid }, new SlickEventData(), grid);
+
+    expect(document.querySelector('.slick-gridmenu.grid-test')).toBeNull();
+    expect(beforeDestroySpy).toHaveBeenCalledTimes(1);
+    expect(grid.onBeforeDestroy.subscriberCount).toBe(1);
+  });
 });
