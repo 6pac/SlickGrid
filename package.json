@@ -2,18 +2,12 @@
   "name": "slickgrid",
   "version": "5.20.2",
   "description": "A lightning fast JavaScript grid/spreadsheet",
-  "main": "./dist/cjs/index.js",
+  "main": "./dist/esm/index.mjs",
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/types/index.d.ts",
-        "default": "./dist/esm/index.mjs"
-      },
-      "require": {
-        "types": "./dist/types/index.d.ts",
-        "default": "./dist/cjs/index.js"
-      }
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.mjs"
     },
     "./dist/styles/*": "./dist/styles/*",
     "./package.json": "./package.json"
