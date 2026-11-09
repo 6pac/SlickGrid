@@ -1,10 +1,11 @@
-import { type SlickEventData, SlickGroup as SlickGroup_, keyCode as keyCode_, Utils as Utils_ } from './slick.core.js';
+import { type SlickEventData, SlickEventHandler as SlickEventHandler_, SlickGroup as SlickGroup_, keyCode as keyCode_, Utils as Utils_ } from './slick.core.js';
 import type { Column, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata, SlickPlugin } from './models/index.js';
 import type { SlickGrid } from './slick.grid.js';
 import type { DataIdType } from './slick.dataview.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
+const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const SlickGroup = IIFE_ONLY ? Slick.Group : SlickGroup_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
@@ -25,6 +26,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 export class SlickGroupItemMetadataProvider implements SlickPlugin {
   pluginName = 'GroupItemMetadataProvider' as const;
 
+  protected _eventHandler = new SlickEventHandler();
   protected _grid!: SlickGrid;
   protected _options: GroupItemMetadataProviderOption;
   protected _defaults: GroupItemMetadataProviderOption = {
@@ -103,15 +105,13 @@ export class SlickGroupItemMetadataProvider implements SlickPlugin {
 
   init(grid: SlickGrid) {
     this._grid = grid;
-    this._grid.onClick.subscribe(this.handleGridClick.bind(this));
-    this._grid.onKeyDown.subscribe(this.handleGridKeyDown.bind(this));
+    this._eventHandler
+      .subscribe(this._grid.onClick, this.handleGridClick.bind(this))
+      .subscribe(this._grid.onKeyDown, this.handleGridKeyDown.bind(this));
   }
 
   destroy() {
-    if (this._grid) {
-      this._grid.onClick.unsubscribe(this.handleGridClick.bind(this));
-      this._grid.onKeyDown.unsubscribe(this.handleGridKeyDown.bind(this));
-    }
+    this._eventHandler.unsubscribeAll();
   }
 
   protected handleGridClick(e: SlickEventData, args: { row: number; cell: number; grid: SlickGrid; }) {

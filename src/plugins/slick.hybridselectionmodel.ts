@@ -115,7 +115,7 @@ export class SlickHybridSelectionModel implements SelectionModel {
       this._eventHandler
         .subscribe(this._selector.onCellRangeSelecting, (e, args) => this.handleCellRangeSelected(e, { ...args, caller: 'onCellRangeSelecting' }))
         .subscribe(this._selector.onCellRangeSelected, (e, args) => this.handleCellRangeSelected(e, { ...args, caller: 'onCellRangeSelected' }))
-      this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this));
+        .subscribe(this._selector.onBeforeCellRangeSelected, this.handleBeforeCellRangeSelected.bind(this));
     }
   }
 

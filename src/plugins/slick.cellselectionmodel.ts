@@ -1,4 +1,4 @@
-import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core.js';
+import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core.js';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector.js';
 import type { CustomDataView, OnActiveCellChangedEventArgs, SelectionModel } from '../models/index.js';
 import type { SlickDataView } from '../slick.dataview.js';
@@ -7,6 +7,7 @@ import type { SlickGrid } from '../slick.grid.js';
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
 const SlickEventData = IIFE_ONLY ? Slick.EventData : SlickEventData_;
+const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;
 const SlickCellRangeSelector = IIFE_ONLY ? Slick.CellRangeSelector : SlickCellRangeSelector_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
@@ -26,6 +27,7 @@ export class SlickCellSelectionModel implements SelectionModel {
   // protected props
   protected _cachedPageRowCount = 0;
   protected _dataView?: CustomDataView | SlickDataView;
+  protected _eventHandler = new SlickEventHandler();
   protected _grid!: SlickGrid;
   protected _prevSelectedRow?: number;
   protected _prevKeyDown = '';
@@ -53,18 +55,17 @@ export class SlickCellSelectionModel implements SelectionModel {
     if (grid.hasDataView()) {
       this._dataView = grid.getData<CustomDataView | SlickDataView>();
     }
-    this._grid.onActiveCellChanged.subscribe(this.handleActiveCellChange.bind(this));
-    this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
+    this._eventHandler
+      .subscribe(this._grid.onActiveCellChanged, this.handleActiveCellChange.bind(this))
+      .subscribe(this._grid.onKeyDown, this.handleKeyDown.bind(this));
     grid.registerPlugin(this._selector);
-    this._selector.onCellRangeSelected.subscribe(this.handleCellRangeSelected.bind(this));
-    this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this));
+    this._eventHandler
+      .subscribe(this._selector.onCellRangeSelected, this.handleCellRangeSelected.bind(this))
+      .subscribe(this._selector.onBeforeCellRangeSelected, this.handleBeforeCellRangeSelected.bind(this));
   }
 
   destroy() {
-    this._grid.onActiveCellChanged.unsubscribe(this.handleActiveCellChange.bind(this));
-    this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this));
-    this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this));
-    this._selector.onBeforeCellRangeSelected.unsubscribe(this.handleBeforeCellRangeSelected.bind(this));
+    this._eventHandler.unsubscribeAll();
     this._grid.unregisterPlugin(this._selector);
     this._selector?.destroy();
   }

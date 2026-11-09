@@ -247,6 +247,19 @@ describe('SlickHybridSelectionModel', () => {
     expect(destroy).toHaveBeenCalledOnce();
   });
 
+  it('unsubscribes its grid and range selector handlers when destroyed', () => {
+    const keyDownCount = grid.onKeyDown.subscriberCount;
+    plugin.init(grid);
+    const selector = plugin.getCellRangeSelector()!;
+    expect(selector.onBeforeCellRangeSelected.subscriberCount).toBe(1);
+
+    plugin.destroy();
+
+    expect(grid.onKeyDown.subscriberCount).toBe(keyDownCount);
+    expect(selector.onCellRangeSelected.subscriberCount).toBe(0);
+    expect(selector.onBeforeCellRangeSelected.subscriberCount).toBe(0);
+  });
+
   it('selects the entire grid with Ctrl+A in cell mode', () => {
     plugin = new SlickHybridSelectionModel({ selectionType: 'cell' });
     plugin.init(grid);

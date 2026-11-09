@@ -1,8 +1,9 @@
 import type { AutoTooltipOption, Column, SlickPlugin } from '../models/index.js';
-import { type SlickEventData, Utils as Utils_ } from '../slick.core.js';
+import { type SlickEventData, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core.js';
 import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
+const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 /**
@@ -15,6 +16,7 @@ export class SlickAutoTooltips implements SlickPlugin {
 
   // --
   // protected props
+  protected _eventHandler = new SlickEventHandler();
   protected _grid!: SlickGrid;
   protected _options?: AutoTooltipOption;
   protected _defaults: AutoTooltipOption = {
@@ -45,10 +47,10 @@ export class SlickAutoTooltips implements SlickPlugin {
   init(grid: SlickGrid) {
     this._grid = grid;
     if (this._options?.enableForCells) {
-      this._grid.onMouseEnter.subscribe(this.handleMouseEnter.bind(this));
+      this._eventHandler.subscribe(this._grid.onMouseEnter, this.handleMouseEnter.bind(this));
     }
     if (this._options?.enableForHeaderCells) {
-      this._grid.onHeaderMouseEnter.subscribe(this.handleHeaderMouseEnter.bind(this));
+      this._eventHandler.subscribe(this._grid.onHeaderMouseEnter, this.handleHeaderMouseEnter.bind(this));
     }
   }
 
@@ -56,12 +58,7 @@ export class SlickAutoTooltips implements SlickPlugin {
    * Destroy plugin.
    */
   destroy() {
-    if (this._options?.enableForCells) {
-      this._grid.onMouseEnter.unsubscribe(this.handleMouseEnter.bind(this));
-    }
-    if (this._options?.enableForHeaderCells) {
-      this._grid.onHeaderMouseEnter.unsubscribe(this.handleHeaderMouseEnter.bind(this));
-    }
+    this._eventHandler.unsubscribeAll();
   }
 
   /**
