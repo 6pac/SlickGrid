@@ -219,9 +219,14 @@ describe('SlickHeaderButtons', () => {
 
   it('does not add buttons to columns without header button definitions', () => {
     plugin.init(grid);
-    const { node } = renderHeader({ id: 'field2', field: 'field2', name: 'Field 2' });
-
+    const { node, args } = renderHeader({ id: 'field2', field: 'field2', name: 'Field 2' });
     expect(node.querySelector('.slick-header-button')).toBeNull();
+
+    // nor remove anything from their header cell
+    const otherElm = node.appendChild(document.createElement('span'));
+    otherElm.className = 'slick-header-button';
+    grid.onBeforeHeaderCellDestroy.notify(args, new SlickEventData());
+    expect(node.contains(otherElm)).toBe(true);
   });
 
   it('removes rendered buttons before the header cell is destroyed', () => {
@@ -230,6 +235,153 @@ describe('SlickHeaderButtons', () => {
     grid.onBeforeHeaderCellDestroy.notify(args, new SlickEventData());
 
     expect(node.querySelector('.slick-header-button')).toBeNull();
+  });
+
+  it('focuses the replacement button in the new header cell when the command replaced the whole header cell', () => {
+    plugin.init(grid);
+    const { node, args } = renderHeader();
+    document.body.appendChild(node);
+    const newNode = document.createElement('div');
+    // what `grid.setColumns()` does: the old header cell is destroyed and the column is rendered in a new header cell
+    vi.mocked(grid.updateColumnHeader).mockImplementationOnce(() => {
+      grid.onBeforeHeaderCellDestroy.notify(args, new SlickEventData());
+      node.replaceWith(newNode);
+      grid.onHeaderCellRendered.notify({ ...args, node: newNode }, new SlickEventData());
+    });
+    vi.mocked(grid.getHeaderColumn).mockReturnValueOnce(newNode);
+    const button = node.querySelector<HTMLElement>('.icon-first')!;
+    button.focus();
+
+    button.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    expect(grid.getColumnIndex).toHaveBeenCalledWith(column.id);
+    expect(grid.getHeaderColumn).toHaveBeenCalledWith(0);
+    expect(document.activeElement).toBe(newNode.querySelector('.icon-first'));
+    newNode.remove();
+  });
+
+  it('does not move the focus when the column of the replaced button is gone', () => {
+    plugin.init(grid);
+    const { node, args } = renderHeader();
+    document.body.appendChild(node);
+    vi.mocked(grid.updateColumnHeader).mockImplementationOnce(() => {
+      grid.onBeforeHeaderCellDestroy.notify(args, new SlickEventData());
+    });
+    vi.mocked(grid.getColumnIndex).mockReturnValueOnce(undefined as any);
+    const button = node.querySelector<HTMLElement>('.icon-first')!;
+    button.focus();
+
+    button.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    expect(grid.getHeaderColumn).not.toHaveBeenCalled();
+    expect(button.isConnected).toBe(false);
+    expect(document.activeElement).toBe(document.body);
+    node.remove();
+  });
+
+  it('keeps the focus on the button when its command left it in place', () => {
+    plugin.init(grid);
+    const { node } = renderHeader();
+    document.body.appendChild(node);
+    const button = node.querySelector<HTMLElement>('.icon-first')!;
+    button.focus();
+
+    button.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', bubbles: true }));
+    expect(grid.updateColumnHeader).not.toHaveBeenCalled();
+    button.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+
+    expect(grid.updateColumnHeader).toHaveBeenCalledWith(column.id);
+    expect(grid.getHeaderColumn).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(button);
+    node.remove();
+  });
+
+  it('renders an image button', () => {
+    column.header!.buttons![0].image = 'first.png';
+    plugin.init(grid);
+    const { node } = renderHeader();
+
+    expect(node.querySelector<HTMLElement>('.icon-first')!.style.backgroundImage).toBe('url("first.png")');
+    expect(node.querySelector<HTMLElement>('.icon-second')!.style.backgroundImage).toBe('');
+  });
+
+  it('names a button from its tooltip, its command or a default label', () => {
+    column.header!.buttons = [
+      { cssClass: 'with-tooltip', tooltip: 'Sort', command: 'sort' },
+      { cssClass: 'with-command', command: 'filter' },
+      { cssClass: 'unnamed' },
+      { tooltip: 'Without class' },
+    ];
+    plugin.init(grid);
+    const { node } = renderHeader();
+
+    expect(node.querySelector('.with-tooltip')!.getAttribute('aria-label')).toBe('Sort');
+    expect(node.querySelector('.with-command')!.getAttribute('aria-label')).toBe('filter');
+    expect(node.querySelector('.unnamed')!.getAttribute('aria-label')).toBe('Header Button');
+    expect(node.querySelector('[title="Without class"]')!.className).toBe('slick-header-button');
+  });
+
+  it('enables a button whose usability override returns true and does not bind the handler of a disabled button', () => {
+    const handler = vi.fn();
+    column.header!.buttons![0].disabled = true;
+    column.header!.buttons![0].itemUsabilityOverride = () => true;
+    column.header!.buttons![1].disabled = true;
+    column.header!.buttons![1].handler = handler;
+    plugin.init(grid);
+    const { node } = renderHeader();
+    const enabled = node.querySelector<HTMLElement>('.icon-first')!;
+    const disabled = node.querySelector<HTMLElement>('.icon-second')!;
+
+    expect(enabled.tabIndex).toBe(0);
+    expect(enabled.classList.contains('slick-header-button-disabled')).toBe(false);
+    disabled.click();
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it('runs the action of a button without command but publishes nothing', () => {
+    const action = vi.fn();
+    const commandListener = vi.fn();
+    column.header!.buttons = [{ cssClass: 'no-command', action }];
+    plugin.init(grid);
+    plugin.onCommand.subscribe(commandListener);
+    const { node } = renderHeader();
+
+    node.querySelector<HTMLElement>('.no-command')!.click();
+
+    expect(action).toHaveBeenCalledWith(expect.anything(), { grid, column, button: column.header!.buttons![0] });
+    expect(commandListener).not.toHaveBeenCalled();
+    expect(grid.updateColumnHeader).not.toHaveBeenCalled();
+  });
+
+  it('finds its buttons by all the classes of a multi-class button CSS class', () => {
+    plugin = new SlickHeaderButtons({ buttonCssClass: 'btn  header-btn' });
+    plugin.init(grid);
+    const { node, args } = renderHeader();
+    expect(node.querySelectorAll('.btn.header-btn')).toHaveLength(2);
+
+    grid.onBeforeHeaderCellDestroy.notify(args, new SlickEventData());
+
+    expect(node.querySelectorAll('.btn')).toHaveLength(0);
+  });
+
+  it('renders buttons without class and does not look for them when the button CSS class is empty', () => {
+    plugin = new SlickHeaderButtons({ buttonCssClass: '' });
+    plugin.init(grid);
+    const { node, args } = renderHeader();
+    document.body.appendChild(node);
+    const button = node.querySelector<HTMLElement>('[role="button"]')!;
+    expect(button.className).toBe('icon-second');
+    button.focus();
+
+    button.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(grid.updateColumnHeader).toHaveBeenCalledWith(column.id);
+    expect(grid.getHeaderColumn).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(button);
+
+    // without a selector, the buttons are left in the header cell
+    grid.onBeforeHeaderCellDestroy.notify(args, new SlickEventData());
+    expect(node.querySelectorAll('[role="button"]')).toHaveLength(2);
+    node.remove();
   });
 
   it('removes event subscriptions when destroyed', () => {

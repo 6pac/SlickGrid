@@ -30,7 +30,13 @@ const gridStub = {
   getUID: () => GRID_UID,
   registerPlugin: vi.fn(),
   sanitizeHtmlString: (text: string) => text,
-  applyHtmlCode: (element: HTMLElement, html: string) => { element.innerHTML = html; },
+  applyHtmlCode: (element: HTMLElement, html: string | HTMLElement) => {
+    if (html instanceof HTMLElement) {
+      element.replaceChildren(html);
+    } else {
+      element.innerHTML = html;
+    }
+  },
   onMouseEnter: new SlickEvent(),
   onHeaderMouseEnter: new SlickEvent(),
   onHeaderMouseLeave: new SlickEvent(),
@@ -1637,6 +1643,219 @@ describe('SlickCustomTooltip plugin', () => {
       const tooltipElm = document.body.querySelector('.slick-custom-tooltip') as HTMLDivElement;
       expect(tooltipElm).toBeTruthy();
       expect(tooltipElm.textContent).toBe('Cell has title directly');
+    });
+  });
+  describe('more tooltip behaviours', () => {
+    const createCell = (title = '') => {
+      const cellNode = document.createElement('div');
+      cellNode.className = 'slick-cell l2 r2';
+      if (title) {
+        cellNode.setAttribute('title', title);
+      }
+      vi.spyOn(gridStub, 'getCellFromEvent').mockReturnValue({ cell: 0, row: 1 });
+      vi.spyOn(gridStub, 'getCellNode').mockReturnValue(cellNode);
+      vi.spyOn(gridStub, 'getColumns').mockReturnValue([{ id: 'firstName', field: 'firstName' }] as Column[]);
+      vi.spyOn(dataviewStub, 'getItem').mockReturnValue({ firstName: 'John', lastName: 'Doe' });
+      return cellNode;
+    };
+    const enterCell = (target: HTMLElement) => gridStub.onMouseEnter.notify({ grid: gridStub } as any, { ...new SlickEventData(), target } as any);
+    const getTooltip = () => document.body.querySelector<HTMLDivElement>('.slick-custom-tooltip');
+
+    it('does not leave an empty aria-describedby on the trigger when the app removed it while the tooltip was shown', () => {
+      const cellNode = createCell('accessible tooltip text');
+      plugin.init(gridStub);
+      plugin.setOptions({ useRegularTooltip: true });
+      enterCell(cellNode);
+      expect(cellNode.getAttribute('aria-describedby')).toBe(getTooltip()!.id);
+
+      cellNode.removeAttribute('aria-describedby');
+      plugin.hideTooltip();
+
+      expect(cellNode.hasAttribute('aria-describedby')).toBe(false);
+      expect(getTooltip()).toBeNull();
+    });
+
+    it('takes only its own id out of a description list with extra whitespace', () => {
+      const cellNode = createCell('accessible tooltip text');
+      cellNode.setAttribute('aria-describedby', '  first-id   second-id ');
+      plugin.init(gridStub);
+      plugin.setOptions({ useRegularTooltip: true });
+      enterCell(cellNode);
+      const tooltipId = getTooltip()!.id;
+      expect(cellNode.getAttribute('aria-describedby')).toContain(tooltipId);
+
+      plugin.hideTooltip();
+
+      expect(cellNode.getAttribute('aria-describedby')).toBe('first-id second-id');
+    });
+
+    it('renders a formatter that returns an html element, truncating its text to "tooltipTextMaxLength"', () => {
+      const cellNode = createCell();
+      document.body.appendChild(cellNode);
+      const formatterElm = document.createElement('span');
+      formatterElm.className = 'formatter-output';
+      formatterElm.textContent = 'a very long tooltip from an element';
+      plugin.init(gridStub);
+      plugin.setOptions({ formatter: () => formatterElm as any, tooltipTextMaxLength: 10 });
+      enterCell(cellNode);
+
+      const tooltipElm = getTooltip()!;
+      expect(tooltipElm.querySelector('.formatter-output')).toBe(formatterElm);
+      expect(tooltipElm.textContent).toBe('a very ...');
+      expect(cellNode.getAttribute('aria-describedby')).toBe(tooltipElm.id);
+      cellNode.remove();
+    });
+
+    it('renders a formatter that returns a short html element as is', () => {
+      const cellNode = createCell();
+      const formatterElm = document.createElement('b');
+      formatterElm.textContent = 'short';
+      plugin.init(gridStub);
+      plugin.setOptions({ formatter: () => formatterElm as any, tooltipTextMaxLength: 10 });
+      enterCell(cellNode);
+
+      expect(getTooltip()!.querySelector('b')!.textContent).toBe('short');
+    });
+
+    it('renders the result of an Observable "asyncProcess" and unsubscribes from it once hidden', () => {
+      const cellNode = createCell();
+      const unsubscribe = vi.fn();
+      let next: (value: any) => void = () => { };
+      let error: (err: any) => void = () => { };
+      const consoleSpy = vi.spyOn(console, 'error').mockReturnValue();
+      plugin.init(gridStub);
+      plugin.setOptions({
+        formatter: () => 'loading...',
+        asyncProcess: () => ({ subscribe: (onNext: any, onError: any) => { next = onNext; error = onError; return { unsubscribe }; } }) as any,
+        asyncPostFormatter: (_row, _cell, _val, _column, dataContext) => `ratio: ${dataContext.__params.ratio}`,
+      });
+      enterCell(cellNode);
+      expect(getTooltip()!.textContent).toBe('loading...');
+
+      next({ ratio: 1.5 });
+      expect(getTooltip()!.textContent).toBe('ratio: 1.5');
+      expect(unsubscribe).toHaveBeenCalledOnce(); // the callback hides the "loading" tooltip first
+
+      error('observable error');
+      expect(consoleSpy).toHaveBeenCalledWith('observable error');
+      consoleSpy.mockRestore();
+    });
+
+    it('ignores an "asyncProcess" that is neither a Promise nor an Observable', () => {
+      const cellNode = createCell();
+      const asyncPostFormatter = vi.fn(() => 'never');
+      plugin.init(gridStub);
+      plugin.setOptions({ formatter: () => 'loading...', asyncProcess: () => ({ ratio: 1 }) as any, asyncPostFormatter });
+      enterCell(cellNode);
+
+      expect(getTooltip()!.textContent).toBe('loading...');
+      expect(asyncPostFormatter).not.toHaveBeenCalled();
+    });
+
+    it('drops the result of a Promise "asyncProcess" once the tooltip was hidden, without logging an error', async () => {
+      const cellNode = createCell();
+      const consoleSpy = vi.spyOn(console, 'error').mockReturnValue();
+      const asyncPostFormatter = vi.fn(() => 'async text');
+      plugin.init(gridStub);
+      plugin.setOptions({ formatter: () => 'loading...', asyncProcess: () => Promise.resolve({ ratio: 1 }), asyncPostFormatter });
+      enterCell(cellNode);
+
+      plugin.hideTooltip();
+      await vi.runAllTimersAsync();
+
+      expect(asyncPostFormatter).not.toHaveBeenCalled();
+      expect(getTooltip()).toBeNull();
+      expect(consoleSpy).not.toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+
+    it('aligns a right-aligned tooltip to the right edge of the hovered element when "repositionByMouseOverTarget" is enabled', () => {
+      const cellNode = createCell();
+      const span = document.createElement('span');
+      span.title = 'span tooltip';
+      cellNode.appendChild(span);
+      vi.spyOn(span, 'getBoundingClientRect').mockReturnValue({ left: 100, top: 0, right: 150, bottom: 20, width: 50, height: 20 } as DOMRect);
+      plugin.init(gridStub);
+      plugin.setOptions({ useRegularTooltip: true, position: 'right-align', repositionByMouseOverTarget: true });
+      enterCell(span);
+
+      const tooltipElm = getTooltip()!;
+      expect(tooltipElm.textContent).toBe('span tooltip');
+      expect(tooltipElm.style.left).toBe('103px'); // target left - tooltip width (0 in jsdom) + target width (0 in jsdom) + 3
+    });
+
+    it('keeps the tooltip of a header column while the mouse moves inside it, and hides it when the mouse leaves the header', () => {
+      const headerNode = document.createElement('div');
+      headerNode.className = 'slick-header-column';
+      const span = document.createElement('span');
+      span.title = 'Header tooltip';
+      headerNode.appendChild(span);
+      const mockColumns = [{ id: 'firstName', field: 'firstName', name: 'First Name' }] as Column[];
+      vi.spyOn(gridStub, 'getColumns').mockReturnValue(mockColumns);
+      plugin.init(gridStub);
+      plugin.setOptions({ useRegularTooltip: true });
+      const notifyEnter = () => {
+        const eventData = new SlickEventData();
+        Object.defineProperty(eventData, 'target', { writable: true, value: span });
+        gridStub.onHeaderMouseEnter.notify({ column: mockColumns[0], grid: gridStub } as any, eventData);
+      };
+
+      notifyEnter();
+      const tooltipElm = getTooltip()!;
+      expect(tooltipElm.textContent).toBe('Header tooltip');
+      notifyEnter();
+      expect(getTooltip()).toBe(tooltipElm);
+
+      gridStub.onHeaderMouseLeave.notify({ grid: gridStub } as any);
+      expect(getTooltip()).toBeNull();
+      expect(span.hasAttribute('aria-describedby')).toBe(false);
+    });
+
+    describe('with observeAllTooltips', () => {
+      beforeEach(() => {
+        gridOptionsMock.customTooltip = { observeAllTooltips: true, observeTooltipContainer: 'body' };
+      });
+
+      it('keeps the tooltip shown while the mouse moves over the same element', () => {
+        plugin.init(gridStub);
+        const button = document.body.appendChild(document.createElement('button'));
+        button.title = 'Button tooltip';
+
+        button.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+        const tooltipElm = getTooltip()!;
+        button.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+        expect(getTooltip()).toBe(tooltipElm);
+        expect(button.getAttribute('aria-describedby')).toBe(tooltipElm.id);
+        button.remove();
+      });
+
+      it('does not show a tooltip for an element with an empty title', () => {
+        plugin.init(gridStub);
+        const button = document.body.appendChild(document.createElement('button'));
+        button.setAttribute('title', '');
+
+        button.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+        expect(getTooltip()).toBeNull();
+        expect(button.hasAttribute('aria-describedby')).toBe(false);
+        button.remove();
+      });
+
+      it('ignores the mouse leaving an element without tooltip', () => {
+        plugin.init(gridStub);
+        const button = document.body.appendChild(document.createElement('button'));
+        button.title = 'Button tooltip';
+        const plainDiv = document.body.appendChild(document.createElement('div'));
+        button.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+        const tooltipElm = getTooltip()!;
+
+        plainDiv.dispatchEvent(new MouseEvent('mouseout', { bubbles: true, relatedTarget: document.body }));
+
+        expect(getTooltip()).toBe(tooltipElm);
+        button.remove();
+        plainDiv.remove();
+      });
     });
   });
 });

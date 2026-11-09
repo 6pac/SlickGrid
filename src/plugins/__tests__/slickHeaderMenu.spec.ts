@@ -413,6 +413,365 @@ describe('SlickHeaderMenu', () => {
     });
   });
 
+  describe('menu options', () => {
+    const pressKey = (target: HTMLElement, key: string) => {
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      target.dispatchEvent(event);
+      return event;
+    };
+    const mouseover = (target: HTMLElement) => target.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    const subMenu = (level = 1) => document.body.querySelector<HTMLDivElement>(`.slick-header-menu.slick-menu-level-${level}`);
+
+    it('merges new options given to setOptions() into the current ones', () => {
+      plugin = new SlickHeaderMenu({ tooltip: 'Old tooltip' });
+      plugin.setOptions({ buttonCssClass: 'new-icon' });
+      plugin.init(grid);
+      renderHeader();
+      const button = header.querySelector<HTMLElement>('.slick-header-menubutton')!;
+
+      expect(button.title).toBe('Old tooltip');
+      expect(button.querySelector('.new-icon')).toBeTruthy();
+    });
+
+    it('renders an image button without the default caret when only buttonImage is given', () => {
+      plugin = new SlickHeaderMenu({ buttonImage: 'menu.png' });
+      plugin.init(grid);
+      renderHeader();
+      const button = header.querySelector<HTMLElement>('.slick-header-menubutton')!;
+
+      expect(button.style.backgroundImage).toBe('url("menu.png")');
+      expect(button.querySelector('.caret')).toBeNull();
+    });
+
+    it('applies hidden state, icon image and text class of command items', () => {
+      column.header!.menu!.commandItems = [
+        { command: 'first', title: 'First command', iconImage: 'first.png', textCssClass: 'bold italic' },
+        { command: 'hidden', title: 'Hidden command', hidden: true },
+      ];
+      plugin.init(grid);
+      const menu = openMenu();
+      const [first, hidden] = Array.from(menu.querySelectorAll<HTMLElement>('.slick-header-menuitem'));
+
+      expect(first.querySelector<HTMLElement>('.slick-header-menuicon')!.style.backgroundImage).toBe('url("first.png")');
+      expect(first.querySelector('.slick-header-menucontent')!.classList.contains('bold')).toBe(true);
+      expect(first.querySelector('.slick-header-menucontent')!.classList.contains('italic')).toBe(true);
+      expect(hidden.classList.contains('slick-header-menuitem-hidden')).toBe(true);
+    });
+
+    it('shows the title of a sub-menu with its class and uses the given chevron class', () => {
+      plugin = new SlickHeaderMenu({ subItemChevronClass: 'chevron-right' });
+      column.header!.menu!.commandItems = [
+        { command: 'more', title: 'More', subMenuTitle: 'Sub title', subMenuTitleCssClass: 'title-class', commandItems: [{ command: 'nested', title: 'Nested' }] },
+      ];
+      plugin.init(grid);
+      const menu = openMenu();
+      const parentItem = menu.querySelector<HTMLElement>('.slick-submenu-item')!;
+
+      expect(parentItem.querySelector('.sub-item-chevron.chevron-right')?.textContent).toBe('');
+      expect(parentItem.getAttribute('aria-haspopup')).toBe('menu');
+      mouseover(parentItem);
+      const title = subMenu()!.querySelector('.slick-menu-title')!;
+      expect(title.textContent).toBe('Sub title');
+      expect(title.classList.contains('title-class')).toBe(true);
+    });
+
+    it('shows the title of a sub-menu without an extra class when none is given', () => {
+      column.header!.menu!.commandItems = [
+        { command: 'more', title: 'More', subMenuTitle: 'Sub title', commandItems: [{ command: 'nested', title: 'Nested' }] },
+      ];
+      plugin.init(grid);
+      const menu = openMenu();
+
+      expect(menu.querySelector('.sub-item-chevron')!.textContent).toBe('⮞');
+      mouseover(menu.querySelector<HTMLElement>('.slick-submenu-item')!);
+      expect(subMenu()!.querySelector('.slick-menu-title')!.className).toBe('slick-menu-title');
+    });
+
+    it('opens sub-menus only on click when subMenuOpenByEvent is "click"', () => {
+      // given to setOptions(), the defaults of the constructor would otherwise win over this option
+      plugin.setOptions({ subMenuOpenByEvent: 'click' });
+      column.header!.menu!.commandItems = [
+        { command: 'more', title: 'More', commandItems: [{ command: 'nested', title: 'Nested' }] },
+      ];
+      plugin.init(grid);
+      const menu = openMenu();
+      const parentItem = menu.querySelector<HTMLElement>('.slick-submenu-item')!;
+
+      mouseover(parentItem);
+      expect(subMenu()).toBeNull();
+      parentItem.click();
+      expect(subMenu()!.querySelector('.slick-header-menucontent')!.textContent).toBe('Nested');
+      expect(menu.isConnected).toBe(true);
+    });
+
+    it('keeps an open sub-menu when it is opened again and replaces it with the one of another item', () => {
+      column.header!.menu!.commandItems = [
+        { command: 'more', title: 'More', commandItems: [{ command: 'nested', title: 'Nested' }] },
+        { command: 'other', title: 'Other', commandItems: [{ command: 'other-nested', title: 'Other nested' }] },
+        { command: 'plain', title: 'Plain' },
+      ];
+      plugin.init(grid);
+      const menu = openMenu();
+      const [more, other, plain] = Array.from(menu.querySelectorAll<HTMLElement>('.slick-header-menuitem'));
+
+      mouseover(more);
+      const firstSubMenu = subMenu()!;
+      mouseover(more);
+      expect(subMenu()).toBe(firstSubMenu);
+      expect(document.body.querySelectorAll('.slick-submenu')).toHaveLength(1);
+
+      mouseover(other);
+      expect(firstSubMenu.isConnected).toBe(false);
+      expect(subMenu()!.textContent).toContain('Other nested');
+      expect(subMenu()!.dataset.subMenuParent).toBe('other');
+
+      // hovering an item without sub-menu in the parent menu closes the sub-menu
+      mouseover(plain);
+      expect(subMenu()).toBeNull();
+      expect(menu.isConnected).toBe(true);
+    });
+
+    it('keeps the parent sub-menu open when hovering an item of a nested sub-menu', () => {
+      column.header!.menu!.commandItems = [
+        { command: 'more', title: 'More', commandItems: [{ command: 'nested', title: 'Nested' }, { command: 'deep', title: 'Deep', commandItems: [{ command: 'deepest', title: 'Deepest' }] }] },
+      ];
+      plugin.init(grid);
+      const menu = openMenu();
+      mouseover(menu.querySelector<HTMLElement>('.slick-submenu-item')!);
+      mouseover(subMenu()!.querySelector<HTMLElement>('.slick-submenu-item')!);
+      expect(subMenu(2)!.getAttribute('aria-label')).toBe('SubMenu');
+
+      mouseover(subMenu()!.querySelector<HTMLElement>('.slick-header-menuitem')!);
+
+      expect(subMenu()).toBeTruthy();
+      expect(subMenu(2)).toBeTruthy();
+    });
+
+    it('closes the sub-menus when an item with an empty command and no sub-menu is clicked', () => {
+      column.header!.menu!.commandItems = [
+        { command: 'more', title: 'More', commandItems: [{ command: 'nested', title: 'Nested' }] },
+        { command: '', title: 'Title only' },
+      ];
+      const commandListener = vi.fn();
+      plugin.init(grid);
+      plugin.onCommand.subscribe(commandListener);
+      const menu = openMenu();
+      mouseover(menu.querySelector<HTMLElement>('.slick-submenu-item')!);
+      expect(subMenu()).toBeTruthy();
+
+      menu.querySelectorAll<HTMLElement>('.slick-header-menuitem')[1].click();
+
+      expect(subMenu()).toBeNull();
+      expect(menu.isConnected).toBe(true);
+      expect(commandListener).not.toHaveBeenCalled();
+    });
+
+    it('keeps the menus open when the click is inside a sub-menu, and closes them on a click on a "close" element', () => {
+      column.header!.menu!.commandItems = [
+        { command: 'more', title: 'More', commandItems: [{ command: 'nested', title: 'Nested', disabled: true }] },
+      ];
+      plugin.init(grid);
+      const menu = openMenu();
+      mouseover(menu.querySelector<HTMLElement>('.slick-submenu-item')!);
+      const nested = subMenu()!.querySelector<HTMLElement>('.slick-header-menuitem')!;
+
+      nested.click();
+      expect(menu.isConnected).toBe(true);
+      expect(subMenu()).toBeTruthy();
+
+      const closeElm = document.createElement('span');
+      closeElm.className = 'close';
+      menu.appendChild(closeElm);
+      closeElm.click();
+      expect(menu.isConnected).toBe(false);
+      expect(subMenu()).toBeNull();
+    });
+
+    it('removes a menu of the same grid left in the page before opening a new one', () => {
+      const staleMenu = document.body.appendChild(document.createElement('div'));
+      staleMenu.className = 'slick-header-menu slick-menu-level-0 slickgrid12345';
+      plugin.init(grid);
+
+      const menu = openMenu();
+
+      expect(staleMenu.isConnected).toBe(false);
+      expect(menu.isConnected).toBe(true);
+    });
+
+    it('does not stop the click event when the after-show event returns false', () => {
+      const afterShowListener = vi.fn(() => false);
+      plugin.init(grid);
+      plugin.onAfterMenuShow.subscribe(afterShowListener);
+      renderHeader();
+      const event = new MouseEvent('click', { bubbles: false, cancelable: true });
+
+      header.querySelector<HTMLElement>('.slick-header-menubutton')!.dispatchEvent(event);
+
+      expect(afterShowListener).toHaveBeenCalledOnce();
+      expect(container.querySelector('.slick-header-menu')).toBeTruthy();
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('aligns the menu to the right edge of its button when it would overflow the grid', () => {
+      plugin.setOptions({ autoAlignOffset: 12 });
+      vi.mocked(grid.getGridPosition).mockReturnValueOnce({ width: 0, left: 0, right: 0, top: 0, bottom: 0 } as any);
+      plugin.init(grid);
+
+      const menu = openMenu();
+
+      expect(menu.style.left).toBe('12px');
+    });
+
+    it('opens a sub-menu on the right of its item when there is enough room', () => {
+      const clientWidth = vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1000);
+      column.header!.menu!.commandItems = [
+        { command: 'more', title: 'More', commandItems: [{ command: 'nested', title: 'Nested' }] },
+      ];
+      plugin.init(grid);
+      try {
+        const menu = openMenu();
+        mouseover(menu.querySelector<HTMLElement>('.slick-submenu-item')!);
+
+        expect(subMenu()!.classList.contains('dropright')).toBe(true);
+        expect(subMenu()!.classList.contains('dropleft')).toBe(false);
+      } finally {
+        clientWidth.mockRestore();
+      }
+    });
+
+    it('opens a sub-menu on the left of its item when there is not enough room', () => {
+      column.header!.menu!.commandItems = [
+        { command: 'more', title: 'More', commandItems: [{ command: 'nested', title: 'Nested' }] },
+      ];
+      plugin.init(grid);
+      const menu = openMenu();
+      mouseover(menu.querySelector<HTMLElement>('.slick-submenu-item')!);
+
+      expect(subMenu()!.classList.contains('dropleft')).toBe(true);
+    });
+
+    it('moves the focus with Home, End and the arrow keys, wrapping around at both ends', () => {
+      column.header!.menu!.commandItems = [
+        { command: 'first', title: 'First command' },
+        'divider',
+        { command: 'middle', title: 'Middle command' },
+        { command: 'last', title: 'Last command' },
+      ];
+      plugin.init(grid);
+      const menu = openMenu();
+      const [first, middle, last] = Array.from(menu.querySelectorAll<HTMLElement>('.slick-header-menuitem:not(.slick-header-menuitem-divider)'));
+      middle.focus();
+
+      expect(pressKey(middle, 'End').defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(last);
+      pressKey(last, 'ArrowDown');
+      expect(document.activeElement).toBe(first);
+      pressKey(first, 'ArrowUp');
+      expect(document.activeElement).toBe(last);
+      pressKey(last, 'Home');
+      expect(document.activeElement).toBe(first);
+      pressKey(first, 'ArrowDown');
+      expect(document.activeElement).toBe(middle);
+    });
+
+    it('closes the menu with Escape on an item of the parent menu and focuses the menu button', () => {
+      plugin.init(grid);
+      const menu = openMenu();
+      const button = header.querySelector<HTMLElement>('.slick-header-menubutton')!;
+      const item = menu.querySelector<HTMLElement>('.slick-header-menuitem')!;
+      item.focus();
+
+      const event = pressKey(item, 'Escape');
+
+      expect(event.defaultPrevented).toBe(true);
+      expect(menu.isConnected).toBe(false);
+      expect(button.getAttribute('aria-expanded')).toBe('false');
+      expect(document.activeElement).toBe(button);
+    });
+
+    it('does not handle ArrowLeft in the parent menu nor ArrowRight on an item without sub-menu', () => {
+      const commandListener = vi.fn();
+      plugin.init(grid);
+      plugin.onCommand.subscribe(commandListener);
+      const menu = openMenu();
+      const item = menu.querySelector<HTMLElement>('.slick-header-menuitem')!;
+      item.focus();
+
+      expect(pressKey(item, 'ArrowLeft').defaultPrevented).toBe(false);
+      expect(pressKey(item, 'ArrowRight').defaultPrevented).toBe(false);
+      expect(pressKey(item, 'a').defaultPrevented).toBe(false);
+      expect(menu.isConnected).toBe(true);
+      expect(document.activeElement).toBe(item);
+      expect(commandListener).not.toHaveBeenCalled();
+    });
+
+    it('ignores ArrowRight on a disabled item with a sub-menu', () => {
+      column.header!.menu!.commandItems = [
+        { command: 'more', title: 'More', disabled: true, commandItems: [{ command: 'nested', title: 'Nested' }] },
+      ];
+      plugin.setOptions({ subMenuOpenByEvent: 'click' });
+      plugin.init(grid);
+      const menu = openMenu();
+      const item = menu.querySelector<HTMLElement>('.slick-submenu-item')!;
+      item.focus();
+
+      const event = pressKey(item, 'ArrowRight');
+
+      expect(event.defaultPrevented).toBe(true);
+      expect(subMenu()).toBeNull();
+      expect(document.activeElement).toBe(item);
+    });
+
+    it('opens a sub-menu with the space key and runs a nested command with Enter', () => {
+      const commandListener = vi.fn();
+      column.header!.menu!.commandItems = [
+        { command: 'more', title: 'More', commandItems: [{ command: 'nested', title: 'Nested' }] },
+      ];
+      plugin.init(grid);
+      plugin.onCommand.subscribe((_e: SlickEventData, args: MenuCommandItemCallbackArgs) => commandListener(args.command));
+      const menu = openMenu();
+      const button = header.querySelector<HTMLElement>('.slick-header-menubutton')!;
+      const item = menu.querySelector<HTMLElement>('.slick-submenu-item')!;
+      item.focus();
+
+      pressKey(item, ' ');
+      const nested = subMenu()!.querySelector<HTMLElement>('.slick-header-menuitem')!;
+      expect(document.activeElement).toBe(nested);
+      pressKey(nested, 'Enter');
+
+      expect(commandListener).toHaveBeenCalledWith('nested');
+      expect(menu.isConnected).toBe(false);
+      expect(subMenu()).toBeNull();
+      expect(document.activeElement).toBe(button);
+    });
+
+    it('focuses the grid when the column of the menu is no longer in the grid', () => {
+      (column.header!.menu!.commandItems![0] as HeaderMenuCommandItem).action = () => {
+        grid.onBeforeHeaderCellDestroy.notify({ column, node: header, grid }, new SlickEventData());
+        vi.mocked(grid.getColumnIndex).mockReturnValueOnce(undefined as any);
+      };
+      plugin.init(grid);
+      const menu = openMenu();
+      const item = menu.querySelector<HTMLElement>('.slick-header-menuitem')!;
+      item.focus();
+
+      pressKey(item, 'Enter');
+
+      expect(grid.getHeaderColumn).not.toHaveBeenCalled();
+      expect(grid.focus).toHaveBeenCalledOnce();
+    });
+
+    it('removes an open menu that is no longer referenced when destroyed', () => {
+      plugin.init(grid);
+      const menu = openMenu();
+      (plugin as any)._menuElm = undefined;
+
+      plugin.destroy();
+
+      expect(menu.isConnected).toBe(false);
+    });
+  });
+
   it('destroys the menu and removes its event subscriptions', () => {
     plugin.init(grid);
     const menu = openMenu();

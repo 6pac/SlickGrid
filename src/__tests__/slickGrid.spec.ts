@@ -855,6 +855,24 @@ describe('SlickGrid core file', () => {
       expect(grid.getSelectedRows()).toEqual([]);
     });
 
+    it('also clears the selected class from the colspan fragments of a cell that leaves the selection', () => {
+      const selectionModel = new SlickHybridSelectionModel({ selectionType: 'cell' });
+      grid = new SlickGrid<any, Column>(container, data, columns, defaultOptions);
+      grid.setSelectionModel(selectionModel);
+      grid.render();
+      selectionModel.setSelectedRanges([new SlickRange(0, 0)]);
+      // a cell spanning pinned bands is drawn as several fragments, the grid keeps them beside the cell node
+      const fragment = document.createElement('div');
+      fragment.className = 'slick-cell selected';
+      (grid as any).rowsCache[0].cellSpanFragments = { 0: [fragment] };
+
+      selectionModel.setSelectedRanges([new SlickRange(1, 0)]);
+
+      expect(grid.getCellNode(0, 0)?.hasAttribute('aria-selected')).toBe(false);
+      expect(fragment.classList.contains('selected')).toBe(false);
+      expect(grid.getCellNode(1, 0)?.getAttribute('aria-selected')).toBe('true');
+    });
+
     it('exposes aria-selected when no selected cell class is configured', () => {
       const selectionModel = new SlickHybridSelectionModel({ selectionType: 'cell' });
       grid = new SlickGrid<any, Column>(container, data, columns, { ...defaultOptions, selectedCellCssClass: '' });
