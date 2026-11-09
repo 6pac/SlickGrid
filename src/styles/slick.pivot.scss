@@ -158,7 +158,11 @@ $pivot-grip-icon-path: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7
 // PivotTable Fields panel
 // -----------------
 
-.slick-pivot-panel {
+// the colors of the panel, the toolbar and the details dialog, set once on a pivot table so that they can be overridden on it
+.slick-pivot-table,
+.slick-pivot-details,
+.slick-pivot-panel:not(.slick-pivot-table .slick-pivot-panel),
+.slick-pivot-toolbar:not(.slick-pivot-table .slick-pivot-toolbar) {
   --slick-pivot-panel-bg: var(--slick-grid-bgcolor, #{v.$slick-grid-bgcolor});
   --slick-pivot-panel-color: var(--slick-font-color, #{v.$slick-font-color});
   --slick-pivot-panel-muted: #687480;
@@ -168,7 +172,9 @@ $pivot-grip-icon-path: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7
   --slick-pivot-panel-pill-bg: #ffffff;
   --slick-pivot-panel-pill-hover-bg: #eef5fd;
   --slick-pivot-panel-menu-shadow: 0 4px 16px rgba(18, 31, 46, 0.18);
+}
 
+.slick-pivot-panel {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -551,7 +557,9 @@ $pivot-grip-icon-path: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7
 }
 
 .slick-pivot-update-button,
-.slick-pivot-dialog-buttons button {
+.slick-pivot-dialog-buttons button,
+.slick-pivot-toolbar-button,
+.slick-pivot-details-close {
   min-width: 64px;
   height: 26px;
   padding: 0 10px;
@@ -762,4 +770,204 @@ $pivot-grip-icon-path: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7
   display: flex;
   justify-content: flex-end;
   gap: 6px;
+}
+
+// --
+// toolbar
+// -----------------
+
+.slick-pivot-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  color: var(--slick-pivot-panel-color);
+  font-family: var(--slick-font-family, #{v.$slick-font-family});
+  font-size: var(--slick-font-size, #{v.$slick-font-size});
+
+  button,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+}
+
+.slick-pivot-toolbar-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.slick-pivot-toolbar-label {
+  color: var(--slick-pivot-panel-muted);
+}
+
+.slick-pivot-toolbar-select {
+  height: 26px;
+  padding: 0 4px;
+  background: var(--slick-pivot-panel-pill-bg);
+  border: 1px solid var(--slick-pivot-panel-border);
+  border-radius: 4px;
+}
+
+.slick-pivot-toolbar-select:focus-visible,
+.slick-pivot-toolbar-button:focus-visible,
+.slick-pivot-details-close:focus-visible {
+  outline: 2px solid var(--slick-pivot-panel-accent);
+  outline-offset: 1px;
+}
+
+.slick-pivot-toolbar-button {
+  &[hidden] {
+    display: none;
+  }
+
+  &[aria-pressed='true'] {
+    background: var(--slick-pivot-panel-pill-hover-bg);
+    border-color: var(--slick-pivot-panel-accent);
+  }
+}
+
+// --
+// details dialog
+// -----------------
+
+.slick-pivot-details {
+  box-sizing: border-box;
+  width: min(900px, calc(100vw - 32px));
+  max-width: none;
+  padding: 12px;
+  color: var(--slick-pivot-panel-color);
+  font-family: var(--slick-font-family, #{v.$slick-font-family});
+  font-size: var(--slick-font-size, #{v.$slick-font-size});
+  background: var(--slick-pivot-panel-bg);
+  border: 1px solid var(--slick-pivot-panel-border);
+  border-radius: 8px;
+  box-shadow: var(--slick-pivot-panel-menu-shadow);
+
+  &::backdrop {
+    background: rgba(20, 30, 40, 0.35);
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  .slick-cell.slick-pivot-details-number {
+    text-align: end;
+  }
+}
+
+.slick-pivot-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.slick-pivot-details-title {
+  font-weight: 600;
+}
+
+.slick-pivot-details-note {
+  margin-bottom: 6px;
+  color: var(--slick-pivot-panel-muted);
+  font-size: 0.9em;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.slick-pivot-details-grid {
+  height: var(--slick-pivot-details-grid-height, 340px);
+}
+
+// --
+// pivot table: toolbar, grid & field list, status bar
+// -----------------
+
+.slick-pivot-table {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 0;
+  font-family: var(--slick-font-family, #{v.$slick-font-family});
+  font-size: var(--slick-font-size, #{v.$slick-font-size});
+
+  &.slick-pivot-table-resizing {
+    cursor: col-resize;
+    user-select: none;
+  }
+}
+
+.slick-pivot-table-body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+
+  &.slick-pivot-table-fields-start {
+    flex-direction: row-reverse;
+  }
+}
+
+.slick-pivot-table-grid {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.slick-pivot-table-splitter {
+  position: relative;
+  flex: 0 0 8px;
+  cursor: col-resize;
+  touch-action: none;
+
+  // a thin line in the middle of the splitter, shown while it is hovered, focused or dragged
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 3px;
+    border-radius: 1px;
+  }
+
+  &:hover::before,
+  &:focus-visible::before,
+  .slick-pivot-table-resizing &::before {
+    background: var(--slick-pivot-panel-accent);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.slick-pivot-table-fields {
+  flex: 0 0 auto;
+  min-width: 0;
+
+  &[hidden] {
+    display: none;
+  }
+
+  .slick-pivot-panel {
+    min-width: 0;
+  }
+}
+
+.slick-pivot-table-status {
+  min-height: 1.4em;
+  color: var(--slick-pivot-panel-muted);
+  font-size: 0.92em;
+
+  &.slick-pivot-table-status-loading {
+    font-style: italic;
+  }
 }

@@ -202,6 +202,12 @@ export interface PivotWriteBackOption {
 
   /** Editor of the value cells, defaults to `Editors.Float` */
   editor?: Column['editor'];
+
+  /**
+   * Number of write-backs that `undo()` (Ctrl+Z) can take back, defaults to 100; 0 keeps no history.
+   * Only the source rows of an array or a DataView can be restored: a provider writes the data itself.
+   */
+  undoLimit?: number;
 }
 
 /** Change of one source row made by a write-back */
@@ -699,6 +705,20 @@ export interface OnPivotWriteBackEventArgs extends PivotCellEdit {
   /** The edited value */
   value: PivotValue;
 
-  /** Changes of the source rows (empty with a provider, which writes the data itself) */
+  /**
+   * Changes of the source rows (empty with a provider, which writes the data itself). After an undo, they go
+   * from the edited values back to the previous ones, so `newValue` is always what the source row now holds.
+   */
   changes: PivotWriteBackChange[];
+
+  /** What wrote the values: a cell edit, `undo()` or `redo()` (`onBeforeWriteBack` is only raised for edits) */
+  source: 'edit' | 'undo' | 'redo';
+}
+
+export interface OnPivotHistoryChangedEventArgs {
+  /** Whether `undo()` has a write-back to take back */
+  canUndo: boolean;
+
+  /** Whether `redo()` has a write-back to apply again */
+  canRedo: boolean;
 }

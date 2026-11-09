@@ -52,7 +52,10 @@ import type { SlickRemoteModel } from './slick.remotemodel.js';
 import type { SlickRemoteModelYahoo } from './slick.remotemodel-yahoo.js';
 import type { PIVOT_DATE_LEVELS, PIVOT_VALUES_FIELD, PivotAggregators, PivotEngine } from './slick.pivotengine.js';
 import type { SlickPivot } from './plugins/slick.pivot.js';
+import type { SlickPivotDetails } from './controls/slick.pivotdetails.js';
 import type { SlickPivotPanel } from './controls/slick.pivotpanel.js';
+import type { SlickPivotTable } from './controls/slick.pivottable.js';
+import type { SlickPivotToolbar } from './controls/slick.pivottoolbar.js';
 import type { Draggable, MouseWheel, reconcileColumnOrder, Resizable, setupColumnReorderDrag, setupDropzonePillDrag } from './slick.interactions.js';
 import type { Aggregators } from './slick.dataview.js';
 import type { Editors } from './slick.editors.js';
@@ -82,7 +85,10 @@ declare global {
       ColumnPicker: typeof SlickColumnPicker | typeof SlickColumnMenu,
       GridMenu: typeof SlickGridMenu,
       Pager: typeof SlickGridPager,
-      PivotPanel: typeof SlickPivotPanel
+      PivotDetails: typeof SlickPivotDetails,
+      PivotPanel: typeof SlickPivotPanel,
+      PivotTable: typeof SlickPivotTable,
+      PivotToolbar: typeof SlickPivotToolbar
     },
     CrossGridRowMoveManager: SlickCrossGridRowMoveManager,
     Data: {

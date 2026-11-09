@@ -4,11 +4,14 @@ title: Pivot tables
 
 # Pivot tables
 
-A pivot table summarizes rows by turning the items of some fields into row headers, the items of other fields into column headers, and aggregating values (sum, count, average, …) where they cross. SlickGrid provides three opt-in modules for it:
+A pivot table summarizes rows by turning the items of some fields into row headers, the items of other fields into column headers, and aggregating values (sum, count, average, …) where they cross. SlickGrid provides opt-in modules for it:
 
 - **`PivotEngine`** computes the pivot. It has no DOM dependency, so it also runs on a server or in a Web Worker.
-- **`SlickPivot`** is a grid plugin that renders the result: multi-level column headers, row layouts, subtotals, grand totals, expand/collapse, sorting, drill-down and write-back.
+- **`SlickPivot`** is a grid plugin that renders the result: multi-level column headers, row layouts, subtotals, grand totals, expand/collapse, sorting, drill-down, and write-back with undo.
 - **`SlickPivotPanel`** is the Excel style *PivotTable Fields* pane: a searchable field list and four drop areas (Filters, Columns, Rows, Values).
+- **`SlickPivotToolbar`** sets the report layout, subtotals and grand totals, expands or collapses every group, and undoes write-backs.
+- **`SlickPivotDetails`** lists the source rows of a double-clicked cell in a dialog.
+- **`SlickPivotTable`** puts them all together, with a status bar, in one container.
 
 None of them adds a runtime dependency, and nothing changes for grids that do not use them. See the [pivot examples](#examples).
 
@@ -105,6 +108,33 @@ spec.measures = [{ id: 'margin', label: 'Margin %', compute: (v) => (v.amount - 
 
 `PivotValue.showAs` applies an Excel "Show Values As" calculation: percentage of the grand, row, column or parent totals, running total, difference from the previous item, and rank.
 
+## The ready-made pivot table
+
+`SlickPivotTable` builds a complete pivot table in a container: the toolbar, the grid with the pivot plugin, the PivotTable Fields pane beside it, a status bar, and the details dialog. Its options are the pivot options plus one entry per part:
+
+```ts
+import { SlickPivotTable } from 'slickgrid';
+
+const pivotTable = new SlickPivotTable('#pivotTable', {
+  source: rows,
+  fields,
+  spec: { rows: ['Region'], columns: ['OrderDate.year'], values: [{ field: 'Amount', aggregator: 'sum' }] },
+  gridOptions: { editable: true },        // merged with SlickPivot.getGridOptions()
+  toolbar: { items: ['layout', 'subtotals', 'grandTotals', 'fieldList'] },
+  fieldList: { position: 'end', width: 300, deferLayoutUpdate: false },
+  details: { maxRows: 500 },
+  statusBar: { formatter: ({ result }) => `${result.filteredRowCount} rows` },
+});
+
+pivotTable.getPivot().updateSpec({ layout: 'tabular' });
+```
+
+The container needs a height; the grid takes what the toolbar and the status bar leave. Set `toolbar`, `fieldList`, `details` or `statusBar` to `false` to leave a part out. The parts are the plugin and controls described below, so everything else is reached through them: `getPivot()`, `getGrid()`, `getFieldList()`, `getToolbar()` and `getDetails()`.
+
+The field list sits at the `end` of the line (the right in a left-to-right page) or at its `start`. Users resize it by dragging the splitter, or with the arrow keys once the splitter has the focus (Shift for bigger steps, Home and End for the narrowest and widest widths), between `minWidth` and `maxWidth`. When the toolbar has its **Field List** button, the pane gets a close button and the button shows it again; `setFieldListVisible()`, `toggleFieldList()` and `setFieldListWidth()` do the same from code, raising `onFieldListToggled` and `onFieldListResized`. The other `fieldList` options are the ones of the pane. With `gridOptions.rtl`, the whole pivot table is mirrored.
+
+`destroy()` destroys the grid, the plugin and every part.
+
 ## Rendering a pivot in the grid
 
 The plugin owns the grid columns and data. Create the grid with the plugin's row model, and merge `SlickPivot.getGridOptions()` into the grid options: it enables the pre-header panel in which the column group headers are drawn.
@@ -127,13 +157,13 @@ The generated rows are plain objects: a value cell is an ordinary column and an 
 - **Outline**: one column per row field, a group row for every outer item.
 - **Tabular**: one column per row field and one row per inner item, with the subtotals below each group. `repeatItemLabels` repeats the outer captions on every row, like an MS Access crosstab.
 
-`subtotals` (`top`, `bottom` or `none`), `columnSubtotals` and `grandTotals` (`rows`, `columns`, their position, the values of the total columns and their caption) complete the layout. The row label columns are pinned to the left and the grand total row to the bottom (see [Pinning & sticky docking](/in-depth/pinning-sticky)); turn this off with `pinRowHeaders` and `pinGrandTotalRow`.
+`subtotals` (`top`, `bottom` or `none`), `columnSubtotals` and `grandTotals` (`rows`, `columns`, their position, the values of the total columns and their caption) complete the layout. The row label columns are pinned to the leading edge and the grand total row is sticky at the bottom (see [below](#pinned-and-sticky-rows-and-columns)); change this with `pinRowHeaders` and `pinGrandTotalRow`.
 
 ### Interaction
 
 - Click a toggle (or press Space, `+` or `-` on a row label) to expand or collapse a row group. Column groups have toggles in the group header; a collapsed column group shows its subtotal. `expandAllRows()`, `collapseAllRows(fieldId?)`, `expandAllColumns()` and `collapseAllColumns(fieldId?)` do the same from code.
 - Click the row label header to sort the items by caption, or a value column header to sort the row items by that value, within each parent.
-- Double-click a cell to raise `onPivotCellDrillDown` with the source rows behind it.
+- Double-click a cell to raise `onPivotCellDrillDown` with the source rows behind it; [`SlickPivotDetails`](#the-details-dialog) lists them in a dialog.
 
 ### Pinned and sticky rows and columns
 
@@ -177,7 +207,13 @@ A value can be edited when its aggregator allocates (`sum`, `avg`, `first`, `las
 { id: 'AmountK', getter: (row) => row.Amount / 1000, setter: (row, value) => (row.Amount = value * 1000) }
 ```
 
-`onBeforeWriteBack` can cancel an edit, and `onWriteBack` receives the changes of the source rows (`{ row, field, oldValue, newValue }`), for example to save them or to build an undo stack: `pivot.applyChanges(changes, true)` restores the old values. `pivot.setCellValue()` does the same as typing into a cell, and `engine.allocate()` computes the changes without applying them, for a server. A DataView source is told which items changed. The cell editor defaults to `Editors.Float`, so load `slick.editors.js` (or set `writeBack.editor`).
+`onBeforeWriteBack` can cancel an edit, and `onWriteBack` receives the changes of the source rows (`{ row, field, oldValue, newValue }`), for example to save them. `pivot.setCellValue()` does the same as typing into a cell, and `engine.allocate()` computes the changes without applying them, for a server. A DataView source is told which items changed. The cell editor defaults to `Editors.Float`, so load `slick.editors.js` (or set `writeBack.editor`).
+
+### Undo and redo
+
+The plugin keeps the write-backs in a history. `pivot.undo()` (Ctrl+Z on the grid, Cmd+Z on macOS) restores the exact previous values of the source rows; typing the old total in again would allocate it anew and change the rows behind it. `pivot.redo()` (Ctrl+Y or Ctrl+Shift+Z) writes the same values again. The shortcuts are left to the editor while a cell is being edited.
+
+`canUndo()` and `canRedo()` tell what is possible, and `onHistoryChanged` is raised when it changes. `onWriteBack` is raised for undo and redo too, with `source` set to `'undo'` or `'redo'` and changes whose `newValue` is what each row now holds, so one handler can save every change. `writeBack.undoLimit` (100 by default, 0 for none) caps the history, and `clearHistory()` empties it; replacing the source rows or the fields does that too. With a provider, the server writes the data itself, so its edits cannot be undone by the plugin. `pivot.applyChanges(changes, true)` still restores changes kept by the application.
 
 ## The PivotTable Fields pane
 
@@ -195,6 +231,22 @@ The pane renders into the container you give it, so the page layout stays yours.
 Dragging uses pointer events, so it works the same with a mouse, a pen or a touch screen. Every drag action is also available from the keyboard: Alt+↑/↓ moves the focused pill, Alt+←/→ moves it to another area, Delete removes it, and the arrow keys move the focus. Moves are announced through an `aria-live` region.
 
 A field placed in the Filters area is stored as a `filters` entry; a field filtered while in the rows or the columns keeps its filter there too. `PivotField.allowedAreas` restricts where a field may go.
+
+## The toolbar
+
+```ts
+const toolbar = new SlickPivotToolbar(pivot, '#pivotToolbar');
+```
+
+Like the PivotTable Design ribbon of Excel, the toolbar holds the **Report Layout**, **Subtotals** and **Grand Totals** dropdowns (row and column, row only, column only, or off), **Expand All** and **Collapse All**, and **Undo** and **Redo**, which are shown while `enableWriteBack` is on. It follows the spec however it changes. `items` picks and orders the items, `labels` translates them, and the `fieldList` item is a toggle button raising `onFieldListToggle`, for an application that can hide its field list (the ready-made pivot table uses it). The items are native dropdowns and buttons in a labelled group, reached with Tab.
+
+## The details dialog
+
+```ts
+const details = new SlickPivotDetails(pivot);
+```
+
+Double-clicking a cell opens a modal dialog listing the source rows behind it in a grid, like the details sheet of Excel: one column per field (computed fields included, or the ones listed in `fields`), numbers in the format of a value summarizing the field, dates and items like the pivot, and every column sortable. The title tells which cell the rows come from, for example "131 source rows — East › China / 2023". `maxRows` (1,000 by default) caps the rows listed, `columns` replaces the generated columns, `gridOptions` configures the grid and `labels` translates the captions. `onBeforeShow` can keep the dialog closed for a cell, to show its rows another way. Escape, the Close button or a click on the backdrop closes the dialog and raises `onClose`.
 
 ## Custom and server-side providers
 
@@ -220,10 +272,12 @@ A SQL backend can return the subtotals and grand totals of one request with `GRO
 
 ## Styling
 
-Include `slick.pivot.css` (or the `slick.pivot.scss` source). The colors are CSS variables that fall back to the grid theme variables, for example `--slick-pivot-group-bg`, `--slick-pivot-grand-total-bg` and `--slick-pivot-panel-accent`.
+Include `slick.pivot.css` (or the `slick.pivot.scss` source). The colors are CSS variables that fall back to the grid theme variables, for example `--slick-pivot-group-bg`, `--slick-pivot-grand-total-bg` and `--slick-pivot-panel-accent`. The `--slick-pivot-panel-*` colors of the pane, the toolbar and the details dialog can be set once on `.slick-pivot-table`, and `--slick-pivot-details-grid-height` sets the height of the grid of the details dialog.
+
+With a script tag per module, the ready-made pivot table needs `slick.pivotengine.js`, `plugins/slick.pivot.js` and the `controls/` scripts of its parts (`slick.pivotpanel.js`, `slick.pivottoolbar.js`, `slick.pivotdetails.js` and `slick.pivottable.js`), plus `slick.editors.js` for write-back.
 
 ## Examples
 
 - [Pivoting](https://6pac.github.io/SlickGrid/examples/example-pivot.html): an MS Access style crosstab with custom column templates.
-- [PivotTable Fields](https://6pac.github.io/SlickGrid/examples/example-pivot-panel.html): the interactive pane, the three layouts, a date hierarchy, drill-down, write-back with undo, pinned or sticky grand totals, a right-to-left grid, deferred updates and a simulated server provider.
+- [PivotTable Fields](https://6pac.github.io/SlickGrid/examples/example-pivot-panel.html): the ready-made pivot table, with its toolbar, resizable field list and details dialog; the three layouts, a date hierarchy, write-back with undo and redo, pinned or sticky grand totals, a right-to-left grid, deferred updates and a simulated server provider.
 - [Crosstab, lookups and measures](https://6pac.github.io/SlickGrid/examples/example-pivot-crosstab.html): lookups into related tables, distinct count, a custom aggregator and measures.

@@ -6,6 +6,7 @@ import type {
   OnCellChangeEventArgs,
   OnPivotCellDrillDownEventArgs,
   OnPivotChangedEventArgs,
+  OnPivotHistoryChangedEventArgs,
   OnPivotSpecChangedEventArgs,
   OnPivotWriteBackEventArgs,
   PivotCellEdit,
@@ -22,6 +23,7 @@ import type {
   PivotRowType,
   PivotSource,
   PivotSpec,
+  PivotValue,
   PivotWriteBackChange,
   RowReference,
   SlickPlugin,
@@ -47,6 +49,13 @@ function getEditors(): typeof Editors_ | undefined {
 
 /** Id of the compact layout row label column */
 const ROW_LABELS_COLUMN_ID = '__pivot_rows';
+
+/** A write-back that `undo()` can take back */
+interface WriteBackHistoryEntry {
+  edit: PivotCellEdit;
+  value: PivotValue;
+  changes: PivotWriteBackChange[];
+}
 
 /** Header segment of a generated value column */
 interface HeaderSegment {
@@ -142,8 +151,11 @@ export class SlickPivot implements SlickPlugin {
   /** Raised before a value typed into a cell is written back to the source rows, return `false` to cancel */
   onBeforeWriteBack = new SlickEvent<OnPivotWriteBackEventArgs>('onBeforeWriteBack');
 
-  /** Raised after a value typed into a cell was written back, with the changes of the source rows (for an undo stack or a save) */
+  /** Raised after values were written back (by a cell edit, `undo()` or `redo()`), with the changes of the source rows (to save them) */
   onWriteBack = new SlickEvent<OnPivotWriteBackEventArgs>('onWriteBack');
+
+  /** Raised when write-backs can (or no longer can) be undone or redone */
+  onHistoryChanged = new SlickEvent<OnPivotHistoryChangedEventArgs>('onHistoryChanged');
 
   /** Data provider to pass to the grid as its data */
   readonly rowModel: CustomDataView<PivotRowItem> & {
@@ -167,6 +179,8 @@ export class SlickPivot implements SlickPlugin {
   protected _resizeObserver?: ResizeObserver;
   protected _stickySyncFrame?: number;
   protected _warnedNoEditor = false;
+  protected _undoStack: WriteBackHistoryEntry[] = [];
+  protected _redoStack: WriteBackHistoryEntry[] = [];
   protected _columns: Column[] = [];
   protected _columnInfo = new Map<string | number, InternalColumnInfo>();
   protected _rowNodeIndex = new Map<string, PivotHeaderNode>();
@@ -299,6 +313,7 @@ export class SlickPivot implements SlickPlugin {
     this.onGroupToggled.unsubscribe();
     this.onBeforeWriteBack.unsubscribe();
     this.onWriteBack.unsubscribe();
+    this.onHistoryChanged.unsubscribe();
     this._resizeObserver?.disconnect();
     if (this._stickySyncFrame !== undefined) {
       cancelAnimationFrame(this._stickySyncFrame);
@@ -332,6 +347,10 @@ export class SlickPivot implements SlickPlugin {
     const { provider, aggregators, ...others } = options;
     Utils.extend(true, this._options, others);
     if ('provider' in options) {
+      if (provider !== this._options.provider) {
+        // the history holds rows of the local source, which a provider does not use
+        this.clearHistory();
+      }
       this._options.provider = provider;
     }
     if (aggregators) {
@@ -398,6 +417,9 @@ export class SlickPivot implements SlickPlugin {
       this._options.source = config.source;
       this.watchSource(config.source);
     }
+    if (config.fields || 'source' in config) {
+      this.clearHistory();
+    }
     this._collapsedRows.clear();
     this._collapsedColumns.clear();
     this._userWidths.clear();
@@ -413,6 +435,7 @@ export class SlickPivot implements SlickPlugin {
   setSource(source: PivotSource): Promise<void> {
     this._options.source = source;
     this.watchSource(source);
+    this.clearHistory();
     return this.refresh();
   }
 
@@ -530,7 +553,7 @@ export class SlickPivot implements SlickPlugin {
     };
     const provider = this._options.provider;
     const changes = provider ? [] : this._engine.allocate(this.getSourceRows(), this._spec, cell, newValue, { method: edit.method, precision: edit.precision });
-    if ((!provider && !changes.length) || this.onBeforeWriteBack.notify({ ...edit, value, changes }).getReturnValue() === false) {
+    if ((!provider && !changes.length) || this.onBeforeWriteBack.notify({ ...edit, value, changes, source: 'edit' }).getReturnValue() === false) {
       // show the current value again in place of the one typed into the cell
       await this.refresh();
       return false;
@@ -547,9 +570,80 @@ export class SlickPivot implements SlickPlugin {
       await this.refresh();
     } else {
       await this.applyChanges(changes);
+      this.addToHistory({ edit, value, changes });
     }
-    this.onWriteBack.notify({ ...edit, value, changes });
+    this.onWriteBack.notify({ ...edit, value, changes, source: 'edit' });
     return true;
+  }
+
+  /** Whether a write-back can be undone */
+  canUndo(): boolean {
+    return this._undoStack.length > 0;
+  }
+
+  /** Whether an undone write-back can be applied again */
+  canRedo(): boolean {
+    return this._redoStack.length > 0;
+  }
+
+  /**
+   * Take back the last write-back, restoring the exact previous values of its source rows (typing the old
+   * total in again would allocate it anew), then re-pivot. Resolves to false when there is nothing to undo.
+   */
+  async undo(): Promise<boolean> {
+    const entry = this._undoStack.pop();
+    if (!entry) {
+      return false;
+    }
+    this._redoStack.push(entry);
+    await this.applyChanges(entry.changes, true);
+    this.notifyHistoryChanged();
+    this.onWriteBack.notify({
+      ...entry.edit,
+      oldValue: entry.edit.newValue,
+      newValue: entry.edit.oldValue,
+      value: entry.value,
+      changes: entry.changes.map((change) => ({ ...change, oldValue: change.newValue, newValue: change.oldValue })),
+      source: 'undo',
+    });
+    return true;
+  }
+
+  /** Apply the last undone write-back again, then re-pivot. Resolves to false when there is nothing to redo. */
+  async redo(): Promise<boolean> {
+    const entry = this._redoStack.pop();
+    if (!entry) {
+      return false;
+    }
+    this._undoStack.push(entry);
+    await this.applyChanges(entry.changes);
+    this.notifyHistoryChanged();
+    this.onWriteBack.notify({ ...entry.edit, value: entry.value, changes: entry.changes, source: 'redo' });
+    return true;
+  }
+
+  /** Forget the write-backs that could be undone or redone (done when the source rows or the fields are replaced) */
+  clearHistory(): void {
+    if (this._undoStack.length || this._redoStack.length) {
+      this._undoStack = [];
+      this._redoStack = [];
+      this.notifyHistoryChanged();
+    }
+  }
+
+  protected addToHistory(entry: WriteBackHistoryEntry): void {
+    const limit = this._options.writeBack.undoLimit ?? 100;
+    if (limit <= 0) {
+      return;
+    }
+    this._undoStack.push(entry);
+    this._undoStack.splice(0, Math.max(0, this._undoStack.length - limit));
+    this._redoStack = [];
+    this.notifyHistoryChanged();
+  }
+
+  protected notifyHistoryChanged(): void {
+    this.onHistoryChanged.notify({ canUndo: this.canUndo(), canRedo: this.canRedo() });
   }
 
   /**
@@ -1580,7 +1674,13 @@ export class SlickPivot implements SlickPlugin {
   }
 
   protected handleKeyDown(e: any, args: { row: number; cell: number; }): void {
-    const key = e.key ?? e.getNativeEvent?.()?.key;
+    const nativeEvent: KeyboardEvent | undefined = e.getNativeEvent?.() ?? e;
+    const key = e.key ?? nativeEvent?.key;
+    if ((nativeEvent?.ctrlKey || nativeEvent?.metaKey) && !nativeEvent.altKey && this.handleHistoryKey(String(key).toLowerCase(), nativeEvent.shiftKey)) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      return;
+    }
     if (key !== ' ' && key !== '+' && key !== '-' && key !== 'Enter') {
       return;
     }
@@ -1603,6 +1703,23 @@ export class SlickPivot implements SlickPlugin {
     }
     e.stopImmediatePropagation();
     e.preventDefault();
+  }
+
+  /** Ctrl+Z undoes a write-back, Ctrl+Y or Ctrl+Shift+Z redoes it (Cmd on macOS), unless a cell is being edited */
+  protected handleHistoryKey(key: string, shiftKey: boolean): boolean {
+    if (!this._options.enableWriteBack || this._grid?.getCellEditor()) {
+      return false;
+    }
+    const redo = key === 'y' || (key === 'z' && shiftKey);
+    if (redo ? !this.canRedo() : key !== 'z' || !this.canUndo()) {
+      return false;
+    }
+    if (redo) {
+      this.redo();
+    } else {
+      this.undo();
+    }
+    return true;
   }
 
   protected async handleDblClick(_e: any, args: { row: number; cell: number; }): Promise<void> {

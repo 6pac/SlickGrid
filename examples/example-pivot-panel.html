@@ -14,72 +14,31 @@
       width: 1000px;
     }
 
-    .pivot-toolbar {
+    .pivot-demo-options {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 6px 14px;
       margin-bottom: 8px;
+      padding-bottom: 8px;
       font-size: 12px;
+      border-bottom: 1px dashed #c9d2db;
     }
 
-    .pivot-toolbar label {
+    .pivot-demo-options label {
       display: inline-flex;
       align-items: center;
       gap: 4px;
     }
 
-    .pivot-toolbar select,
-    .pivot-toolbar button {
+    .pivot-demo-options select,
+    .pivot-demo-options button {
       font-size: 12px;
     }
 
-    .pivot-layout {
-      display: flex;
-      gap: 8px;
-      height: 600px;
-    }
-
-    .pivot-layout #myGrid {
-      flex: 1 1 auto;
-      min-width: 0;
-      height: 100%;
-    }
-
-    .pivot-layout #pivotPanel {
-      flex: 0 0 300px;
-      height: 100%;
-    }
-
-    .pivot-status {
-      margin-top: 6px;
-      font-size: 12px;
-      color: #5b6670;
-    }
-
-    #drillDialog {
-      width: 820px;
-      max-width: calc(100vw - 32px);
-      padding: 12px;
-      border: 1px solid #c9d2db;
-      border-radius: 8px;
-    }
-
-    #drillDialog::backdrop {
-      background: rgba(20, 30, 40, 0.35);
-    }
-
-    .drill-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-
-    #drillGrid {
-      width: 100%;
-      height: 320px;
+    /* the pivot table fills its container: the grid takes the height left by the toolbar and the status bar */
+    #pivotTable {
+      height: 660px;
     }
   </style>
 </head>
@@ -89,15 +48,16 @@
     <div style="padding:6px;">
       <h2>Demonstrates:</h2>
       <ul>
-        <li>an Excel style <b>PivotTable Fields</b> pane (<code>SlickPivotPanel</code>): check fields, drag them between the Filters, Columns, Rows and Values areas, reorder them, or drag them out to remove them</li>
+        <li>the ready-made pivot table (<code>SlickPivotTable</code>): a toolbar, the pivot grid, a resizable <b>PivotTable Fields</b> pane, a status bar and a details dialog, from one constructor; the options above the line are the example's own</li>
+        <li>an Excel style <b>PivotTable Fields</b> pane (<code>SlickPivotPanel</code>): check fields, drag them between the Filters, Columns, Rows and Values areas, reorder them, or drag them out to remove them; drag the splitter (or use its arrow keys) to resize it, and hide or show it with <b>Field List</b></li>
         <li>the <code>▾</code> pill menus (also opened with Enter): move, filter, sort, <b>Summarize Values By</b> (Sum, Count, Average…) and the <b>Value Field Settings</b> (every aggregator, show values as, number format)</li>
         <li>keyboard: Alt+↑/↓ moves a pill, Alt+←/→ moves it to another area, Delete removes it</li>
-        <li>compact, outline and tabular layouts, subtotals, grand totals, expand/collapse of row and column groups</li>
+        <li>the toolbar (<code>SlickPivotToolbar</code>): compact, outline and tabular layouts, subtotals, grand totals, Expand All and Collapse All</li>
         <li>sorting by label (row label header) or by value (value column header)</li>
-        <li>double-click a cell to drill down to its source rows</li>
+        <li>double-click a cell to list its source rows in a sortable grid (<code>SlickPivotDetails</code>)</li>
         <li>"Defer layout update", saving the layout, and an asynchronous (simulated server) provider</li>
         <li>automatic date hierarchy: checking <b>Order Date</b> groups it by years, quarters and months, like Excel; each level is also listed below the date field</li>
-        <li>write-back: with "Edit values", type a new total into a <b>Sum of Units</b> cell (subtotals and grand totals too) and it is spread over the source rows behind it, keeping their proportions; Undo restores them</li>
+        <li>write-back: with "Edit values", type a new total into a <b>Sum of Units</b> cell (subtotals and grand totals too) and it is spread over the source rows behind it, keeping their proportions; Undo and Redo in the toolbar (or Ctrl+Z and Ctrl+Y) restore them exactly</li>
         <li>pinned or sticky grand totals (the column group headers follow docked columns), and a right-to-left grid</li>
       </ul>
       <p>The "Excel sample" dataset is the one from <a href="https://github.com/6pac/SlickGrid/issues/1020" target="_blank" rel="noopener">issue #1020</a>; its pivot gives 3, 7 and 10 as in Excel.</p>
@@ -108,7 +68,7 @@
     </div>
   </div>
 
-  <div class="pivot-toolbar">
+  <div class="pivot-demo-options">
     <label>Dataset
       <select id="datasetSelect" data-test="dataset-select">
         <option value="sales">Sales (5,000 rows)</option>
@@ -116,29 +76,9 @@
         <option value="excel">Excel sample (issue #1020)</option>
       </select>
     </label>
-    <label>Layout
-      <select id="layoutSelect" data-test="layout-select">
-        <option value="compact">Compact</option>
-        <option value="outline">Outline</option>
-        <option value="tabular">Tabular</option>
-      </select>
-    </label>
-    <label>Subtotals
-      <select id="subtotalsSelect" data-test="subtotals-select">
-        <option value="top">At top</option>
-        <option value="bottom">At bottom</option>
-        <option value="none">None</option>
-      </select>
-    </label>
-    <label><input type="checkbox" id="grandTotalRows" data-test="grand-total-rows" checked> Grand total row</label>
-    <label><input type="checkbox" id="grandTotalColumns" data-test="grand-total-columns" checked> Grand total column</label>
-    <button class="btn" data-test="expand-all-btn" onclick="pivot.expandAllRows(); pivot.expandAllColumns()">Expand all</button>
-    <button class="btn" data-test="collapse-all-btn" onclick="pivot.collapseAllRows()">Collapse rows</button>
     <label><input type="checkbox" id="serverProvider" data-test="server-provider"> Simulated server</label>
     <button class="btn" data-test="save-layout-btn" onclick="saveLayout()">Save layout</button>
     <button class="btn" data-test="restore-layout-btn" onclick="restoreLayout()">Restore layout</button>
-  </div>
-  <div class="pivot-toolbar">
     <label>Grand total row
       <select id="grandTotalRowDocking" data-test="grand-total-row-docking">
         <option value="sticky">Sticky</option>
@@ -154,24 +94,11 @@
       </select>
     </label>
     <label><input type="checkbox" id="writeBack" data-test="write-back"> Edit values (write-back)</label>
-    <button class="btn" id="undoBtn" data-test="undo-btn" disabled onclick="undoWriteBack()">Undo</button>
     <label><input type="checkbox" id="rtl" data-test="rtl"> Right to left</label>
   </div>
 
-  <div class="pivot-layout">
-    <div id="myGrid" class="slick-container"></div>
-    <div id="pivotPanel"></div>
-  </div>
-  <div class="pivot-status" data-test="pivot-status"></div>
+  <div id="pivotTable"></div>
 </div>
-
-<dialog id="drillDialog" aria-labelledby="drillTitle">
-  <div class="drill-header">
-    <span id="drillTitle" data-test="drill-title"></span>
-    <button class="btn" data-test="drill-close-btn" onclick="document.querySelector('#drillDialog').close()">Close</button>
-  </div>
-  <div id="drillGrid" class="slick-container"></div>
-</dialog>
 
 <script src="../dist/browser/slick.core.js"></script>
 <script src="../dist/browser/slick.interactions.js"></script>
@@ -180,6 +107,9 @@
 <script src="../dist/browser/slick.pivotengine.js"></script>
 <script src="../dist/browser/plugins/slick.pivot.js"></script>
 <script src="../dist/browser/controls/slick.pivotpanel.js"></script>
+<script src="../dist/browser/controls/slick.pivottoolbar.js"></script>
+<script src="../dist/browser/controls/slick.pivotdetails.js"></script>
+<script src="../dist/browser/controls/slick.pivottable.js"></script>
 
 <script>
   // --
@@ -290,48 +220,29 @@
   };
 
   // --
-  // pivot, grid & panel
+  // pivot table
   // -----------------
 
   const initial = datasets.sales();
   let currentRows = initial.source;
-  let pivot;
-  let grid;
-  let panel;
-  const undoStack = [];
+  let pivotTable;
 
   /**
-   * Create the pivot, its grid and the field list. The reading direction of a grid is set when it is
-   * created, so switching to right to left creates them again with the current fields, rows, spec and options.
+   * Create the pivot table: toolbar, grid, field list, status bar and details dialog. The reading direction of a grid
+   * is set when it is created, so switching to right to left creates it again with the current fields, rows and spec.
    */
-  function createPivot(config, options = {}, rtl = false) {
-    panel?.destroy();
-    grid?.destroy();
-    pivot = new Slick.Pivot({ ...config, ...options, columnDefaults: { width: 105 }, numberFormat: { locale: 'en-US' }, locale: 'en-US' });
-    grid = new Slick.Grid('#myGrid', pivot.rowModel, pivot.getColumns(), Slick.Pivot.getGridOptions({
-      enableCellNavigation: true,
-      preHeaderPanelHeight: 25,
-      editable: true,
-      autoEdit: false,
-      rtl,
-    }));
-    pivot.onPivotChanged.subscribe((_e, { result }) => {
-      document.querySelector('[data-test="pivot-status"]').textContent =
-        `${result.filteredRowCount.toLocaleString('en-US')} of ${result.sourceRowCount.toLocaleString('en-US')} source rows · ` +
-        `${grid.getDataLength()} rows × ${grid.getColumns().length} columns · computed in ${Math.round(result.duration ?? 0)} ms`;
+  function createPivotTable(config, options = {}, rtl = false) {
+    pivotTable?.destroy();
+    pivotTable = new Slick.Controls.PivotTable('#pivotTable', {
+      ...config,
+      ...options,
+      columnDefaults: { width: 105 },
+      numberFormat: { locale: 'en-US' },
+      locale: 'en-US',
+      gridOptions: { preHeaderPanelHeight: 25, editable: true, autoEdit: false, rtl },
     });
-    grid.registerPlugin(pivot);
-    // the field list follows the reading direction of the page it is in
-    document.querySelector('#pivotPanel').dir = rtl ? 'rtl' : 'ltr';
-    panel = new Slick.Controls.PivotPanel(pivot, '#pivotPanel');
-    pivot.onSpecChanged.subscribe((_e, { spec }) => syncToolbar(spec));
-    pivot.onPivotCellDrillDown.subscribe(showDrillDown);
-    pivot.onWriteBack.subscribe((_e, { changes }) => {
-      undoStack.push(changes);
-      document.querySelector('#undoBtn').disabled = false;
-    });
-    Object.assign(window, { grid, pivot, panel });
-    syncToolbar(pivot.getSpec());
+    // for the console and the tests
+    Object.assign(window, { pivotTable, grid: pivotTable.getGrid(), pivot: pivotTable.getPivot(), panel: pivotTable.getFieldList() });
   }
 
   function getPivotOptions() {
@@ -345,26 +256,15 @@
     };
   }
 
-  function syncToolbar(spec) {
-    document.querySelector('#layoutSelect').value = spec.layout;
-    document.querySelector('#subtotalsSelect').value = spec.subtotals;
-    document.querySelector('#grandTotalRows').checked = spec.grandTotals.rows !== false;
-    document.querySelector('#grandTotalColumns').checked = spec.grandTotals.columns !== false;
-  }
-
   document.querySelector('#datasetSelect').addEventListener('change', (e) => {
     const dataset = datasets[e.target.value]();
     currentRows = dataset.source;
     pivot.load(dataset);
   });
-  document.querySelector('#layoutSelect').addEventListener('change', (e) => pivot.updateSpec({ layout: e.target.value }));
-  document.querySelector('#subtotalsSelect').addEventListener('change', (e) => pivot.updateSpec({ subtotals: e.target.value }));
-  document.querySelector('#grandTotalRows').addEventListener('change', (e) => pivot.updateSpec({ grandTotals: { ...pivot.getSpec().grandTotals, rows: e.target.checked } }));
-  document.querySelector('#grandTotalColumns').addEventListener('change', (e) => pivot.updateSpec({ grandTotals: { ...pivot.getSpec().grandTotals, columns: e.target.checked } }));
   document.querySelector('#grandTotalRowDocking').addEventListener('change', () => pivot.setOptions({ pinGrandTotalRow: getPivotOptions().pinGrandTotalRow }));
   document.querySelector('#grandTotalColumnDocking').addEventListener('change', () => pivot.setOptions({ pinGrandTotalColumns: getPivotOptions().pinGrandTotalColumns }));
   document.querySelector('#rtl').addEventListener('change', (e) => {
-    createPivot({ fields: pivot.getFields(), source: currentRows, spec: pivot.getSpec() }, getPivotOptions(), e.target.checked);
+    createPivotTable({ fields: pivot.getFields(), source: currentRows, spec: pivot.getSpec() }, getPivotOptions(), e.target.checked);
   });
 
   // --
@@ -379,14 +279,6 @@
     }
     pivot.setOptions({ enableWriteBack: e.target.checked });
   });
-
-  function undoWriteBack() {
-    const changes = undoStack.pop();
-    if (changes) {
-      pivot.applyChanges(changes, true);
-    }
-    document.querySelector('#undoBtn').disabled = !undoStack.length;
-  }
 
   // --
   // simulated server: the request is serializable (it could be turned into SQL GROUP BY ... GROUPING SETS);
@@ -422,7 +314,7 @@
   };
   document.querySelector('#serverProvider').addEventListener('change', (e) => pivot.setOptions({ provider: e.target.checked ? serverProvider : undefined }));
 
-  createPivot(initial);
+  createPivotTable(initial);
 
   // --
   // save & restore the layout (the spec is plain JSON)
@@ -445,42 +337,6 @@
     } catch (error) {
       console.warn('The layout could not be restored', error);
     }
-  }
-
-  // --
-  // drill-down
-  // -----------------
-
-  let drillGrid;
-  const drillColumns = [
-    { id: 'OrderId', name: 'Order', field: 'OrderId', width: 70 },
-    { id: 'OrderDate', name: 'Date', field: 'OrderDate', width: 95, formatter: (_r, _c, value) => (value instanceof Date ? value.toLocaleDateString() : value ?? '') },
-    { id: 'Region', name: 'Region', field: 'Region', width: 70 },
-    { id: 'Country', name: 'Country', field: 'Country', width: 110 },
-    { id: 'Channel', name: 'Channel', field: 'Channel', width: 80 },
-    { id: 'Product', name: 'Product', field: 'Product', width: 120 },
-    { id: 'Units', name: 'Units', field: 'Units', width: 60, cssClass: 'cell-right' },
-    { id: 'Amount', name: 'Amount', field: 'Amount', width: 90 },
-  ];
-  function showDrillDown(_e, args) {
-    const dialog = document.querySelector('#drillDialog');
-    const describe = (path) => Object.keys(path).map((field) => pivot.getEngine().formatItem(field, path[field])).join(' › ');
-    const where = [describe(args.rowPath), describe(args.columnPath)].filter(Boolean).join(' / ') || 'Grand Total';
-    document.querySelector('#drillTitle').textContent = `${args.rows.length.toLocaleString()} source rows — ${where}`;
-    const amountField = pivot.getEngine().getField('Amount');
-    const rows = args.rows.slice(0, 1000).map((row, index) => ({ ...row, id: index, Amount: amountField ? pivot.getEngine().getFieldValue('Amount', row) : undefined }));
-    const columns = pivot.getEngine().getField('OrderId')
-      ? drillColumns
-      : pivot.getFields().map((field) => ({ id: field.id, name: field.label ?? field.id, field: field.field ?? field.id, width: 100 }));
-    dialog.showModal();
-    if (!drillGrid) {
-      drillGrid = new Slick.Grid('#drillGrid', rows, columns, { enableCellNavigation: true });
-    } else {
-      drillGrid.setColumns(columns);
-      drillGrid.setData(rows, true);
-      drillGrid.render();
-    }
-    drillGrid.resizeCanvas();
   }
 </script>
 </body>

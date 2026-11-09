@@ -100,6 +100,7 @@ function createMockGrid(options: Partial<GridOption> = {}, containerWidth = 0): 
     updateRowCount: vi.fn(),
     render: vi.fn(),
     setSortColumns: vi.fn(),
+    getCellEditor: vi.fn(() => null),
     onClick: new SlickEvent(),
     onKeyDown: new SlickEvent(),
     onDblClick: new SlickEvent(),
@@ -633,6 +634,7 @@ describe('SlickPivot plugin', () => {
         precision: 0,
         value: expect.objectContaining({ id: 'sum:units', field: 'units', aggregator: 'sum' }),
         changes: [{ row: rows[0], field: 'units', oldValue: 10, newValue: 15 }, { row: rows[1], field: 'units', oldValue: 30, newValue: 45 }],
+        source: 'edit',
       });
       expect(before.mock.calls[0][1]).toEqual(args);
 
@@ -739,6 +741,151 @@ describe('SlickPivot plugin', () => {
       } finally {
         vi.useRealTimers();
       }
+    });
+
+    describe('undo and redo', () => {
+      const chinaUnits = { rowKey: CHINA, columnKey: ROOT, valueId: 'sum:units' };
+      const units = (rows: SalesRow[]) => rows.map((row) => row.units);
+      /** A key pressed on a cell of the grid */
+      const keyDown = (grid: SlickGrid, key: string, init: KeyboardEventInit = {}) => {
+        const event = new SlickEventData(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init }));
+        grid.onKeyDown.notify({ row: 1, cell: 1, grid }, event);
+        return event.isDefaultPrevented();
+      };
+
+      it('undoes and redoes the write-backs, restoring the exact values of the source rows', async () => {
+        const rows = createRows();
+        const { pivot } = createPivot({ enableWriteBack: true, source: rows, spec: writeBackSpec });
+        const history = vi.fn();
+        const written = vi.fn();
+        pivot.onHistoryChanged.subscribe((_e, args) => history(args));
+        pivot.onWriteBack.subscribe((_e, args) => written(args));
+        expect([pivot.canUndo(), pivot.canRedo()]).toEqual([false, false]);
+
+        await pivot.setCellValue(chinaUnits, 60);
+        await pivot.setCellValue({ rowKey: EAST, columnKey: '[2023]', valueId: 'sum:units' }, 25);
+        expect(units(rows)).toEqual([19, 45, 6, 20, 8]);
+        expect(history).toHaveBeenLastCalledWith({ canUndo: true, canRedo: false });
+
+        await expect(pivot.undo()).resolves.toBe(true);
+        expect(units(rows)).toEqual([15, 45, 5, 20, 8]);
+        expect(history).toHaveBeenLastCalledWith({ canUndo: true, canRedo: true });
+        // the changes go back to the previous values: newValue is what each row now holds
+        expect(written).toHaveBeenLastCalledWith(expect.objectContaining({
+          source: 'undo',
+          rowKey: EAST,
+          oldValue: 25,
+          newValue: 20,
+          value: expect.objectContaining({ id: 'sum:units' }),
+          changes: [{ row: rows[0], field: 'units', oldValue: 19, newValue: 15 }, { row: rows[2], field: 'units', oldValue: 6, newValue: 5 }],
+        }));
+        expect(pivot.getResult()!.cells[EAST]['[2023]'][0]).toBe(20);
+
+        await expect(pivot.undo()).resolves.toBe(true);
+        expect(units(rows)).toEqual([10, 30, 5, 20, 8]);
+        expect(pivot.getResult()!.cells[ROOT][ROOT][0]).toBe(73);
+        expect([pivot.canUndo(), pivot.canRedo()]).toEqual([false, true]);
+        await expect(pivot.undo()).resolves.toBe(false);
+
+        await expect(pivot.redo()).resolves.toBe(true);
+        expect(units(rows)).toEqual([15, 45, 5, 20, 8]);
+        expect(written).toHaveBeenLastCalledWith(expect.objectContaining({ source: 'redo', newValue: 60, changes: [{ row: rows[0], field: 'units', oldValue: 10, newValue: 15 }, { row: rows[1], field: 'units', oldValue: 30, newValue: 45 }] }));
+
+        // a new edit cannot be followed by the write-back undone before it
+        await pivot.setCellValue({ rowKey: WEST, columnKey: ROOT, valueId: 'sum:units' }, 56);
+        expect(units(rows)).toEqual([15, 45, 5, 40, 16]);
+        expect([pivot.canUndo(), pivot.canRedo()]).toEqual([true, false]);
+        await expect(pivot.redo()).resolves.toBe(false);
+      });
+
+      it('keeps at most writeBack.undoLimit write-backs, and none with 0', async () => {
+        const rows = createRows();
+        const { pivot } = createPivot({ enableWriteBack: true, writeBack: { undoLimit: 1 }, source: rows, spec: writeBackSpec });
+        await pivot.setCellValue(chinaUnits, 60);
+        await pivot.setCellValue(chinaUnits, 80);
+        await expect(pivot.undo()).resolves.toBe(true);
+        expect(units(rows).slice(0, 2)).toEqual([15, 45]);
+        await expect(pivot.undo()).resolves.toBe(false);
+
+        const none = createPivot({ enableWriteBack: true, writeBack: { undoLimit: 0 }, source: createRows(), spec: writeBackSpec });
+        const history = vi.fn();
+        none.pivot.onHistoryChanged.subscribe(history);
+        await none.pivot.setCellValue(chinaUnits, 60);
+        expect(none.pivot.canUndo()).toBe(false);
+        expect(history).not.toHaveBeenCalled();
+      });
+
+      it('forgets the write-backs when the source rows, the fields or the provider are replaced', async () => {
+        const { pivot } = createPivot({ enableWriteBack: true, spec: writeBackSpec });
+        const history = vi.fn();
+        pivot.onHistoryChanged.subscribe((_e, args) => history(args));
+        // nothing to forget, nothing to tell
+        pivot.clearHistory();
+        expect(history).not.toHaveBeenCalled();
+
+        await pivot.setCellValue(chinaUnits, 60);
+        await pivot.load({ spec: { ...writeBackSpec, layout: 'tabular' } });
+        expect(pivot.canUndo()).toBe(true);
+        await pivot.load({ source: createRows() });
+        expect(pivot.canUndo()).toBe(false);
+        expect(history).toHaveBeenLastCalledWith({ canUndo: false, canRedo: false });
+
+        await pivot.setCellValue(chinaUnits, 60);
+        await pivot.load({ fields });
+        expect(pivot.canUndo()).toBe(false);
+
+        await pivot.setCellValue(chinaUnits, 60);
+        await pivot.setSource(createRows());
+        expect(pivot.canUndo()).toBe(false);
+
+        await pivot.setCellValue(chinaUnits, 60);
+        await pivot.undo();
+        await pivot.setOptions({ indentation: 20 });
+        expect(pivot.canRedo()).toBe(true);
+        const engine = new PivotEngine({ fields });
+        await pivot.setOptions({ provider: { execute: (request: PivotRequest) => engine.execute(createRows(), request.spec) } });
+        expect(pivot.canRedo()).toBe(false);
+      });
+
+      it('does not keep the edits of a provider, which writes the data itself', async () => {
+        const engine = new PivotEngine({ fields });
+        const provider = { execute: vi.fn((request: PivotRequest) => engine.execute(createRows(), request.spec)), writeBack: vi.fn(async () => undefined) };
+        const { pivot } = createPivot({ provider, enableWriteBack: true, spec: writeBackSpec });
+        await vi.waitFor(() => expect(pivot.getResult()).toBeTruthy());
+        await expect(pivot.setCellValue(chinaUnits, 60)).resolves.toBe(true);
+        expect(provider.writeBack).toHaveBeenCalledTimes(1);
+        expect(pivot.canUndo()).toBe(false);
+      });
+
+      it('undoes with Ctrl+Z and redoes with Ctrl+Y or Ctrl+Shift+Z (Cmd on macOS) on the grid, unless a cell is being edited', async () => {
+        const rows = createRows();
+        const { pivot, grid } = createPivot({ enableWriteBack: true, source: rows, spec: writeBackSpec });
+        // nothing to undo: the key is left alone
+        expect(keyDown(grid, 'z', { ctrlKey: true })).toBe(false);
+
+        await pivot.setCellValue(chinaUnits, 60);
+        expect(keyDown(grid, 'z', { ctrlKey: true })).toBe(true);
+        await vi.waitFor(() => expect(units(rows)).toEqual([10, 30, 5, 20, 8]));
+        expect(keyDown(grid, 'y', { ctrlKey: true })).toBe(true);
+        await vi.waitFor(() => expect(units(rows)).toEqual([15, 45, 5, 20, 8]));
+        expect(keyDown(grid, 'Z', { metaKey: true })).toBe(true);
+        await vi.waitFor(() => expect(units(rows)).toEqual([10, 30, 5, 20, 8]));
+        expect(keyDown(grid, 'z', { metaKey: true, shiftKey: true })).toBe(true);
+        await vi.waitFor(() => expect(units(rows)).toEqual([15, 45, 5, 20, 8]));
+        // nothing to redo
+        expect(keyDown(grid, 'y', { ctrlKey: true })).toBe(false);
+
+        // other shortcuts, Alt combinations and an edited cell keep the keys
+        expect(keyDown(grid, 'a', { ctrlKey: true })).toBe(false);
+        expect(keyDown(grid, 'z', { ctrlKey: true, altKey: true })).toBe(false);
+        expect(keyDown(grid, 'z')).toBe(false);
+        vi.mocked(grid.getCellEditor).mockReturnValue({} as any);
+        expect(keyDown(grid, 'z', { ctrlKey: true })).toBe(false);
+        vi.mocked(grid.getCellEditor).mockReturnValue(null);
+        await pivot.setOptions({ enableWriteBack: false });
+        expect(keyDown(grid, 'z', { ctrlKey: true })).toBe(false);
+        expect(units(rows)).toEqual([15, 45, 5, 20, 8]);
+      });
     });
   });
 
