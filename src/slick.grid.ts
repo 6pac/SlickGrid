@@ -1018,6 +1018,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.setupColumnSort();
       this.createCssRules();
       this.resizeCanvas();
+      this.updateAriaRowIndexes();
 
       if (this._options.autoHeaderHeight) {
         this.recalculateHeaderHeight();
@@ -1832,7 +1833,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         header,
         'keydown',
         ((e: KeyboardEvent & { target: HTMLElement }) => {
-          this.triggerEvent(this.onHeaderKeyDown, { event: e, column: Utils.storage.get(e.target, 'column'), grid: this });
+          // the key can come from a control inside the header cell (header button, header menu button), the column is stored on the cell itself
+          this.triggerEvent(this.onHeaderKeyDown, { event: e, column: Utils.storage.get(e.target.closest('.slick-header-column'), 'column'), grid: this });
           if (e.key === 'Enter' || e.key === ' ') {
             sortCallback(e);
           }
@@ -3448,6 +3450,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const numberCols = this._options.numberedMultiColumnSort && this.sortColumns.length > 1;
     this._headers.forEach((header) => {
+      header.querySelectorAll('[aria-sort]').forEach((column) => column.removeAttribute('aria-sort'));
       let indicators = header.querySelectorAll('.slick-header-column-sorted');
       // v8 ignore next
       indicators.forEach((indicator) => indicator.classList.remove('slick-header-column-sorted'));
@@ -3460,6 +3463,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     });
 
     let i = 1;
+    let hasAriaSort = false; // `aria-sort` goes to the first sorted column that has a header, a hidden column has none
     this.sortColumns.forEach((col) => {
       if (!Utils.isDefined(col.sortAsc)) {
         col.sortAsc = true;
@@ -3470,6 +3474,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         const column = this.getColumnByIndex(columnIndex);
         if (column) {
           column.classList.add('slick-header-column-sorted');
+          if (!hasAriaSort) {
+            column.setAttribute('aria-sort', col.sortAsc ? 'ascending' : 'descending');
+            hasAriaSort = true;
+          }
           let indicator = column.querySelector('.slick-sort-indicator');
           indicator?.classList.add(col.sortAsc ? 'slick-sort-indicator-asc' : 'slick-sort-indicator-desc');
 
@@ -4347,6 +4355,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     this.setCellCssStyles(selectedCellCssClass, hash);
+    this.updateAriaSelectedCells(hash, selectedCellCssClass);
 
     if (this.selectionBottomRow >= 0 && this.selectionRightCell >= 0 && addDragHandle && showDragHandle !== false) {
       const lowerRightCell = this.getCellNode(this.selectionBottomRow, this.selectionRightCell);
@@ -5303,7 +5312,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Boolean} [visible] - optionally set if header row panel is visible or not
    */
   setHeaderRowVisibility(visible?: boolean, animate?: boolean): void {
+    const wasVisible = this._options.showHeaderRow;
     this.togglePanelVisibility('showHeaderRow', this._headerRowScroller, visible, animate);
+    if (this._options.showHeaderRow !== wasVisible) {
+      this.updateAriaRowIndexes();
+    }
   }
 
   /**
@@ -5311,7 +5324,47 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Boolean} [visible] - optionally set if column header is visible or not
    */
   setColumnHeaderVisibility(visible?: boolean, animate?: boolean): void {
+    const wasVisible = this._options.showColumnHeader;
     this.togglePanelVisibility('showColumnHeader', this._headerScroller, visible, animate);
+    if (this._options.showColumnHeader !== wasVisible) {
+      this.updateAriaRowIndexes();
+    }
+  }
+
+  /** Number of visible header rows (column headers and header-filter row) that come before the data rows in `aria-rowindex`. */
+  protected getAriaHeaderRowCount(): number {
+    return Number(!!this._options.showColumnHeader) + Number(!!this._options.showHeaderRow);
+  }
+
+  /** Updates `aria-rowcount` for the data rows, the add-new row and the visible header rows. */
+  protected updateAriaRowCount(): void {
+    this._container.setAttribute('aria-rowcount', String(this.getDataLengthIncludingAddNew() + this.getAriaHeaderRowCount()));
+  }
+
+  /**
+   * Updates `aria-rowcount` and every `aria-rowindex`. The index of a rendered row only changes when a header row
+   * is shown or hidden; rows rendered later get theirs in `appendRowHtml()`.
+   */
+  protected updateAriaRowIndexes(): void {
+    const headerCount = this.getAriaHeaderRowCount();
+    this.updateAriaRowCount();
+    this._headers.forEach((header) => {
+      if (this._options.showColumnHeader) {
+        header.setAttribute('aria-rowindex', '1');
+      } else {
+        header.removeAttribute('aria-rowindex');
+      }
+    });
+    this._headerRows.forEach((header) => {
+      if (this._options.showHeaderRow) {
+        header.setAttribute('aria-rowindex', String(headerCount));
+      } else {
+        header.removeAttribute('aria-rowindex');
+      }
+    });
+    Object.entries(this.rowsCache).forEach(([row, cache]) => {
+      cache.rowNode?.forEach((node) => node.setAttribute('aria-rowindex', String(Number(row) + headerCount + 1)));
+    });
   }
 
   /**
@@ -5446,7 +5499,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const rowDiv = Utils.createDomElement('div', {
       className: `slick-widget-content ${rowCss}`,
       role: 'row',
-      ariaRowIndex: `${row + 1}`,
+      ariaRowIndex: `${row + 1 + this.getAriaHeaderRowCount()}`,
       dataset: { row: `${row}` },
     });
     const rowDocking = this.dockingByRow.get(row);
@@ -5645,8 +5698,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (cellCssClasses) {
       cellCss += ` ${cellCssClasses}`;
     }
-    if (this.isCellSelected(row, cell) && !cellCssClasses?.includes(this._options.selectedCellCssClass || '')) {
-      cellCss += ` ${this._options.selectedCellCssClass}`;
+    const isSelected = this.isCellSelected(row, cell);
+    const selectedCellCssClass = this._options.selectedCellCssClass;
+    if (isSelected && selectedCellCssClass && !cellCssClasses?.includes(selectedCellCssClass)) {
+      cellCss += ` ${selectedCellCssClass}`;
     }
 
     let formatterResult: FormatterResultWithHtml | FormatterResultWithText | HTMLElement | DocumentFragment | string = '';
@@ -5662,6 +5717,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       tabIndex: -1,
       ariaColIndex: `${cell + 1}`,
     });
+    if (isSelected) {
+      cellDiv.setAttribute('aria-selected', 'true');
+    }
     if (usesStickyTransform) {
       this.applyStickyColumnTransform(cellDiv, cell, 'cell');
     }
@@ -6238,7 +6296,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   updateRowCount(): void {
     if (this.initialized && this._container) {
       const dataLength = this.getDataLength();
-      this._container.setAttribute('aria-rowcount', dataLength.toString());
+      this.updateAriaRowCount();
 
       // remap all rowspan cache when necessary
       if (dataLength > 0 && dataLength !== this._prevDataLength) {
@@ -7207,6 +7265,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   updatePagingStatusFromView(pagingInfo: Pick<PagingInfo, 'pageSize' | 'pageNum' | 'totalPages'>): void {
     this.pagingActive = pagingInfo.pageSize !== 0;
     this.pagingIsLastPage = pagingInfo.pageNum === pagingInfo.totalPages - 1;
+    if (this.initialized) {
+      this.updateAriaRowCount();
+    }
   }
 
   /**
@@ -7929,13 +7990,40 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return this.cellCssClasses[key];
   }
 
-  /** Returns whether a cell is included in the current selectable ranges. */
+  /** Returns whether a cell is included in the current selectable ranges, however the selection is styled. */
   protected isCellSelected(row: number, cell: number): boolean {
-    return (
-      !!this._options.selectedCellCssClass &&
-      this.selectedRanges.some((range) => range.contains(row, cell)) &&
-      this.canCellBeSelected(row, cell)
-    );
+    return this.selectedRanges.some((range) => range.contains(row, cell)) && this.canCellBeSelected(row, cell);
+  }
+
+  /**
+   * Mirrors the selection onto `aria-selected` for every rendered cell. `selectedCells` lists, for each cached row,
+   * the ids of its selected columns (the hash built by a selection change). A row that was rendered after the previous
+   * selection change is not part of the CSS class diff: its cell nodes are indexed here first, and a cell that leaves
+   * the selection also loses the selected class it was rendered with.
+   */
+  protected updateAriaSelectedCells(selectedCells: CssStyleHash, selectedCellCssClass: string): void {
+    const selectedClasses = Utils.classNameToList(selectedCellCssClass);
+    Object.keys(this.rowsCache).forEach((rowKey) => {
+      const row = Number(rowKey);
+      this.ensureCellNodesInRowsCache(row);
+      const cacheEntry = this.rowsCache[row];
+      const selectedColumns = selectedCells[row];
+      Object.keys(cacheEntry.cellNodesByColumnIdx).forEach((cellKey) => {
+        const cell = Number(cellKey);
+        const node = cacheEntry.cellNodesByColumnIdx[cell];
+        const columnId = this.columns[cell]?.id;
+        const isSelected = !!selectedColumns && columnId !== undefined && columnId in selectedColumns;
+        if (isSelected !== node.hasAttribute('aria-selected')) {
+          if (isSelected) {
+            node.setAttribute('aria-selected', 'true');
+          } else {
+            node.removeAttribute('aria-selected');
+            node.classList.remove(...selectedClasses);
+            cacheEntry.cellSpanFragments?.[cell]?.forEach((fragment) => fragment.classList.remove(...selectedClasses));
+          }
+        }
+      });
+    });
   }
 
   /**

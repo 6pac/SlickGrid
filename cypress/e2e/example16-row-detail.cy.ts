@@ -15,6 +15,30 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
       .each(($child, index) => expect($child.text()).to.eq(fullTitles[index]));
   });
 
+  it('keeps a row detail open while Space is typed in one of its inputs', () => {
+    cy.get('.slick-cell.detailView-toggle').eq(1).click();
+    cy.window().then((win) => (win as any).grid.setActiveCell(1, 0));
+    cy.get('.slick-cell.detailView-toggle').eq(1).should('have.class', 'active');
+    cy.get('.slick-row-detail-container input').first().type(' ok');
+    cy.get('.slick-row-detail-container').should('have.length', 1);
+    cy.get('.slick-row-detail-container input').first().invoke('val').should('match', / ok$/);
+
+    // collapse it again, the rows were rendered anew so look the selector cell up by its row
+    cy.get('.slick-row[data-row="1"] .slick-cell.detailView-toggle').click();
+    cy.get('.slick-row-detail-container').should('not.exist');
+  });
+
+  it('collapses row details from the selector cell with the keyboard', () => {
+    cy.get('.slick-cell.detailView-toggle').eq(1).click();
+    cy.get('.slick-row-detail-container').should('have.length', 1);
+    cy.window().then((win) => (win as any).grid.setActiveCell(1, 0));
+    cy.get('.slick-cell.detailView-toggle').eq(1).should('have.class', 'active')
+      .trigger('keydown', { key: ' ', which: 32 });
+    cy.get('.slick-row-detail-container').should('not.exist');
+    cy.get('.slick-cell.detailView-toggle').eq(1).find('[data-row-detail-toggle]')
+      .should('have.attr', 'aria-expanded', 'false');
+  });
+
   it('should open the 1st Row Detail of the 2nd row and expect to find some details', () => {
     cy.get('.slick-cell.detailView-toggle:nth(1)')
       .click()

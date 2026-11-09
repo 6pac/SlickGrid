@@ -1211,3 +1211,38 @@ describe('SlickCore file', () => {
     });
   });
 });
+
+describe('Utils.clickOnActivationKey', () => {
+  const press = (element: HTMLElement, key: string, extraKeys?: string[]) => {
+    const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+    const stopPropagation = vi.spyOn(event, 'stopPropagation');
+    const handled = Utils.clickOnActivationKey(event, element, extraKeys);
+    return { event, handled, stopPropagation };
+  };
+
+  it('clicks the element on Enter and Space and consumes the event', () => {
+    const element = document.createElement('div');
+    const click = vi.spyOn(element, 'click');
+
+    for (const key of ['Enter', ' ']) {
+      const { event, handled, stopPropagation } = press(element, key);
+      expect(handled).toBe(true);
+      expect(event.defaultPrevented).toBe(true);
+      expect(stopPropagation).toHaveBeenCalledOnce();
+    }
+    expect(click).toHaveBeenCalledTimes(2);
+  });
+
+  it('leaves other keys alone unless they are listed as extra keys', () => {
+    const element = document.createElement('div');
+    const click = vi.spyOn(element, 'click');
+
+    const tab = press(element, 'Tab');
+    expect(tab.handled).toBe(false);
+    expect(tab.event.defaultPrevented).toBe(false);
+    expect(click).not.toHaveBeenCalled();
+
+    expect(press(element, 'ArrowDown', ['ArrowDown']).handled).toBe(true);
+    expect(click).toHaveBeenCalledOnce();
+  });
+});

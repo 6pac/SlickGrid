@@ -189,6 +189,7 @@ export class SlickRowDetailView {
 
     this._eventHandler
       .subscribe(this._grid.onClick, this.handleClick.bind(this))
+      .subscribe(this._grid.onKeyDown, this.handleKeyDown.bind(this))
       .subscribe(this._grid.onScroll, this.handleScroll.bind(this))
       .subscribe(this._grid.onRendered, this.renderOverlayPanels.bind(this));
 
@@ -266,6 +267,23 @@ export class SlickRowDetailView {
       }
     }
     return -1;
+  }
+
+  /** Toggle the row detail with Enter or Space while the active cell is the row detail selector cell */
+  protected handleKeyDown(e: SlickEventData, args: { row: number; cell: number; }) {
+    if ((e.key !== 'Enter' && e.key !== ' ') || this._grid.getColumns()[args.cell]?.id !== this._options.columnId || this._grid.getEditorLock().isActive()) {
+      return;
+    }
+    // the detail panels live in the grid canvas, so the keys typed in their own inputs and buttons reach this handler as well: leave those alone
+    if (e.target?.closest?.('.slick-row-detail-container')) {
+      return;
+    }
+    const toggle = this._grid.getCellNode(args.row, args.cell)?.querySelector<HTMLElement>('[data-row-detail-toggle]');
+    if (toggle) {
+      toggle.click();
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
   }
 
   /** Handle mouse click event */
@@ -711,7 +729,7 @@ export class SlickRowDetailView {
         if (this._options.collapsedClass) {
           collapsedClasses += this._options.collapsedClass;
         }
-        return Utils.createDomElement('div', { className: collapsedClasses });
+        return Utils.createDomElement('div', { className: collapsedClasses, role: 'button', ariaLabel: 'Expand row details', ariaExpanded: 'false', dataset: { rowDetailToggle: '' } });
       }
       else {
         let expandedClasses = this._options.cssClass + ' collapse ';
@@ -720,7 +738,7 @@ export class SlickRowDetailView {
         }
 
         return {
-          html: Utils.createDomElement('div', { className: expandedClasses }),
+          html: Utils.createDomElement('div', { className: expandedClasses, role: 'button', ariaLabel: 'Collapse row details', ariaExpanded: 'true', dataset: { rowDetailToggle: '' } }),
         };
       }
     }
