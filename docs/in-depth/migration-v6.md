@@ -52,6 +52,7 @@ What to change:
 - Do not filter columns out of the array to hide them. Set `hidden` instead.
 - `getColumns()` returns every column, including hidden ones.
 - Use [`getVisibleColumns()`](/reference/grid#m-getVisibleColumns) to read only the visible ones.
+- Use [`grid.updateColumnById('id', { hidden: true })`](/reference/grid#m-updateColumnById) and [`grid.updateColumns()`](/reference/grid#m-updateColumns) to dynamically toggle a column visibility
 
 This makes show/hide reversible and keeps each column's settings while it is hidden.
 
