@@ -110,6 +110,101 @@ describe('SlickCore file', () => {
       expect(onClick.subscriberCount).toBe(1);
     });
 
+    it('should drop every subscriber when calling unsubscribe() without any argument', () => {
+      const spy1 = vi.fn();
+      const spy2 = vi.fn();
+      const onClick = new SlickEvent();
+      onClick.subscribe(spy1);
+      onClick.subscribe(spy2);
+
+      onClick.unsubscribe();
+      onClick.notify({ hello: 'world' });
+
+      expect(onClick.subscriberCount).toBe(0);
+      expect(spy1).not.toHaveBeenCalled();
+      expect(spy2).not.toHaveBeenCalled();
+    });
+
+    it('should keep every subscriber when calling unsubscribe() with an undefined handler', () => {
+      const spy1 = vi.fn();
+      const onClick = new SlickEvent();
+      onClick.subscribe(spy1);
+
+      onClick.unsubscribe(undefined);
+      onClick.notify({ hello: 'world' });
+
+      expect(onClick.subscriberCount).toBe(1);
+      expect(spy1).toHaveBeenCalledTimes(1);
+    });
+
+    it('should still call the next subscriber when a subscriber unsubscribes itself while notifying', () => {
+      const spy2 = vi.fn();
+      const onClick = new SlickEvent();
+      const selfRemovingSpy = vi.fn(() => onClick.unsubscribe(selfRemovingSpy));
+      onClick.subscribe(selfRemovingSpy);
+      onClick.subscribe(spy2);
+
+      onClick.notify({ hello: 'world' });
+      onClick.notify({ hello: 'again' });
+
+      expect(selfRemovingSpy).toHaveBeenCalledTimes(1);
+      expect(spy2).toHaveBeenCalledTimes(2);
+      expect(onClick.subscriberCount).toBe(1);
+    });
+
+    it('should still call the other subscribers when a SlickEventHandler unsubscribes all its handlers while notifying', () => {
+      const spy2 = vi.fn();
+      const eventHandler = new SlickEventHandler();
+      const onClick = new SlickEvent();
+      eventHandler.subscribe(onClick, () => eventHandler.unsubscribeAll());
+      onClick.subscribe(spy2);
+
+      onClick.notify({ hello: 'world' });
+
+      expect(spy2).toHaveBeenCalledTimes(1);
+      expect(onClick.subscriberCount).toBe(1);
+    });
+
+    it('should not call a subscriber that was unsubscribed by a previous subscriber while notifying', () => {
+      const spy2 = vi.fn();
+      const spy3 = vi.fn();
+      const onClick = new SlickEvent();
+      onClick.subscribe(() => onClick.unsubscribe(spy2));
+      onClick.subscribe(spy2);
+      onClick.subscribe(spy3);
+
+      onClick.notify({ hello: 'world' });
+
+      expect(spy2).not.toHaveBeenCalled();
+      expect(spy3).toHaveBeenCalledTimes(1);
+    });
+
+    it('should stop calling subscribers when every subscriber is unsubscribed while notifying', () => {
+      const spy2 = vi.fn();
+      const onClick = new SlickEvent();
+      onClick.subscribe(() => onClick.unsubscribe());
+      onClick.subscribe(spy2);
+
+      onClick.notify({ hello: 'world' });
+
+      expect(spy2).not.toHaveBeenCalled();
+      expect(onClick.subscriberCount).toBe(0);
+    });
+
+    it('should only call a subscriber added while notifying on the next notify', () => {
+      const spy2 = vi.fn();
+      const onClick = new SlickEvent();
+      const addingSpy = vi.fn(() => onClick.subscribe(spy2));
+      onClick.subscribe(addingSpy);
+
+      onClick.notify({ hello: 'world' });
+      expect(spy2).not.toHaveBeenCalled();
+
+      onClick.unsubscribe(addingSpy);
+      onClick.notify({ hello: 'again' });
+      expect(spy2).toHaveBeenCalledTimes(1);
+    });
+
     it('should notify subscribers without resetting existing return values', () => {
       const spy1 = vi.fn();
       const spy2 = vi.fn();
