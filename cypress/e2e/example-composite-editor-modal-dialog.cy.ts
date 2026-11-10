@@ -187,11 +187,11 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
   });
 
   it('Should expect an Alert about missing row selection before executing Mass Selection', () => {
-    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('missingSelectionAlert'));
     cy.get('[data-test="mass-selection-button"]')
       .click()
       .then(() => {
-        cy.get('@alertStub').should('have.been.calledWith',`You must select some rows before trying to apply new value(s)`);
+        cy.get('@missingSelectionAlert').should('have.been.calledWith',`You must select some rows before trying to apply new value(s)`);
       });
   });
 
@@ -318,8 +318,13 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
     cy.get(`[style*="transform: translateY(12500px);"] > .slick-cell:nth(2)`).should('contain', 'random text');
     cy.get(`[style*="transform: translateY(12500px);"] > .slick-cell:nth(3)`).should('contain', '9 days');
     cy.get(`[style*="transform: translateY(12500px);"] > .slick-cell:nth(4)`).each($cell => {
-      const htmlText = $cell.html();
-      expect(htmlText).to.eq('<span class="percent-complete-bar" style="background:silver;width:44%" title="44%"></span>');
+      const $bar = $cell.children('.percent-complete-bar');
+      expect($bar).to.have.length(1);
+      expect($bar).to.have.attr('role', 'img');
+      expect($bar).to.have.attr('aria-label', '44%');
+      expect($bar).to.have.attr('title', '44%');
+      expect($bar[0].style.backgroundColor).to.eq('silver');
+      expect($bar[0].style.width).to.eq('44%');
     });
     cy.get(`[style*="transform: translateY(12500px);"] > .slick-cell:nth(5)`).should('contain', '02/02/2020');
     cy.get(`[style*="transform: translateY(12500px);"] > .slick-cell:nth(6)`).should('contain', '');

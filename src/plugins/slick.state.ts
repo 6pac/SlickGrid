@@ -1,9 +1,10 @@
-import { SlickEvent as SlickEvent_, Utils as Utils_ } from '../slick.core.js';
+import { SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core.js';
 import type { Column, ColumnSort, SlickPlugin } from '../models/index.js';
 import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 export interface SlickStateOption {
@@ -74,6 +75,7 @@ export class SlickState implements SlickPlugin {
 
   // --
   // protected props
+  protected _eventHandler = new SlickEventHandler();
   protected _grid!: SlickGrid;
   protected _cid = '';
   protected _store: LocalStorageWrapper;
@@ -100,18 +102,17 @@ export class SlickState implements SlickPlugin {
     Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
 
     if (this._cid) {
-      this._grid.onColumnsResized.subscribe(this.save.bind(this));
-      this._grid.onColumnsReordered.subscribe(this.save.bind(this));
-      this._grid.onSort.subscribe(this.save.bind(this));
+      this._eventHandler
+        .subscribe(this._grid.onColumnsResized, this.save.bind(this))
+        .subscribe(this._grid.onColumnsReordered, this.save.bind(this))
+        .subscribe(this._grid.onSort, this.save.bind(this));
     } else {
       console.warn('grid has no client id. state persisting is disabled.');
     }
   }
 
   destroy() {
-    this._grid.onSort.unsubscribe(this.save.bind(this));
-    this._grid.onColumnsReordered.unsubscribe(this.save.bind(this));
-    this._grid.onColumnsResized.unsubscribe(this.save.bind(this));
+    this._eventHandler.unsubscribeAll();
     this.save();
   }
 

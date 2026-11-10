@@ -176,6 +176,20 @@ describe('SlickState', () => {
     expect(plugin.getUserData()).toEqual({ mode: 'compact' });
   });
 
+  it('unsubscribes its grid handlers when destroyed', () => {
+    const columnsResizedCount = grid.onColumnsResized.subscriberCount;
+    const columnsReorderedCount = grid.onColumnsReordered.subscriberCount;
+    const sortCount = grid.onSort.subscriberCount;
+    plugin.init(grid);
+    expect(grid.onSort.subscriberCount).toBe(sortCount + 1);
+
+    plugin.destroy();
+
+    expect(grid.onColumnsResized.subscriberCount).toBe(columnsResizedCount);
+    expect(grid.onColumnsReordered.subscriberCount).toBe(columnsReorderedCount);
+    expect(grid.onSort.subscriberCount).toBe(sortCount);
+  });
+
   it('saves on destroy when a client id is available', () => {
     plugin.init(grid);
 

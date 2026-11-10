@@ -1,10 +1,11 @@
 import type { PagingInfo } from '../models/index.js';
-import { BindingEventService as BindingEventService_, SlickGlobalEditorLock as SlickGlobalEditorLock_, Utils as Utils_ } from '../slick.core.js';
+import { BindingEventService as BindingEventService_, SlickEventHandler as SlickEventHandler_, SlickGlobalEditorLock as SlickGlobalEditorLock_, Utils as Utils_ } from '../slick.core.js';
 import type { SlickDataView } from '../slick.dataview.js';
 import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
+const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const SlickGlobalEditorLock = IIFE_ONLY ? Slick.GlobalEditorLock : SlickGlobalEditorLock_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
@@ -26,6 +27,7 @@ export class SlickGridPager {
   protected _container: HTMLElement; // the container might be a string, a jQuery object or a native element
   protected _statusElm!: HTMLElement;
   protected _bindingEventService: BindingEventService_;
+  protected _eventHandler = new SlickEventHandler();
   protected _options: GridPagerOption;
   protected _defaults: GridPagerOption = {
     showAllText: 'Showing all {rowCount} rows',
@@ -52,7 +54,7 @@ export class SlickGridPager {
   init() {
     this.constructPagerUI();
     this.updatePager(this.dataView.getPagingInfo());
-    this.dataView.onPagingInfoChanged.subscribe((_e, pagingInfo) => {
+    this._eventHandler.subscribe(this.dataView.onPagingInfoChanged, (_e, pagingInfo) => {
       this.updatePager(pagingInfo);
     });
   }
@@ -60,6 +62,7 @@ export class SlickGridPager {
   /** Destroy function when element is destroyed */
   destroy() {
     this.setPageSize(0);
+    this._eventHandler.unsubscribeAll();
     this._bindingEventService.unbindAll();
     Utils.emptyElement(this._container);
   }
@@ -121,6 +124,13 @@ export class SlickGridPager {
         : selectorOrElm;
   }
 
+  protected makeKeyboardButton(element: HTMLElement) {
+    element.role = 'button';
+    element.tabIndex = 0;
+    // a disabled navigation button stays focusable; its click handler does nothing when the page cannot change
+    this._bindingEventService.bind(element, 'keydown', ((event: KeyboardEvent) => { Utils.clickOnActivationKey(event, element); }) as EventListener);
+  }
+
   protected constructPagerUI() {
     // the container might be a string, a jQuery object or a native element
     const container = this.getContainerElement(this._container) as HTMLElement | HTMLElement[];
@@ -134,6 +144,7 @@ export class SlickGridPager {
 
     this._statusElm = document.createElement('span');
     this._statusElm.className = 'slick-pager-status';
+    this._statusElm.setAttribute('aria-live', 'polite');
 
     const pagerSettingsElm = document.createElement('span');
     pagerSettingsElm.className = 'slick-pager-settings-expanded';
@@ -146,6 +157,7 @@ export class SlickGridPager {
       anchorElm.textContent = p.name;
       anchorElm.ariaLabel = p.ariaLabel;
       anchorElm.dataset.val = String(p.data);
+      this.makeKeyboardButton(anchorElm);
       pagerSettingsElm.appendChild(anchorElm);
 
       this._bindingEventService.bind(anchorElm, 'click', ((e: any) => {
@@ -170,13 +182,15 @@ export class SlickGridPager {
     const displayIconElm = document.createElement('span');
     displayPaginationContainer.className = 'sgi-container';
     displayIconElm.ariaLabel = 'Show Pagination Options';
-    displayIconElm.role = 'button';
+    this.makeKeyboardButton(displayIconElm);
+    displayIconElm.setAttribute('aria-expanded', String(this._options.showPageSizes));
     displayIconElm.className = 'sgi sgi-lightbulb';
     displayPaginationContainer.appendChild(displayIconElm);
 
     this._bindingEventService.bind(displayIconElm, 'click', () => {
       const styleDisplay = pagerSettingsElm.style.display;
       pagerSettingsElm.style.display = styleDisplay === 'none' ? 'inline-flex' : 'none';
+      displayIconElm.setAttribute('aria-expanded', String(pagerSettingsElm.style.display !== 'none'));
     });
     settingsElm.appendChild(displayPaginationContainer);
 
@@ -192,7 +206,7 @@ export class SlickGridPager {
       iconElm.className = 'sgi-container';
 
       const innerIconElm = document.createElement('span');
-      innerIconElm.role = 'button';
+      this.makeKeyboardButton(innerIconElm);
       innerIconElm.ariaLabel = pageBtn.ariaLabel;
       innerIconElm.className = `sgi sgi-chevron-${pageBtn.key}`;
       this._bindingEventService.bind(innerIconElm, 'click', pageBtn.callback.bind(this));
@@ -232,6 +246,9 @@ export class SlickGridPager {
     if (!state.canGotoPrev) {
       this._container!.querySelector('.sgi-chevron-left')?.classList.add('sgi-state-disabled');
     }
+    this._container.querySelectorAll<HTMLElement>('.slick-pager-nav [role="button"]').forEach((button) => {
+      button.setAttribute('aria-disabled', String(button.classList.contains('sgi-state-disabled')));
+    });
 
     if (pagingInfo.pageSize === 0) {
       this._statusElm.textContent = (this._options.showAllText.replace('{rowCount}', pagingInfo.totalRows + '').replace('{pageCount}', pagingInfo.totalPages + ''));

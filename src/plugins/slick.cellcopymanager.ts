@@ -1,10 +1,11 @@
 import type { CssStyleHash, SlickPlugin } from '../models/index.js';
-import { keyCode as keyCode_, SlickEvent as SlickEvent_, type SlickEventData, Utils as Utils_, type SlickRange } from '../slick.core.js';
+import { keyCode as keyCode_, SlickEvent as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, Utils as Utils_, type SlickRange } from '../slick.core.js';
 import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 /**
@@ -20,17 +21,18 @@ export class SlickCellCopyManager implements SlickPlugin {
 
   // --
   // protected props
+  protected _eventHandler = new SlickEventHandler();
   protected _grid!: SlickGrid;
   protected _copiedRanges?: SlickRange[] | null = null;
 
   init(grid: SlickGrid) {
     this._grid = grid;
     Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
-    this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
+    this._eventHandler.subscribe(this._grid.onKeyDown, this.handleKeyDown.bind(this));
   }
 
   destroy() {
-    this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this));
+    this._eventHandler.unsubscribeAll();
   }
 
   protected handleKeyDown(e: SlickEventData) {

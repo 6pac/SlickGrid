@@ -415,10 +415,12 @@ export class SlickGridMenu {
 
       if ((item as GridMenuItem).divider || item === 'divider') {
         liElm.classList.add('slick-gridmenu-item-divider');
+        liElm.role = 'separator';
         addClickListener = false;
       }
       if ((item as GridMenuItem).disabled) {
         liElm.classList.add('slick-gridmenu-item-disabled');
+        liElm.setAttribute('aria-disabled', 'true');
       }
 
       if ((item as GridMenuItem).hidden) {

@@ -590,12 +590,14 @@ export class SlickContextMenu implements SlickPlugin {
 
       if ((item as MenuCommandItem | MenuOptionItem).divider || item === 'divider') {
         liElm.classList.add('slick-context-menu-item-divider');
+        liElm.role = 'separator';
         addClickListener = false;
       }
 
       // if the item is disabled then add the disabled css class
       if ((item as MenuCommandItem | MenuOptionItem).disabled || !isItemUsable) {
         liElm.classList.add('slick-context-menu-item-disabled');
+        liElm.setAttribute('aria-disabled', 'true');
       }
 
       // if the item is hidden then add the hidden css class

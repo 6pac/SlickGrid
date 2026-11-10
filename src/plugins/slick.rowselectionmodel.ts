@@ -75,18 +75,16 @@ export class SlickRowSelectionModel implements SelectionModel {
     this._eventHandler.subscribe(this._grid.onClick, this.wrapHandler(this.handleClick).bind(this));
     if (this._selector) {
       grid.registerPlugin(this._selector);
-      this._selector.onCellRangeSelecting.subscribe(this.handleCellRangeSelected.bind(this));
-      this._selector.onCellRangeSelected.subscribe(this.handleCellRangeSelected.bind(this));
-      this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this));
+      this._eventHandler
+        .subscribe(this._selector.onCellRangeSelecting, this.handleCellRangeSelected.bind(this))
+        .subscribe(this._selector.onCellRangeSelected, this.handleCellRangeSelected.bind(this))
+        .subscribe(this._selector.onBeforeCellRangeSelected, this.handleBeforeCellRangeSelected.bind(this));
     }
   }
 
   destroy() {
     this._eventHandler.unsubscribeAll();
     if (this._selector) {
-      this._selector.onCellRangeSelecting.unsubscribe(this.handleCellRangeSelected.bind(this));
-      this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this));
-      this._selector.onBeforeCellRangeSelected.unsubscribe(this.handleBeforeCellRangeSelected.bind(this));
       this._grid.unregisterPlugin(this._selector);
       if (this._selector.destroy) {
         this._selector.destroy();

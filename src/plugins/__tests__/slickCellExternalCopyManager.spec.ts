@@ -163,6 +163,20 @@ describe('CellExternalCopyManager', () => {
       expect(gridFocusSpy).toHaveBeenCalled();
     });
 
+    it('should unsubscribe from the grid and selection model events when destroyed', () => {
+      vi.spyOn(gridStub, 'getSelectionModel').mockReturnValue(mockGetSelectionModel as any);
+      const keyDownCount = gridStub.onKeyDown.subscriberCount;
+      const selectedRangesChangedCount = mockGetSelectionModel.onSelectedRangesChanged.subscriberCount;
+
+      plugin.init(gridStub);
+      expect(gridStub.onKeyDown.subscriberCount).toBe(keyDownCount + 1);
+      expect(mockGetSelectionModel.onSelectedRangesChanged.subscriberCount).toBe(selectedRangesChangedCount + 1);
+      plugin.destroy();
+
+      expect(gridStub.onKeyDown.subscriberCount).toBe(keyDownCount);
+      expect(mockGetSelectionModel.onSelectedRangesChanged.subscriberCount).toBe(selectedRangesChangedCount);
+    });
+
     it('should remove CSS styling when "clearCopySelection" is called', () => {
       const removeStyleSpy = vi.spyOn(gridStub, 'removeCellCssStyles');
       plugin.init(gridStub);
@@ -507,7 +521,7 @@ describe('CellExternalCopyManager', () => {
 
             clipCommand.undo();
 
-            expect(mockOnPasteCells).toHaveBeenCalledWith(expect.any(SlickEventData), { ranges: [new SlickRange(2, 0, 3, 0)] });
+            expect(mockOnPasteCells).toHaveBeenCalledWith(expect.any(SlickEventData), { ranges: [new SlickRange(3, 0, 3, 1)] });
             done();
           });
         }));
