@@ -917,4 +917,158 @@ describe('SlickGrid editors', () => {
       expect(container.querySelector('.slick-large-editor-text')).toBeNull();
     });
   });
+
+  describe('fixes found while raising coverage', () => {
+    const placeCursor = (input: HTMLInputElement | HTMLTextAreaElement, position: number) => input.setSelectionRange(position, position);
+
+    it('only lets left/right arrows reach the grid once the cursor is at the start or the end of the text', () => {
+      args.grid.getOptions = () => ({ editorCellNavOnLRKeys: true });
+      editor = new TextEditor(args);
+      editor.loadValue({ value: 'abc' });
+      const input = container.querySelector('input')!;
+      const outer = vi.fn();
+      container.addEventListener('keydown', outer);
+
+      placeCursor(input, 1);
+      keydown(input, { keyCode: 37 });
+      keydown(input, { keyCode: 39 });
+      placeCursor(input, 2);
+      keydown(input, { keyCode: 39 });
+      expect(outer).not.toHaveBeenCalled();
+
+      placeCursor(input, 0);
+      keydown(input, { keyCode: 37 });
+      expect(outer).toHaveBeenCalledTimes(1);
+      placeCursor(input, 3);
+      keydown(input, { keyCode: 39 });
+      expect(outer).toHaveBeenCalledTimes(2);
+    });
+
+    it('lets the long text editor navigate on left/right arrows only from the start or the end of its text', () => {
+      args.grid.getOptions = () => ({ editorCellNavOnLRKeys: true });
+      args.position = { top: 100, left: 50 };
+      args.grid.navigatePrev = vi.fn();
+      args.grid.navigateNext = vi.fn();
+      editor = new LongTextEditor(args);
+      editor.loadValue({ value: 'abc' });
+      const area = document.querySelector<HTMLTextAreaElement>('.slick-large-editor-text textarea')!;
+
+      placeCursor(area, 1);
+      keydown(area, { which: 37, keyCode: 37 });
+      placeCursor(area, 2);
+      keydown(area, { which: 39, keyCode: 39 });
+      expect(args.grid.navigatePrev).not.toHaveBeenCalled();
+      expect(args.grid.navigateNext).not.toHaveBeenCalled();
+
+      placeCursor(area, 0);
+      keydown(area, { which: 37, keyCode: 37 });
+      placeCursor(area, 3);
+      keydown(area, { which: 39, keyCode: 39 });
+      expect(args.grid.navigatePrev).toHaveBeenCalledTimes(1);
+      expect(args.grid.navigateNext).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      ['text', TextEditor, 0, '0'],
+      ['integer', IntegerEditor, 5, '5'],
+      ['float', FloatEditor, 1.5, '1.5'],
+    ])('does not report the %s editor as changed when its loaded value was not edited', (_name, EditorClass: any, value, shown) => {
+      editor = new EditorClass(args);
+      editor.loadValue({ value });
+
+      expect(container.querySelector('input')!.value).toBe(shown);
+      expect(editor.isValueChanged()).toBe(false);
+    });
+
+    it('does not report the date editor as changed when its loaded value was not edited', () => {
+      vi.stubGlobal('flatpickr', vi.fn(() => ({ close: vi.fn(), destroy: vi.fn(), open: vi.fn(), setDate: vi.fn() })));
+      try {
+        editor = new FlatpickrEditor(args);
+        editor.loadValue({ value: 20260101 });
+
+        expect(editor.isValueChanged()).toBe(false);
+      } finally {
+        editor.destroy();
+        editor = undefined;
+        vi.unstubAllGlobals();
+      }
+    });
+
+    it.each([true, false])('does not report the yes/no editor as changed when its loaded value %s was not edited', (value) => {
+      editor = new YesNoSelectEditor(args);
+      editor.loadValue({ value });
+
+      expect(editor.isValueChanged()).toBe(false);
+      container.querySelector('select')!.value = value ? 'no' : 'yes';
+      expect(editor.isValueChanged()).toBe(true);
+    });
+
+    it('throws before adding an input when Flatpickr is not loaded', () => {
+      expect(() => new FlatpickrEditor(args)).toThrow('Flatpickr not loaded');
+      expect(container.querySelector('input')).toBeNull();
+    });
+
+    it('shows an empty percent complete input for an item without a value', () => {
+      editor = new PercentCompleteEditor(args);
+      editor.loadValue({});
+
+      expect(container.querySelector<HTMLInputElement>('input.editor-percentcomplete')!.value).toBe('');
+    });
+
+    it.each([
+      ['text', TextEditor, 'input'],
+      ['integer', IntegerEditor, 'input'],
+      ['float', FloatEditor, 'input'],
+      ['yes/no', YesNoSelectEditor, 'select'],
+      ['checkbox', CheckboxEditor, 'input'],
+    ])('stops publishing composite changes of the %s editor once it is destroyed', (_name, EditorClass: any, selector) => {
+      args.compositeEditorOptions = { formValues: {}, editors: [] };
+      editor = new EditorClass(args);
+      const field = container.querySelector(selector)!;
+
+      editor.destroy();
+      editor = undefined;
+      field.dispatchEvent(new Event('change'));
+
+      expect(args.grid.onCompositeEditorChange.notify).not.toHaveBeenCalled();
+    });
+
+    it('stops listening to the long text editor buttons and keys once it is destroyed', () => {
+      args.commitChanges = vi.fn();
+      args.cancelChanges = vi.fn();
+      args.grid.navigateNext = vi.fn();
+      args.position = { top: 100, left: 50 };
+      editor = new LongTextEditor(args);
+      const wrapper = document.querySelector<HTMLDivElement>('.slick-large-editor-text')!;
+      const area = wrapper.querySelector('textarea')!;
+
+      editor.destroy();
+      editor = undefined;
+      wrapper.querySelector<HTMLButtonElement>('#save')!.click();
+      wrapper.querySelector<HTMLButtonElement>('#cancel')!.click();
+      keydown(area, { which: 9, keyCode: 9 });
+
+      expect(args.commitChanges).not.toHaveBeenCalled();
+      expect(args.cancelChanges).not.toHaveBeenCalled();
+      expect(args.grid.navigateNext).not.toHaveBeenCalled();
+    });
+
+    it('stops listening to the percent complete slider and buttons once it is destroyed', () => {
+      args.compositeEditorOptions = { formValues: {}, editors: [] };
+      editor = new PercentCompleteEditor(args);
+      const input = container.querySelector<HTMLInputElement>('input.editor-percentcomplete')!;
+      const slider = container.querySelector<HTMLInputElement>('input.editor-percentcomplete-slider')!;
+      const button = container.querySelector<HTMLButtonElement>('.editor-percentcomplete-buttons button')!;
+      input.value = '20';
+
+      editor.destroy();
+      editor = undefined;
+      slider.dispatchEvent(new Event('input'));
+      slider.dispatchEvent(new Event('change'));
+      button.click();
+
+      expect(input.value).toBe('20');
+      expect(args.grid.onCompositeEditorChange.notify).not.toHaveBeenCalled();
+    });
+  });
 });

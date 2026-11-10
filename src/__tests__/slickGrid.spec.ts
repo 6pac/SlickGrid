@@ -3212,6 +3212,7 @@ describe('SlickGrid core file', () => {
         const updateRowSpy = vi.spyOn(grid, 'updateRow');
         const onCellChangeSpy = vi.spyOn(grid.onCellChange, 'notify');
         vi.spyOn(editor!, 'serializeValue').mockReturnValueOnce(newValue);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
         expect(activeCellNode).toBeTruthy();
 
         const result = grid.getEditController()?.commitCurrentEdit();
@@ -3248,6 +3249,7 @@ describe('SlickGrid core file', () => {
         const updateRowSpy = vi.spyOn(grid, 'updateRow');
         const onCellChangeSpy = vi.spyOn(grid.onCellChange, 'notify');
         vi.spyOn(editor!, 'serializeValue').mockReturnValueOnce(newValue);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
         expect(activeCellNode).toBeTruthy();
 
         const result = grid.getEditController()?.commitCurrentEdit();
@@ -3277,6 +3279,7 @@ describe('SlickGrid core file', () => {
         const updateRowSpy = vi.spyOn(grid, 'updateRow');
         const onCellChangeSpy = vi.spyOn(grid.onCellChange, 'notify');
         vi.spyOn(editor!, 'serializeValue').mockReturnValue(newValue);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
 
         const result = grid.getEditController()?.commitCurrentEdit();
 
@@ -3356,6 +3359,7 @@ describe('SlickGrid core file', () => {
         const updateRowSpy = vi.spyOn(grid, 'updateRow');
         const onCellChangeSpy = vi.spyOn(grid.onCellChange, 'notify');
         vi.spyOn(editor!, 'serializeValue').mockReturnValueOnce(newValue);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
 
         const result = grid.getEditController()?.commitCurrentEdit();
 
@@ -3392,6 +3396,7 @@ describe('SlickGrid core file', () => {
         vi.spyOn(grid, 'getDataLength').mockReturnValueOnce(0); // trick grid to think it's a new item
         const onAddNewRowSpy = vi.spyOn(grid.onAddNewRow, 'notify');
         vi.spyOn(editor!, 'serializeValue').mockReturnValue(newValue);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
 
         const result = grid.getEditController()?.commitCurrentEdit();
 
@@ -3425,6 +3430,7 @@ describe('SlickGrid core file', () => {
         vi.spyOn(grid, 'getDataLength').mockReturnValueOnce(0); // trick grid to think it's a new item
         const onAddNewRowSpy = vi.spyOn(grid.onAddNewRow, 'notify');
         vi.spyOn(editor!, 'serializeValue').mockReturnValue(newValue);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
 
         const result = grid.getEditController()?.commitCurrentEdit();
         const newHeight = grid.getViewportHeight();
@@ -3448,6 +3454,7 @@ describe('SlickGrid core file', () => {
         const editor = grid.getCellEditor();
         const onValidationErrorSpy = vi.spyOn(grid.onValidationError, 'notify');
         vi.spyOn(editor!, 'validate').mockReturnValue(invalidResult);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
         const activeCellNode = container.querySelector('.slick-cell.editable.l1.r1');
 
         const result = grid.getEditController()?.commitCurrentEdit();

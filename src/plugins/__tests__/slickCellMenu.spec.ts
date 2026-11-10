@@ -213,6 +213,21 @@ describe('CellMenu Plugin', () => {
     expect(onAfterMenuShow).toHaveBeenCalledOnce();
   });
 
+  it('dismisses the menu it just showed when onAfterMenuShow returns false', () => {
+    plugin = new SlickCellMenu({});
+    plugin.onAfterMenuShow.subscribe(() => false);
+    plugin.init(grid);
+    const cell = document.createElement('div');
+    cell.className = 'slick-cell';
+    document.body.appendChild(cell);
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'target', { configurable: true, value: cell });
+
+    grid.onClick.notify({} as any, event, grid);
+
+    expect(document.body.querySelector('.slick-cell-menu')).toBeNull();
+  });
+
   it('closes the menu when the grid scrolls', () => {
     openMenu();
 

@@ -622,6 +622,15 @@ describe('SlickHeaderMenu', () => {
       expect(menu.style.left).toBe('12px');
     });
 
+    it('uses the options given to the constructor over the defaults', () => {
+      plugin = new SlickHeaderMenu({ minWidth: 250 });
+      plugin.init(grid);
+
+      const menu = openMenu();
+
+      expect(menu.style.minWidth).toBe('250px');
+    });
+
     it('opens a sub-menu on the right of its item when there is enough room', () => {
       const clientWidth = vi.spyOn(document.documentElement, 'clientWidth', 'get').mockReturnValue(1000);
       column.header!.menu!.commandItems = [

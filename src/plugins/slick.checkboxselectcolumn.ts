@@ -39,6 +39,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
   };
   protected _isSelectAllChecked = false;
   protected _bindingEventService: BindingEventService_;
+  protected headerClickHandler = this.handleHeaderClick.bind(this); // same reference to unsubscribe it again
 
   constructor(options?: Partial<CheckboxSelectorOption>) {
     this._bindingEventService = new BindingEventService();
@@ -75,7 +76,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
       this.addCheckboxToFilterHeaderRow(grid);
     }
     if (!this._options.hideInColumnTitleRow) {
-      this._handler.subscribe(this._grid.onHeaderClick, this.handleHeaderClick.bind(this));
+      this._handler.subscribe(this._grid.onHeaderClick, this.headerClickHandler);
     }
   }
 
@@ -97,7 +98,9 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
     } else {
       if (!this._options.hideInColumnTitleRow) {
         this.renderSelectAllCheckbox(this._isSelectAllChecked);
-        this._handler.subscribe(this._grid.onHeaderClick, this.handleHeaderClick.bind(this));
+        // subscribe only once, however many times the options are set
+        this._handler.unsubscribe(this._grid.onHeaderClick, this.headerClickHandler);
+        this._handler.subscribe(this._grid.onHeaderClick, this.headerClickHandler);
       } else {
         this.hideSelectAllFromColumnHeaderTitleRow();
         if (this._options.name) {

@@ -152,6 +152,26 @@ describe('SlickCheckboxSelectColumn', () => {
     expect(selectedRows).toHaveBeenCalledWith([0, 2], 'click.selectAll');
   });
 
+  it('handles a header checkbox click only once however many times the options are set', () => {
+    gridStub.getDataLength = vi.fn(() => 2) as any;
+    gridStub.getDataItem = vi.fn((row: number) => ({ id: row })) as any;
+    plugin.init(gridStub);
+    plugin.setOptions({ hideInColumnTitleRow: false });
+    plugin.setOptions({ hideInColumnTitleRow: false });
+    const selectedRows = vi.spyOn(gridStub, 'setSelectedRows');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = true;
+    gridStub.onHeaderClick.notify({ column: columns[0] } as any, Object.assign(new SlickEventData(), {
+      target: checkbox,
+      preventDefault: vi.fn(),
+      stopPropagation: vi.fn(),
+      stopImmediatePropagation: vi.fn(),
+    }));
+
+    expect(selectedRows).toHaveBeenCalledOnce();
+  });
+
   it('selects all filtered DataView ids when applySelectOnAllPages is enabled', () => {
     dataViewStub.getFilteredItems.mockReturnValue([{ id: 'a' }, { id: 'b' }] as any);
     plugin = new SlickCheckboxSelectColumn({ applySelectOnAllPages: true });
