@@ -160,7 +160,7 @@ const queueMicrotaskPolyfill = (callback: () => void) => typeof queueMicrotask =
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.20.2
+ * SlickGrid v6.0.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -213,7 +213,7 @@ const EMPTY_ROW_DOCKING_LAYOUT: RowDockingLayout = {
 export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O extends BaseGridOption<C> = BaseGridOption<C>> {
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Public API
-  slickGridVersion = '5.20.2';
+  slickGridVersion = '6.0.0';
 
   /** Optional grid state client id retained for plugin compatibility. */
   cid = '';

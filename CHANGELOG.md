@@ -3,6 +3,57 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [6.0.0](https://github.com/6pac/SlickGrid/compare/5.20.2...6.0.0) (2026-11-10)
+
+* feat(grid)!: sample 200 autosize rows by default and type autosize modes (#1328) ([2293efc](https://github.com/6pac/SlickGrid/commit/2293efcdd04f6c3d4465ad126f54de3dcadb672f)), closes [#1328](https://github.com/6pac/SlickGrid/issues/1328)
+* refactor!: remove the SortableJS dependency entirely (#1244), closes [#1244](https://github.com/6pac/SlickGrid/issues/1244) [ghiscoding/slickgrid-universal#2634](https://github.com/ghiscoding/slickgrid-universal/issues/2634)
+* feat!: replace decoy-textarea clipboard handling with the async Clipboard API (#1270) ([5720d08](https://github.com/6pac/SlickGrid/commit/5720d082abeba3f8d4e5f1b7f6adbf7c87ab1de6)), closes [#1270](https://github.com/6pac/SlickGrid/issues/1270)
+
+### Bug Fixes
+
+* **alpine:** keep resize handle separator thin ([#1340](https://github.com/6pac/SlickGrid/issues/1340)) ([2c604ce](https://github.com/6pac/SlickGrid/commit/2c604ce9f58211e8ebfa38aa7a4b51721192ef37))
+* **build:** point package entry points at the ESM build ([#1343](https://github.com/6pac/SlickGrid/issues/1343)) ([0b8b163](https://github.com/6pac/SlickGrid/commit/0b8b1632b8d6ee2d198497970ac96ea01a63b005)), closes [#1310](https://github.com/6pac/SlickGrid/issues/1310)
+* **build:** require Node versions that support require(esm) ([#1344](https://github.com/6pac/SlickGrid/issues/1344)) ([b72d781](https://github.com/6pac/SlickGrid/commit/b72d78141392ba1068d46a7e37b581fbb4c995ed))
+* **core:** let SlickEvent.unsubscribe() remove every handler ([#1345](https://github.com/6pac/SlickGrid/issues/1345)) ([fe26f4c](https://github.com/6pac/SlickGrid/commit/fe26f4cffe108df132f487c5211f9ceec6a0c819))
+* **core:** prevent hidden columns from rendering in group totals rows ([#1321](https://github.com/6pac/SlickGrid/issues/1321)) ([4528333](https://github.com/6pac/SlickGrid/commit/4528333381e2ed1bdef00bfd631d1765f9193be3))
+* editor, menu, checkbox column and tooltip bugs found by coverage ([#1347](https://github.com/6pac/SlickGrid/issues/1347)) ([51bc59a](https://github.com/6pac/SlickGrid/commit/51bc59a0e025c0fef90020ef2e0b727c939e1021)), closes [#1338](https://github.com/6pac/SlickGrid/issues/1338)
+* **examples:** use the current Grid Menu command options in the pinning examples ([96666c4](https://github.com/6pac/SlickGrid/commit/96666c4f5a3574706f56d474483ce27308314788))
+* **grid:** correct autosize measurement for single columns, filter modes and supplied types ([#1309](https://github.com/6pac/SlickGrid/issues/1309)) ([d7cb0d6](https://github.com/6pac/SlickGrid/commit/d7cb0d6a3e327f6ed05706b0a5c0ea8560633ebd))
+* **gridmenu:** fit the icon in the menu slot, keep the resize-handle hover box stable and make the trailing-handle test deterministic ([2f99987](https://github.com/6pac/SlickGrid/commit/2f99987449925726786e9c4115c8e289eb0dce30))
+* **grid:** render the visible columns of wide right-to-left grids ([#1333](https://github.com/6pac/SlickGrid/issues/1333)) ([2d03479](https://github.com/6pac/SlickGrid/commit/2d03479cfb91304221785b82b30eff5ca8cc8a0b))
+* really unsubscribe plugin and control handlers on destroy ([#1346](https://github.com/6pac/SlickGrid/issues/1346)) ([ce83876](https://github.com/6pac/SlickGrid/commit/ce8387632c2769b81ef02c8cf676ea70de736d33))
+* **rowdetail:** keep the 13px line-height for every top-level element of a detail template ([7e4bb60](https://github.com/6pac/SlickGrid/commit/7e4bb6043d94f3625dd6ee57e28b682c78be2d41))
+* **selection:** preserve active cell when selecting all cells ([#1308](https://github.com/6pac/SlickGrid/issues/1308)) ([bb29805](https://github.com/6pac/SlickGrid/commit/bb2980587007f66119ce0ef52be41034a7cd86ec))
+
+### Features
+
+* **pinning:** unify validation error callbacks ([#1318](https://github.com/6pac/SlickGrid/issues/1318)) ([892349e](https://github.com/6pac/SlickGrid/commit/892349eda28055a7208ceab559646e1874f05829))
+* rename trigger fn to `triggerEvent()` and make it public ([#1315](https://github.com/6pac/SlickGrid/issues/1315)) ([fcaa7d0](https://github.com/6pac/SlickGrid/commit/fcaa7d0a0e5eda4db288a3f8e7514b4a4b5c42f2))
+
+### BREAKING CHANGES
+
+* CellExternalCopyManager now copies via
+  navigator.clipboard.writeText and pastes via navigator.clipboard.readText
+  (secure context required). The bodyElement and clipboardPasteDelay options
+  are removed, _decodeTabularData takes the clipboard text instead of a
+  textarea, and paste completes asynchronously. New clipboardWriteOverride /
+  clipboardReadOverride plugin options replace the transport where the
+  Clipboard API is unavailable. The row split in _decodeTabularData now
+  treats CRLF as one delimiter (the decoy textarea normalized CRLF away;
+  readText does not).
+* ContentIntelligent number and string columns used to read
+  every row and now read the first 200. Content columns using the default
+  count read 200 rows instead of 100.
+* SortableJS is no longer used nor required. Consumers who load
+  SlickGrid via script tags can remove their SortableJS `<script>` include; the
+  `window.Sortable` global is no longer read. Column reordering now requires
+  `slick.interactions.js` to be loaded (it already was in every example). The
+  `SlickDraggableGrouping.getSetupColumnReorder()` return shape changed in the
+  previous commit as part of the same effort.
+* TypeScript rejects misspelt autosize modes, and a value
+  held in a plain string variable needs a type assertion such as
+  `value as ColAutosizeModeValue`. No runtime change.
+
 ## [5.20.2](https://github.com/6pac/SlickGrid/compare/5.20.1...5.20.2) (2026-09-17)
 
 ### Bug Fixes
