@@ -118,10 +118,10 @@
   opacity: var(--slick-group-icon-opacity, v.$slick-group-icon-opacity);
 
   &.expanded {
-    @include m.createSvgStyle('alpine-group-expanded-icon-svg', v.$slick-group-expanded-icon-svg-path);
+    @include m.createSvgStyle('slick-group-expanded-icon-svg', v.$slick-group-expanded-icon-svg-path);
   }
   &.collapsed {
-    @include m.createSvgStyle('alpine-group-collapsed-icon-svg', v.$slick-group-collapsed-icon-svg-path);
+    @include m.createSvgStyle('slick-group-collapsed-icon-svg', v.$slick-group-collapsed-icon-svg-path);
   }
 }
 
@@ -141,10 +141,10 @@
   opacity: var(--slick-group-icon-opacity, v.$slick-group-icon-opacity);
 
   &.collapsed {
-    @include m.createSvgStyle('alpine-group-collapsed-icon-svg', v.$slick-group-collapsed-icon-svg-path);
+    @include m.createSvgStyle('slick-group-collapsed-icon-svg', v.$slick-group-collapsed-icon-svg-path);
   }
   &.expanded {
-    @include m.createSvgStyle('alpine-group-expanded-icon-svg', v.$slick-group-expanded-icon-svg-path);
+    @include m.createSvgStyle('slick-group-expanded-icon-svg', v.$slick-group-expanded-icon-svg-path);
   }
 }
 
@@ -801,7 +801,7 @@ input.editor-percentcomplete {
     font-size: 18px;
     width: 1em;
     height: 1em;
-    @include m.createSvgStyle('alpine-percent-complete-picker-icon-svg', v.$slick-percent-complete-picker-icon-svg-path);
+    @include m.createSvgStyle('slick-percent-complete-picker-icon-svg', v.$slick-percent-complete-picker-icon-svg-path);
   }
 }
 .editor-percentcomplete-picker:hover .editor-percentcomplete-helper {
