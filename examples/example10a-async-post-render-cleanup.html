@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <title>SlickGrid example 10: Async post render</title>
+  <title>SlickGrid example 10a: Async post render with cleanup</title>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
@@ -31,7 +31,7 @@
 
 <div style="margin-left:650px;margin-top:40px;" class="description">
   <h2>
-    <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+    <a href="./index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
     Demonstrates:
   </h2>
 
@@ -66,10 +66,9 @@
     </ul>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-<script src="https://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
-<!-- nb: sparkline 2.x will cause a memory leak in the current architecture, so we use sparkline 1.x and jquery-migrate -->
-<script src="../lib/jquery.sparkline.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+<!-- sparkline 2.x leaks memory unless its nodes are cleaned up explicitly, which is what this example demonstrates -->
+<script src="../lib/jquery.sparkline-2-1-2.min.js"></script>
 
 <script src="../dist/browser/slick.core.js"></script>
 <script src="../dist/browser/slick.interactions.js"></script>

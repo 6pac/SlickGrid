@@ -27,6 +27,7 @@ export default defineConfig({
       { text: 'Introduction', link: '/introduction/' },
       { text: 'In-depth', link: '/in-depth/' },
       { text: 'Reference', link: '/reference/' },
+      { text: 'Migration guides', link: '/migration/' },
       { text: 'Examples', link: '/examples' },
     ],
     sidebar: {
@@ -65,7 +66,15 @@ export default defineConfig({
             { text: 'CSP & sanitization', link: '/in-depth/csp' },
             { text: 'Performance', link: '/in-depth/performance' },
             { text: 'TypeScript', link: '/in-depth/typescript' },
-            { text: 'Migrating to v6', link: '/in-depth/migration-v6' },
+          ],
+        },
+      ],
+      '/migration/': [
+        {
+          text: 'Migration guides',
+          items: [
+            { text: 'Overview', link: '/migration/' },
+            { text: 'Migrating to v6', link: '/migration/v6' },
           ],
         },
       ],

@@ -182,9 +182,9 @@ resolves to the column drawn there, not to the column the natural layout would p
 | `frozenRightViewportMinWidth` | removed; use `docking.maxColumnViewportWidthPercent` |
 | `skipFreezeColumnValidation` | `skipPinningValidation` |
 | `invalidColumnFreezePickerMessage/Callback`, `invalidColumnFreezeWidthMessage/Callback`, `throwWhenFrozenNotAllViewable` | `invalidColumnPinningPickerMessage`, `invalidColumnPinningWidthMessage`, and the shared `errorCallback` (no throwing variant) |
-| `grid.getFrozenColumnId()`, `grid.getFrozenRowOffset()`, `grid.validateColumnFreeze()`, `grid.validateColumnFreezeWidth()` | `grid.getPinnedColumns()`, `grid.validateColumnPinning()`; row offsets are internal |
+| `grid.getFrozenColumnId()`, `grid.getFrozenRowOffset()`, `grid.validateColumnFreezeWidth()`, `grid.validateSetColumnFreeze()` | `grid.getPinnedColumns()`, `grid.validateColumnPinning()`; row offsets are internal |
 | `getCanvases()`, `getViewports()`, `getHeaderRow()`, `getFooterRow()` returning left/right pairs | One element each; the array-returning forms still return one entry |
-| `.slick-pane-*`, `.slick-viewport-right`, `.slick-viewport-bottom`, `.grid-canvas-right`, `.grid-canvas-bottom`, `.slick-header-right`, `.slick-headerrow-right`, `.slick-footerrow-right` | Removed. Use the selectors in the table above. `slick-viewport-top slick-viewport-left` and `grid-canvas-top grid-canvas-left` remain on the single viewport/canvas. |
+| `.slick-pane-*`, `.slick-viewport-right`, `.slick-viewport-bottom`, `.grid-canvas-right`, `.grid-canvas-bottom`, `.slick-header-right` | Removed. Use the selectors in the table above. `slick-viewport-top slick-viewport-left` and `grid-canvas-top grid-canvas-left` remain on the single viewport/canvas. `.slick-header-columns-right`, `.slick-headerrow-columns-right` and `.slick-footerrow-columns-right` remain only as right-pinned band wrappers. |
 | Column reorder across the frozen boundary | Not possible; pin/unpin explicitly |
 | Grid State plugin `frozenColumn` | Not persisted; store `pinning` from `grid.getOptions()` |
 
@@ -198,8 +198,9 @@ The new `onHeaderKeyDown` event is typed `OnHeaderKeyDownEventArgs` and publishe
 
 Header, header-row, footer and cell events keep their argument shapes. `getGridPosition()` and
 `getActiveCellPosition()` still return document-relative positions. `applyHtmlCode()`,
-`trigger()`, `validateAndEnforceOptions()` and the `set*Visibility(visible, animate)` signatures
-are unchanged from v5.
+`validateAndEnforceOptions()` and the `set*Visibility(visible, animate)` signatures are unchanged
+from v5. The protected `trigger()` became the public `triggerEvent()`; see the
+[v6 migration guide](/migration/v6#subclasses-protected-members).
 
 ## Known limitations
 
@@ -228,7 +229,7 @@ Browser coverage lives in `cypress/e2e/*pinning*`, `*sticky*`, `quirk-pinning-*`
 
 ## See also
 
-- [Migrating to v6](/in-depth/migration-v6)
+- [Migrating to v6](/migration/v6)
 - Reference: [`pinning`](/reference/grid#opt-pinning), [`stickyRows`](/reference/grid#opt-stickyRows),
   [`docking`](/reference/grid#opt-docking), [`skipPinningValidation`](/reference/grid#opt-skipPinningValidation),
   the column properties [`pinned`](/reference/column#col-pinned) and [`sticky`](/reference/column#col-sticky),

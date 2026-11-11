@@ -5,7 +5,7 @@ description: Migrate standalone 6pac/SlickGrid applications to v6, including IIF
 
 # Migrate SlickGrid to v6
 
-Read the [v6 migration guide](https://6pac.github.io/SlickGrid/in-depth/migration-v6) before changing an application. In a SlickGrid checkout, the guide is `docs/in-depth/migration-v6.md`; it is the source of truth for detailed mappings and examples. The release is upcoming, so confirm that the target v6 version contains each referenced change. For applications older than v5, check earlier migrations first.
+Read the [v6 migration guide](https://6pac.github.io/SlickGrid/migration/v6) before changing an application. In a SlickGrid checkout, the guide is `docs/migration/v6.md`; it is the source of truth for detailed mappings and examples. It compares 5.20.2 with 6.0.0. For applications older than v5, check earlier migrations first.
 
 Inspect the application's dependencies, script tags or imports, grid and column options, plugins, saved configurations, styles, and tests. Apply only relevant changes and preserve existing behavior. SlickGrid standalone supports IIFE and ESM; it does not provide SlickGrid Universal's services or framework wrappers. Preserve the application's module format and explicitly loaded plugins.
 

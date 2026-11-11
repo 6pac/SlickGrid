@@ -183,7 +183,7 @@ const dataView = new SlickDataView();
 dataView.setFilter((item) => item.active === true);
 ```
 
-No DataView filter strategy option is needed. See the [v6 migration guide](/in-depth/migration-v6#dataview-filtering) for removed options and types.
+No DataView filter strategy option is needed. See the [v6 migration guide](/migration/v6#dataview-filtering) for removed options and types.
 
 ## Common pitfalls
 
