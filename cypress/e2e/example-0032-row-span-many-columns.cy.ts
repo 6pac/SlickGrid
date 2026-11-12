@@ -36,6 +36,37 @@ describe('Example - colspan & rowspan spanning many columns', { retries: 0 }, ()
       .each(($child, index) => expect($child.text()).to.eq(fullTitles[index]));
   });
 
+  it('keeps spanning cells above active and hovered covered rows', () => {
+    const expectSpanAtRow = (selector: string, rowIndex: number) => {
+      cy.get(selector).should(($span) => {
+        const span = $span[0];
+        const row = span.ownerDocument.querySelector<HTMLElement>(`#myGrid .slick-row[data-row="${rowIndex}"]`)!;
+        const spanRect = span.getBoundingClientRect();
+        const rowRect = row.getBoundingClientRect();
+        const painted = span.ownerDocument.elementFromPoint(spanRect.left + spanRect.width / 2, rowRect.top + rowRect.height / 2);
+        expect(painted === span || span.contains(painted)).to.eq(true);
+      });
+    };
+
+    cy.get('#myGrid .slick-row[data-row="3"] > .slick-cell.l2').click();
+    expectSpanAtRow('#myGrid .slick-row[data-row="2"] > .slick-cell.l0.rowspan', 3);
+    cy.get('#myGrid .slick-row[data-row="4"] > .slick-cell.l2').realHover();
+    expectSpanAtRow('#myGrid .slick-row[data-row="2"] > .slick-cell.l0.rowspan', 4);
+    expectSpanAtRow('#myGrid .slick-row[data-row="3"] > .slick-cell.l3.rowspan', 4);
+    cy.get('h2').realHover();
+  });
+
+  it('retains the tall rowspan host while scrolling vertically', () => {
+    let host: HTMLElement;
+    cy.get('#myGrid .slick-row[data-row="8"]').then(($row) => { host = $row[0]; });
+    cy.get('#myGrid .slick-viewport-top.slick-viewport-left').scrollTo(0, 900);
+    cy.get('#myGrid .slick-row[data-row="8"]').should(($row) => {
+      expect($row[0]).to.equal(host);
+      expect($row.find('.slick-cell.l3.rowspan')).to.have.length(1);
+    });
+    cy.get('#myGrid .slick-viewport-top.slick-viewport-left').scrollTo(0, 0);
+  });
+
   it('should clamp an off-screen resize to the viewport and continue widening at 10px per 30ms', () => {
     let widthAtViewportEdge = 0;
     const headerSelector = '#myGrid .slick-header-columns .slick-header-column:first-child';
