@@ -6604,6 +6604,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
     }
 
+    // Span hosts above the render range still need horizontally virtualized cells.
+    for (const row of Object.keys(this.rowsCache).map(Number)) {
+      if (this.rowsCache[row].rowSpanHost && !rowsToProcess.includes(row)) {
+        rowsToProcess.push(row);
+      }
+    }
+
     for (const row of rowsToProcess) {
       cacheEntry = this.rowsCache[row];
       if (cacheEntry) {
@@ -6763,7 +6770,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const mandatorySpanRows = this.setDifference(renderingRows, mustRenderRows);
     if (mandatorySpanRows.size > 0) {
       mandatorySpanRows.forEach((r) => {
-        this.removeRowFromCache(r); // remove any previous element to avoid duplicates in DOM
+        if (this.rowsCache[r]) {
+          return;
+        }
         rows.push(r);
         this.rowsCache[r] = this.createEmptyCachingRow();
         this.appendRowHtml(divArray, r, range, dataLength);
