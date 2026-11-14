@@ -4,6 +4,22 @@ title: Pinning and sticky docking
 
 # Pinning and sticky docking
 
+## Sticky headers in auto-height grids
+
+Set `autoHeight: { stickyHeader: true }` to grow the grid to fit its rows while keeping the top-header panel, pre-header, column headers and header row visible as the page or nearest scrolling ancestor scrolls. `autoHeight: true` retains the existing non-sticky behavior. Since the option also accepts an object, use a truthy check when reading it.
+
+Sticky positioning is relative to the nearest ancestor with a scrolling mechanism. An ancestor with `overflow: auto` or `hidden` can therefore prevent the headers from sticking to the page if that ancestor is not the element being scrolled.
+
+Use `--slick-sticky-header-top` to offset the stack below fixed page content and `--slick-sticky-header-z-index` to change its stacking order (default `7`):
+
+```css
+.slick-container {
+  --slick-sticky-header-top: 56px;
+}
+```
+
+See [the auto-height example](/examples/example11-autoheight.html).
+
 ::: tip v6
 Version 6 replaces frozen panes with pinning and sticky docking (PR #1302). If you used `frozenColumn`, `frozenRow` or `frozenBottom`, see [Migrating from frozen panes (v5)](#migrating-from-frozen-panes-v5) below.
 :::

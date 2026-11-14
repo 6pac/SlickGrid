@@ -6141,6 +6141,22 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return this.viewportW;
   }
 
+  /** Toggle the sticky header layers of `autoHeight.stickyHeader` and expose their measured heights as CSS variables. */
+  protected applyAutoHeightStickyHeader(): boolean {
+    const autoHeight = this._options.autoHeight;
+    const isStickyHeader = !!(autoHeight && typeof autoHeight === 'object' && autoHeight.stickyHeader);
+    this._container.classList.toggle('slick-auto-height-sticky-header', isStickyHeader);
+    if (isStickyHeader) {
+      const topHeaderHeight = this._options.showTopHeaderPanel ? this._topHeaderPanelScroller?.offsetHeight || 0 : 0;
+      this._container.style.setProperty('--slick-sticky-topheader-height', `${topHeaderHeight}px`);
+      this._container.style.setProperty('--slick-sticky-header-height', `${this._headerRoot.offsetHeight}px`);
+    } else {
+      this._container.style.removeProperty('--slick-sticky-topheader-height');
+      this._container.style.removeProperty('--slick-sticky-header-height');
+    }
+    return isStickyHeader;
+  }
+
   /** Execute a Resize of the Grid Canvas.
   *
   * Recalculates the grid’s canvas, pane, and viewport dimensions based on the current container size,
@@ -6202,6 +6218,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         this.autoHeightContainerSizeApplied = false;
       }
 
+      const isStickyHeader = this.applyAutoHeightStickyHeader();
       let topHeightOffset = Utils.height(this._headerRoot);
       if (topHeightOffset) {
         topHeightOffset += this._options.showTopHeaderPanel ? this._options.topHeaderPanelHeight! : 0;
@@ -6210,7 +6227,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           (this._options.showHeaderRow ? this._options.headerRowHeight! : 0) +
           (this._options.showPreHeaderPanel ? this._options.preHeaderPanelHeight! : 0);
       }
-      Utils.setStyleSize(this._contentRoot, 'top', topHeightOffset);
+      // A sticky header root stays in the normal flow, so the content root must not be offset below it.
+      Utils.setStyleSize(this._contentRoot, 'top', isStickyHeader ? 0 : topHeightOffset);
       Utils.height(this._contentRoot, this.paneTopH);
 
       if (!this._options.autoHeight) {
