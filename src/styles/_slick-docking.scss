@@ -10,6 +10,34 @@
   display: block;
 }
 
+// In auto-height grids the page (or another ancestor) owns vertical scrolling.
+.slick-auto-height-sticky-header {
+  > .slick-topheader-panel,
+  > .slick-header-root,
+  > .slick-content-root > .slick-headerrow {
+    position: sticky !important;
+    z-index: var(--slick-sticky-header-z-index, 7);
+  }
+
+  > .slick-topheader-panel {
+    top: var(--slick-sticky-header-top, 0px);
+    background-color: var(--slick-header-bg-color, #ececec);
+  }
+
+  > .slick-header-root {
+    top: calc(var(--slick-sticky-header-top, 0px) + var(--slick-sticky-topheader-height, 0px));
+  }
+
+  > .slick-content-root {
+    overflow: clip;
+  }
+
+  > .slick-content-root > .slick-headerrow {
+    top: calc(var(--slick-sticky-header-top, 0px) + var(--slick-sticky-topheader-height, 0px) + var(--slick-sticky-header-height, 0px));
+    background-color: var(--slick-headerrow-bg-color, #fafafa);
+  }
+}
+
 .slick-header-container,
 .slick-preheader-container {
   display: flex;

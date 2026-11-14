@@ -2822,6 +2822,51 @@ describe('SlickGrid core file', () => {
           expect(grid.getCanvasWidth()).toBeLessThanOrEqual(801);
         });
 
+        it('should make the header layers sticky and expose their stacked heights when "autoHeight.stickyHeader" is enabled', () => {
+          grid = new SlickGrid<any, Column>(container, data, columns, {
+            ...defaultOptions,
+            autoHeight: { stickyHeader: true },
+            createTopHeaderPanel: true,
+            showTopHeaderPanel: true,
+            topHeaderPanelHeight: 30,
+            showHeaderRow: true,
+            headerRowHeight: 40,
+          });
+          grid.init();
+          const topHeaderPanelElm = container.querySelector('.slick-topheader-panel') as HTMLDivElement;
+          const headerRootElm = container.querySelector('.slick-header-root') as HTMLDivElement;
+          const contentRootElm = container.querySelector('.slick-content-root') as HTMLDivElement;
+          Object.defineProperty(topHeaderPanelElm, 'offsetHeight', { configurable: true, value: 31 });
+          Object.defineProperty(headerRootElm, 'offsetHeight', { configurable: true, value: 50 });
+          grid.resizeCanvas();
+
+          expect(grid.getViewportHeight()).toBe(DEFAULT_COLUMN_HEIGHT * data.length);
+          expect(container.classList.contains('slick-auto-height-sticky-header')).toBe(true);
+          expect(container.style.getPropertyValue('--slick-sticky-topheader-height')).toBe('31px');
+          expect(container.style.getPropertyValue('--slick-sticky-header-height')).toBe('50px');
+          expect(contentRootElm.style.top).toBe('0px');
+
+          grid.setOptions({ showTopHeaderPanel: false });
+          grid.resizeCanvas();
+          expect(container.style.getPropertyValue('--slick-sticky-topheader-height')).toBe('0px');
+
+          grid.setOptions({ autoHeight: true });
+          grid.resizeCanvas();
+          expect(container.classList.contains('slick-auto-height-sticky-header')).toBe(false);
+          expect(container.style.getPropertyValue('--slick-sticky-topheader-height')).toBe('');
+          expect(container.style.getPropertyValue('--slick-sticky-header-height')).toBe('');
+          expect(contentRootElm.style.top).toBe('40px');
+        });
+
+        it('should use "autoHeight" without sticky header layers when it is a boolean', () => {
+          grid = new SlickGrid<any, Column>(container, data, columns, { ...defaultOptions, autoHeight: true });
+          grid.init();
+
+          expect(grid.getViewportHeight()).toBe(DEFAULT_COLUMN_HEIGHT * data.length);
+          expect(container.classList.contains('slick-auto-height-sticky-header')).toBe(false);
+          expect(container.style.getPropertyValue('--slick-sticky-header-height')).toBe('');
+        });
+
         it('should return original grid height when calling method', () => {
           const data = [
             { id: 0, firstName: 'John', lastName: 'Doe', age: 30 },
