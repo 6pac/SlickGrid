@@ -18,6 +18,6 @@
     "vitepress": "^2.0.0-alpha.21"
   },
   "overrides": {
-    "minimatch": "^11.0.5"
+    "minimatch": "^11.0.8"
   }
 }
