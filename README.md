@@ -22,7 +22,7 @@ We extended the project from the original SlickGrid foundation while also includ
 - removed jQueryUI requirement in [v3](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) (replaced it with [SortableJS](https://sortablejs.github.io/Sortable/) which was later dropped in v6)
 - removed jQuery requirement in [v4](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
 - modernized the project in [v5](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) by migrating to TypeScript (we kept IIFE and added ES6/ESM build targets) and we also gave SlickGrid a fresh and more modern look via a new Alpine Theme (CSS/SASS)
-- in [v6](https://6pac.github.io/SlickGrid/in-depth/migration-v6), we completely rewrote Freezing into Pinning and also brought a new Sticky columns/rows, we also dropped `SortableJS` which makes SlickGrid a **zero dependencies** project (we now use native HTML5 drag & drop for column reordering and draggable grouping)
+- in [v6](https://6pac.github.io/SlickGrid/migration/v6), we completely rewrote Freezing into Pinning and also brought a new Sticky columns/rows, we also dropped `SortableJS` which makes SlickGrid a **zero dependencies** project (we now use native HTML5 drag & drop for column reordering and draggable grouping)
 
 ### Common Questions & Answers
 - Do I need TypeScript to use version >=5.0?
@@ -106,7 +106,7 @@ Once the Cypress UI is open, you can then click on "Run all Specs" to execute al
 | 3.x       | [Announcing v3.0](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) | dropping [jQueryUI](https://jqueryui.com/) requirement and replaced it with [SortableJS](https://sortablejs.github.io/Sortable/) which is a lot more modern and touch friendly |
 | 4.x       | [Announcing v4.0](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement) | dropping [jQuery](https://jquery.com/) requirement, SlickGrid is now using browser native code |
 | 5.x       | [Announcing v5.0](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) | project modernization, we added ES6/ESM builds by migrating to TypeScript and also a new Alpine Theme |
-| 6.x       | [Announcing v6.0](https://6pac.github.io/SlickGrid/in-depth/migration-v6) | Pinning rewrite, new Sticky feature and drop of `SortableJS` to be a **zero dependencies** project |
+| 6.x       | [Announcing v6.0](https://6pac.github.io/SlickGrid/migration/v6) | Pinning rewrite, new Sticky feature and drop of `SortableJS` to be a **zero dependencies** project |
 
 ## CSP Compliance
 The library is now, for the big part, CSP (Content Security Policy) compliant since `v5.5.0`, however there are some exceptions to be aware of; when using any html strings as template (for example with Custom Formatter returning an html string), you will not be fully compliant unless you return `TrustedHTML`. You can achieve it by using the `sanitizer` grid option callback in combo with [DOMPurify](https://github.com/cure53/DOMPurify) to return [`TrustedHTML`](https://developer.mozilla.org/en-US/docs/Web/API/TrustedHTML). For more info, please take a look at the [CSP Compliance](https://github.com/6pac/SlickGrid/wiki/CSP-Compliance) Wiki.

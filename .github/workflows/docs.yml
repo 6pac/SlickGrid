@@ -20,6 +20,7 @@ on:
       - 'docs/**'
       - 'vitepress/**'
       - 'examples/**'
+      - 'lib/**'
       - 'src/**'
       - 'scripts/**'
       - 'package.json'
@@ -69,6 +70,9 @@ jobs:
       - name: add Examples folder to the VitePress site
         working-directory: .
         run: cp -a examples vitepress/.vitepress/dist/
+      - name: add the third-party libraries used by the Examples to the VitePress site
+        working-directory: .
+        run: cp -a lib vitepress/.vitepress/dist/
       - uses: actions/upload-pages-artifact@v5
         with:
           path: vitepress/.vitepress/dist

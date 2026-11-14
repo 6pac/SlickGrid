@@ -6,6 +6,23 @@ import { fileURLToPath } from 'node:url';
 const base = process.env.DOCS_BASE || '/';
 const vuePath = fileURLToPath(new URL('../node_modules/vue', import.meta.url));
 
+// VitePress runs both heading ids and the #hash of every internal link through this.
+// Its default lowercases, which breaks links to the Reference anchors (`m-updateColumns`,
+// `opt-frozenColumn`, ...) whose ids are the member names, so keep those exactly as written.
+const referenceAnchor = /^[a-z]+-[A-Za-z_$][\w$]*$/;
+const slugify = (str) =>
+  referenceAnchor.test(str)
+    ? str
+    : str
+        .normalize('NFKD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[\u0000-\u001f]/g, '')
+        .replace(/[\s~`!@#$%^&*()\-_+=[\]{}|\;:"'“”‘’<>,.?/]+/g, '-')
+        .replace(/-{2,}/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .replace(/^(\d)/, '_$1')
+        .toLowerCase();
+
 export default defineConfig({
   base,
   srcDir: '../docs',
@@ -14,6 +31,7 @@ export default defineConfig({
   description: 'A lightning fast JavaScript data grid — official documentation.',
   head: [['link', { rel: 'icon', type: 'image/x-icon', href: `${base}favicon.ico` }]],
   cleanUrls: true,
+  markdown: { anchor: { slugify } },
   lastUpdated: true,
   vite: {
     // The Markdown source lives outside the VitePress project root, so make
@@ -27,6 +45,7 @@ export default defineConfig({
       { text: 'Introduction', link: '/introduction/' },
       { text: 'In-depth', link: '/in-depth/' },
       { text: 'Reference', link: '/reference/' },
+      { text: 'Migration guides', link: '/migration/' },
       { text: 'Examples', link: '/examples' },
     ],
     sidebar: {
@@ -65,7 +84,15 @@ export default defineConfig({
             { text: 'CSP & sanitization', link: '/in-depth/csp' },
             { text: 'Performance', link: '/in-depth/performance' },
             { text: 'TypeScript', link: '/in-depth/typescript' },
-            { text: 'Migrating to v6', link: '/in-depth/migration-v6' },
+          ],
+        },
+      ],
+      '/migration/': [
+        {
+          text: 'Migration guides',
+          items: [
+            { text: 'Overview', link: '/migration/' },
+            { text: 'Migrating to v6', link: '/migration/v6' },
           ],
         },
       ],
