@@ -1,0 +1,225 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example: Pivot crosstab, lookups and measures</title>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.pivot.css" type="text/css"/>
+  <style>
+    .crosstab-example {
+      width: 1000px;
+    }
+
+    .crosstab-example h3 {
+      margin: 14px 0 6px;
+      font-size: 14px;
+    }
+
+    .crosstab-example p {
+      margin: 4px 0 8px;
+      font-size: 12px;
+      color: #4b5560;
+    }
+
+    #crosstabGrid,
+    #measuresGrid {
+      width: 100%;
+      height: 330px;
+    }
+  </style>
+</head>
+<body>
+<div class="crosstab-example">
+  <div class="options-panel" style="left:1020px; top:8px;">
+    <div style="padding:6px;">
+      <h2>Demonstrates:</h2>
+      <ul>
+        <li>the pivot API without a field list: an MS Access crosstab query (row headings, a "Qtr n" column heading with a fixed list of items, a "Where" filter and a row total)</li>
+        <li>derived fields (<code>getter</code>) and lookup fields reading related tables, like the Power Pivot data model</li>
+        <li><code>distinctCount</code>, a custom aggregator (quantity weighted discount) and measures computed after aggregation, correct at every subtotal level</li>
+        <li>"Show Values As": % of the parent row total</li>
+      </ul>
+      <h2>View Source:</h2>
+      <ul>
+        <li><a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-pivot-crosstab.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Crosstab (MS Access style)</h3>
+  <p>
+    Rows: product, customer and order year · Column heading: quarter · Value: sum of the amount · Total in front ·
+    Where:
+    <select id="yearSelect" data-test="year-select">
+      <option value="1996">1996</option>
+      <option value="1997" selected>1997</option>
+      <option value="1998">1998</option>
+    </select>
+  </p>
+  <div id="crosstabGrid" class="slick-container"></div>
+
+  <h3>Lookups, distinct count, custom aggregator and measures</h3>
+  <p>Rows: category (looked up through the product) · Columns: order year · Orders is a distinct count, "Avg Order" and "Margin %" are measures.</p>
+  <div id="measuresGrid" class="slick-container"></div>
+</div>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.pivotengine.js"></script>
+<script src="../dist/browser/plugins/slick.pivot.js"></script>
+
+<script>
+  // --
+  // related tables (a small, generated, Northwind like data model)
+  // -----------------
+
+  function createRandom(seed) {
+    return function () {
+      seed |= 0;
+      seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  const categories = new Map([[1, 'Beverages'], [2, 'Condiments'], [3, 'Dairy Products'], [4, 'Seafood']]);
+  const products = new Map([
+    [1, { name: 'Alice Mutton', categoryId: 3, price: 39, cost: 25 }],
+    [2, { name: 'Aniseed Syrup', categoryId: 2, price: 10, cost: 6 }],
+    [3, { name: 'Boston Crab Meat', categoryId: 4, price: 18.4, cost: 12 }],
+    [4, { name: 'Camembert Pierrot', categoryId: 3, price: 34, cost: 22 }],
+    [5, { name: 'Chai', categoryId: 1, price: 18, cost: 9 }],
+    [6, { name: 'Ikura', categoryId: 4, price: 31, cost: 21 }],
+  ]);
+  const customers = new Map([
+    ['ALFKI', { name: 'Alfreds Futterkiste', country: 'Germany' }],
+    ['BERGS', { name: 'Berglunds snabbköp', country: 'Sweden' }],
+    ['BOTTM', { name: 'Bottom-Dollar Markets', country: 'Canada' }],
+    ['ERNSH', { name: 'Ernst Handel', country: 'Austria' }],
+    ['PICCO', { name: 'Piccolo und mehr', country: 'Austria' }],
+    ['SAVEA', { name: 'Save-a-lot Markets', country: 'USA' }],
+  ]);
+
+  const random = createRandom(1997);
+  const orderDetails = [];
+  for (let orderId = 10248; orderId < 10248 + 420; orderId++) {
+    const customerId = Array.from(customers.keys())[Math.floor(random() * customers.size)];
+    const orderDate = new Date(1996, 6, 1 + Math.floor(random() * 640));
+    const lines = 1 + Math.floor(random() * 3);
+    for (let line = 0; line < lines; line++) {
+      const productId = 1 + Math.floor(random() * products.size);
+      orderDetails.push({
+        OrderID: orderId,
+        CustomerID: customerId,
+        OrderDate: orderDate,
+        ProductID: productId,
+        UnitPrice: products.get(productId).price,
+        Quantity: 1 + Math.floor(random() * 40),
+        Discount: [0, 0, 0.05, 0.1, 0.15, 0.2][Math.floor(random() * 6)],
+      });
+    }
+  }
+
+  // --
+  // fields: derived fields and lookups through the related tables
+  // -----------------
+
+  const amount = (row) => row.UnitPrice * row.Quantity * (1 - row.Discount);
+  const fields = [
+    { id: 'ProductName', label: 'Product Name', group: 'Products', getter: (row) => products.get(row.ProductID).name },
+    { id: 'Category', group: 'Products', getter: (row) => categories.get(products.get(row.ProductID).categoryId) },
+    { id: 'CustomerID', label: 'Customer', group: 'Customers', itemFormatter: (id) => customers.get(id)?.name ?? id },
+    { id: 'Country', group: 'Customers', getter: (row) => customers.get(row.CustomerID).country },
+    { id: 'OrderID', label: 'Order', group: 'Orders' },
+    { id: 'OrderYear', label: 'OrderYear', type: 'number', group: 'Orders', getter: (row) => row.OrderDate.getFullYear() },
+    { id: 'Quarter', group: 'Orders', getter: (row) => `Qtr ${Math.floor(row.OrderDate.getMonth() / 3) + 1}`, predefinedValues: ['Qtr 1', 'Qtr 2', 'Qtr 3', 'Qtr 4'] },
+    { id: 'Quantity', type: 'number', group: 'Order Details' },
+    { id: 'Discount', type: 'number', group: 'Order Details' },
+    { id: 'Amount', type: 'number', group: 'Order Details', getter: amount },
+    { id: 'Cost', type: 'number', group: 'Order Details', getter: (row) => products.get(row.ProductID).cost * row.Quantity },
+  ];
+  const currency = { style: 'currency', currency: 'USD', locale: 'en-US' };
+  const gridOptions = Slick.Pivot.getGridOptions({ enableCellNavigation: true });
+
+  // --
+  // 1. MS Access crosstab: ProductName, CustomerID, OrderYear = Row Heading; "Qtr " & DatePart("q", [OrderDate]) = Column Heading;
+  //    Sum(amount) = Value; Total: Sum(amount) = Row Heading (here the grand total column, in front); OrderDate = Where
+  // -----------------
+
+  const crosstab = new Slick.Pivot({
+    source: orderDetails,
+    fields,
+    showFieldCaptions: false,
+    enableRowCollapse: false,
+    numberFormat: currency,
+    spec: {
+      rows: ['ProductName', 'CustomerID', 'OrderYear'],
+      columns: ['Quarter'],
+      values: [{ id: 'ProductAmount', field: 'Amount', aggregator: 'sum', label: 'ProductAmount' }],
+      filters: [{ field: 'OrderYear', include: [1997] }],
+      layout: 'tabular',
+      subtotals: 'none',
+      repeatItemLabels: true,
+      grandTotals: { rows: false, columns: 'start', label: 'Total' },
+    },
+  });
+  const crosstabGrid = new Slick.Grid('#crosstabGrid', crosstab.rowModel, crosstab.getColumns(), gridOptions);
+  crosstabGrid.registerPlugin(crosstab);
+  document.querySelector('#yearSelect').addEventListener('change', (e) => {
+    crosstab.updateSpec({ filters: [{ field: 'OrderYear', include: [Number(e.target.value)] }] });
+  });
+
+  // --
+  // 2. Power Pivot like measures
+  // -----------------
+
+  // custom aggregator: discount weighted by the quantity, which can be merged at every level
+  const weightedDiscount = {
+    id: 'weightedDiscount',
+    label: 'Weighted Avg',
+    numericOnly: true,
+    init: () => ({ weighted: 0, quantity: 0 }),
+    accumulate: (state, discount, row) => {
+      state.weighted += discount * row.Quantity;
+      state.quantity += row.Quantity;
+      return state;
+    },
+    result: (state) => (state.quantity ? state.weighted / state.quantity : null),
+  };
+
+  const measures = new Slick.Pivot({
+    source: orderDetails,
+    fields,
+    aggregators: { weightedDiscount },
+    numberFormat: { locale: 'en-US' },
+    columnDefaults: { width: 92 },
+    spec: {
+      rows: ['Category', 'ProductName'],
+      columns: ['OrderYear'],
+      values: [
+        { id: 'amount', field: 'Amount', aggregator: 'sum', label: 'Amount', numberFormat: { ...currency, maximumFractionDigits: 0 } },
+        { id: 'cost', field: 'Cost', aggregator: 'sum', hidden: true },
+        { id: 'orders', field: 'OrderID', aggregator: 'distinctCount', label: 'Orders' },
+        { id: 'share', field: 'Amount', aggregator: 'sum', label: '% of Parent', showAs: 'percentOfParentRowTotal' },
+        { id: 'discount', field: 'Discount', aggregator: 'weightedDiscount', label: 'Discount', numberFormat: { style: 'percent', maximumFractionDigits: 1, locale: 'en-US' } },
+      ],
+      measures: [
+        { id: 'avgOrder', label: 'Avg Order', dependsOn: ['amount', 'orders'], compute: (v) => (v.orders ? v.amount / v.orders : null), numberFormat: { ...currency, maximumFractionDigits: 0 } },
+        { id: 'margin', label: 'Margin %', dependsOn: ['amount', 'cost'], compute: (v) => (v.amount ? (v.amount - v.cost) / v.amount : null), numberFormat: { style: 'percent', maximumFractionDigits: 1, locale: 'en-US' } },
+      ],
+      grandTotals: { columns: true, rows: true },
+    },
+  });
+  const measuresGrid = new Slick.Grid('#measuresGrid', measures.rowModel, measures.getColumns(), gridOptions);
+  measuresGrid.registerPlugin(measures);
+  measures.collapseAllRows();
+  Object.assign(window, { crosstab, crosstabGrid, measures, measuresGrid, orderDetails, fields });
+</script>
+</body>
+</html>
