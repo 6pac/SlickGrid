@@ -1,9 +1,10 @@
 describe('Example - Pivot table with PivotTable Fields', { retries: 1 }, () => {
-  const pivotTable = '#pivotTable .slick-pivot-table';
-  const grid = `${pivotTable} .slick-pivot-table-grid`;
-  const panel = `${pivotTable} .slick-pivot-table-fields`;
-  const status = `${pivotTable} .slick-pivot-table-status`;
-  const toolbarItem = (item: string) => `${pivotTable} .slick-pivot-toolbar [data-item="${item}"]`;
+  // the container of the application's grid, in which the field list plugin adds its parts
+  const layout = '#gridAndPivot';
+  const grid = '#myGrid';
+  const panel = `${layout} .slick-pivot-layout-fields`;
+  const status = `${layout} .slick-pivot-layout-status`;
+  const toolbarItem = (item: string) => `${layout} .slick-pivot-toolbar [data-item="${item}"]`;
   const details = 'dialog.slick-pivot-details';
   const cell = (row: number, column: number) => `${grid} .slick-row[data-row="${row}"] .slick-cell.l${column}`;
   const areaList = (area: string) => `${panel} .slick-pivot-area-list[data-area="${area}"]`;
@@ -97,7 +98,7 @@ describe('Example - Pivot table with PivotTable Fields', { retries: 1 }, () => {
 
   // a test failing with the details dialog open would leave the page behind it out of reach
   afterEach(() => {
-    cy.window().then((win: any) => win.pivotTable?.getDetails()?.close());
+    cy.window().then((win: any) => win.fieldList?.getDetails()?.close());
   });
 
   it('should display Example title', () => {
@@ -106,12 +107,26 @@ describe('Example - Pivot table with PivotTable Fields', { retries: 1 }, () => {
     cy.get(`${panel} .slick-pivot-panel-title`).should('have.text', 'PivotTable Fields');
   });
 
-  it('should build the pivot table from its parts: a toolbar, the grid, the field list and a status bar', () => {
-    cy.get(`${pivotTable} > *`).then(($parts) => {
-      expect(Array.from($parts).map((part) => part.className)).to.deep.equal(['slick-pivot-table-toolbar', 'slick-pivot-table-body slick-pivot-table-fields-end', 'slick-pivot-table-status']);
+  it('should add a toolbar, the field list and a status bar around the grid of the application, which shows the pivot', () => {
+    cy.get(`${layout} > *`).then(($parts) => {
+      expect(Array.from($parts).map((part) => (part.id === 'myGrid' ? part.id : part.classList[1]))).to.deep.equal(['myGrid', 'slick-pivot-layout-toolbar', 'slick-pivot-layout-splitter', 'slick-pivot-layout-fields', 'slick-pivot-layout-status']);
     });
-    cy.get(`${pivotTable} .slick-pivot-toolbar`).should('have.attr', 'role', 'group').and('have.attr', 'aria-label', 'PivotTable options');
-    cy.get(`${pivotTable} .slick-pivot-toolbar [data-item]`).should(($items) => {
+    cy.window().then((win: any) => {
+      expect(win.grid.getData()).to.equal(win.pivot.rowModel);
+      expect(win.grid.getPluginByName('Pivot')).to.equal(win.pivot);
+      expect(win.grid.getPluginByName('PivotFieldList')).to.equal(win.fieldList);
+      // the source rows are the DataView of the grid
+      expect(win.pivot.getSource()).to.equal(win.dataView);
+    });
+    // the panel sits beside the grid, as high as it is
+    cy.get(panel).then(($panel) => cy.get(grid).should(($grid) => {
+      const gridRect = $grid[0].getBoundingClientRect();
+      const panelRect = $panel[0].getBoundingClientRect();
+      expect(panelRect.left).to.be.greaterThan(gridRect.right);
+      expect(Math.abs(panelRect.height - gridRect.height)).to.be.lessThan(1);
+    }));
+    cy.get(`${layout} .slick-pivot-toolbar`).should('have.attr', 'role', 'group').and('have.attr', 'aria-label', 'PivotTable options');
+    cy.get(`${layout} .slick-pivot-toolbar [data-item]`).should(($items) => {
       expect(Array.from($items).map((item) => item.getAttribute('data-item'))).to.deep.equal(['layout', 'subtotals', 'grandTotals', 'expandAll', 'collapseAll', 'undo', 'redo', 'fieldList']);
     });
     cy.get(`${toolbarItem('layout')} select`).should('have.value', 'compact');
@@ -154,6 +169,29 @@ describe('Example - Pivot table with PivotTable Fields', { retries: 1 }, () => {
     cy.get(status).should('contain', '5,000 of 5,000 source rows');
   });
 
+  it('should give the grid its own rows and columns back with Pivot Mode off, and show the same pivot again with it on', () => {
+    cy.get(`${panel} .slick-pivot-mode-checkbox`).should('be.checked').and('have.attr', 'role', 'switch').uncheck();
+    expectHeaderNames(['Region', 'Country', 'Channel', 'Salesperson', 'Category', 'Product', 'Order Id', 'Order Date', 'Units', 'Unit Price', 'Discount', 'Amount']);
+    cy.window().its('grid').invoke('getDataLength').should('eq', 5000);
+    cy.get(`${grid} .slick-preheader-panel`).should('not.be.visible');
+    cy.get(status).should('not.be.visible');
+    cy.get(`${toolbarItem('layout')} select`).should('be.disabled');
+    cy.get(toolbarItem('fieldList')).should('not.be.disabled');
+    cy.get(`${panel} .slick-pivot-areas`).should('have.attr', 'inert');
+    expectAreaFields('rows', ['Region', 'Country']);
+
+    // the application sorts its own rows
+    cy.get(`${grid} .slick-header-column`).contains('Units').click();
+    cy.get(`${grid} .slick-row[data-row="0"] .slick-cell.l8`).should('have.text', '1');
+
+    cy.get(`${panel} .slick-pivot-mode-checkbox`).check();
+    expectHeaderNames(['Row Labels', '2023', '2024', '2025', 'Grand Total']);
+    cy.get(cell(0, 1)).should('have.text', '$128,587');
+    cy.get(`${grid} .slick-pivot-header-caption`).last().should('have.text', 'Years (Order Date)');
+    cy.get(`${toolbarItem('layout')} select`).should('not.be.disabled');
+    cy.get(status).should('contain', '5,000 of 5,000 source rows');
+  });
+
   it('should collapse and expand a row group with its toggle', () => {
     cy.get(`${cell(0, 0)} .slick-pivot-toggle`).click();
     cy.get(`${cell(0, 0)} .slick-pivot-toggle`).should('have.class', 'collapsed');
@@ -161,6 +199,12 @@ describe('Example - Pivot table with PivotTable Fields', { retries: 1 }, () => {
     cy.get(cell(1, 0)).should('contain', 'North');
     cy.get(`${cell(0, 0)} .slick-pivot-toggle`).click();
     cy.get(cell(1, 0)).should('contain', 'China');
+  });
+
+  it('should follow the DataView of the grid when rows are added to it while pivoting', () => {
+    cy.get('[data-test="add-rows-btn"]').click();
+    cy.get(status).should('contain', '5,500 of 5,500 source rows');
+    cy.get(`${grid} .slick-pivot-grand-total .slick-cell.l4`).should('not.have.text', '$1,647,338');
   });
 
   it('should show the pivot of the Excel sample of issue #1020 like Excel does', () => {
@@ -343,7 +387,7 @@ describe('Example - Pivot table with PivotTable Fields', { retries: 1 }, () => {
       const columnKey = win.pivot.getColumnInfo(win.grid.getColumns()[1].id).columnKey;
       const expected = win.pivot.getEngine().getSourceRows(win.pivot.getSourceRows(), win.pivot.getSpec(), item.__pivot.key, columnKey).length;
       cy.get(`${details} .slick-pivot-details-title`).should('have.text', `${expected} source rows — East › China / 2023`);
-      cy.wrap(win.pivotTable.getDetails().getGrid().getDataLength()).should('eq', expected);
+      cy.wrap(win.fieldList.getDetails().getGrid().getDataLength()).should('eq', expected);
     });
     // one column per field, the computed Amount included
     cy.get(`${details} .slick-header-column .slick-column-name`).should(($names) => {
@@ -351,14 +395,14 @@ describe('Example - Pivot table with PivotTable Fields', { retries: 1 }, () => {
     });
     cy.get(`${details} .slick-row[data-row="0"] .slick-cell.l0`).should('have.text', 'East');
     // Amount is in the number format of Sum of Amount (whole numbers since the Value Field Settings test), Unit Price keeps its decimals
-    cy.window().then((win: any) => win.pivotTable.getDetails().getGrid().scrollCellIntoView(0, 11));
+    cy.window().then((win: any) => win.fieldList.getDetails().getGrid().scrollCellIntoView(0, 11));
     cy.get(`${details} .slick-row[data-row="0"] .slick-cell.l11`).invoke('text').should('match', /^[\d,]+$/);
     cy.get(`${details} .slick-row[data-row="0"] .slick-cell.l9`).invoke('text').should('match', /^\d+\.\d{1,2}$/);
 
     // sort by Units, largest first
     cy.get(`${details} .slick-header-column`).contains('Units').click().click();
     cy.window().should((win: any) => {
-      const detailsGrid = win.pivotTable.getDetails().getGrid();
+      const detailsGrid = win.fieldList.getDetails().getGrid();
       const units = Array.from({ length: detailsGrid.getDataLength() }, (_v, i) => detailsGrid.getDataItem(i).Units);
       expect(units).to.deep.equal([...units].sort((a, b) => b - a));
     });
@@ -419,7 +463,7 @@ describe('Example - Pivot table with PivotTable Fields', { retries: 1 }, () => {
   });
 
   it('should resize the field list by dragging its splitter or with its keyboard', () => {
-    const splitter = `${pivotTable} .slick-pivot-table-splitter`;
+    const splitter = `${layout} .slick-pivot-layout-splitter`;
     cy.get(splitter).should('have.attr', 'role', 'separator').and('have.attr', 'aria-valuenow', '300').and('have.attr', 'aria-valuemin', '240');
     cy.get(splitter).then(($splitter) => {
       const rect = $splitter[0].getBoundingClientRect();
@@ -441,7 +485,7 @@ describe('Example - Pivot table with PivotTable Fields', { retries: 1 }, () => {
     cy.get(splitter).should('have.attr', 'aria-valuenow', '240');
     pressKey(cy.get(splitter), 'End');
     cy.get(splitter).invoke('attr', 'aria-valuemax').then((max) => cy.get(splitter).should('have.attr', 'aria-valuenow', max));
-    cy.window().then((win: any) => win.pivotTable.setFieldListWidth(300));
+    cy.window().then((win: any) => win.fieldList.setWidth(300));
     cy.get(panel).invoke('outerWidth').should('eq', 300);
   });
 
@@ -579,7 +623,7 @@ describe('Example - Pivot table with PivotTable Fields', { retries: 1 }, () => {
   it('should mirror the pivot in a right-to-left grid, rendering the visible cells of a wide pivot wherever it is scrolled', () => {
     cy.get('[data-test="rtl"]').check();
     cy.get(grid).should('have.class', 'slick-rtl');
-    cy.get(pivotTable).should('have.attr', 'dir', 'rtl');
+    cy.get(layout).should('have.attr', 'dir', 'rtl');
     // the field list is at the end of the line, which is on the left
     cy.get(panel).then(($panel) => cy.get(grid).should(($grid) => expect($panel[0].getBoundingClientRect().right).to.be.lessThan($grid[0].getBoundingClientRect().left)));
     cy.window().then((win: any) => win.pivot.updateSpec({ columns: ['OrderDate.year', 'OrderDate.quarter'] }));
@@ -603,6 +647,6 @@ describe('Example - Pivot table with PivotTable Fields', { retries: 1 }, () => {
 
     cy.get('[data-test="rtl"]').uncheck();
     cy.get(grid).should('not.have.class', 'slick-rtl');
-    cy.get(pivotTable).should('have.attr', 'dir', 'ltr');
+    cy.get(layout).should('not.have.attr', 'dir');
   });
 });

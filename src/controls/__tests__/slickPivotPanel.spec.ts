@@ -105,6 +105,47 @@ describe('SlickPivotPanel', () => {
     vi.restoreAllMocks();
   });
 
+  describe('Pivot Mode', () => {
+    it('shows a Pivot Mode switch that turns the pivot on and off, the rest of the panel being inert while it is off', async () => {
+      createPanel();
+      const checkbox = element.querySelector<HTMLInputElement>('.slick-pivot-mode-checkbox')!;
+      expect(checkbox.getAttribute('role')).toBe('switch');
+      expect(checkbox.checked).toBe(true);
+      expect(element.querySelector('.slick-pivot-mode-label')!.textContent).toBe('Pivot Mode');
+      const inert = () => ['.slick-pivot-panel-search', '.slick-pivot-field-list', '.slick-pivot-areas-hint', '.slick-pivot-areas', '.slick-pivot-panel-footer', '.slick-pivot-panel-status']
+        .map((selector) => element.querySelector(selector)!.hasAttribute('inert'));
+      expect(inert()).toEqual([false, false, false, false, false, false]);
+
+      checkbox.checked = false;
+      checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+      expect(pivot.isPivotMode()).toBe(false);
+      expect(element.classList.contains('slick-pivot-panel-off')).toBe(true);
+      expect(inert()).toEqual([true, true, true, true, true, true]);
+      // the layout is kept for the next time
+      expect(areaFields('rows')).toEqual(['region', 'country']);
+      expect(pivot.getSpec().rows).toEqual(['region', 'country']);
+
+      await pivot.setPivotMode(true);
+      expect(checkbox.checked).toBe(true);
+      expect(element.classList.contains('slick-pivot-panel-off')).toBe(false);
+      expect(inert()).toEqual([false, false, false, false, false, false]);
+    });
+
+    it('captions the switch with pivotModeLabel, or leaves it out with showPivotModeToggle: false and for a grid that only shows the pivot', () => {
+      createPanel({ pivotModeLabel: 'Pivot' });
+      expect(element.querySelector('.slick-pivot-mode-label')!.textContent).toBe('Pivot');
+      created.splice(0).forEach((item) => item.destroy());
+
+      createPanel({ showPivotModeToggle: false });
+      expect(element.querySelector('.slick-pivot-mode')).toBeNull();
+      created.splice(0).forEach((item) => item.destroy());
+
+      vi.spyOn(SlickPivot.prototype, 'canTogglePivotMode').mockReturnValue(false);
+      createPanel();
+      expect(element.querySelector('.slick-pivot-mode')).toBeNull();
+    });
+  });
+
   describe('field list', () => {
     it('lists the fields by group with their type, checks the ones the pivot uses and lists the levels of a date field below it', () => {
       createPanel();

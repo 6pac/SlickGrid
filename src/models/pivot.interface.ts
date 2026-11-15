@@ -188,6 +188,12 @@ export interface PivotValue {
   /** Computed but not displayed, for example an input of a measure */
   hidden?: boolean;
 
+  /**
+   * Shown in the grand total columns only, not under every column item, like the row total of an
+   * MS Access crosstab (a Row Heading with a Total other than Group By), defaults to false
+   */
+  totalsOnly?: boolean;
+
   /** Write-back settings of this value, overriding the plugin `writeBack` option; `false` makes the value read-only */
   writeBack?: false | Pick<PivotWriteBackOption, 'method' | 'precision'>;
 }
@@ -302,6 +308,14 @@ export interface PivotFilter {
 
   /** Keep the top (or bottom) N items of the field, ranked by the grand total of a value */
   top?: { count: number; valueId: string; direction?: 'top' | 'bottom'; };
+
+  /**
+   * Keep the items matching an MS Access style criteria expression, compared with the item values (case
+   * insensitive for text): `1997`, `>= 100`, `<> "North"`, `"East" Or "West"`, `Between 1 And 5`,
+   * `In ("A", "B")`, `Like "C*"` (`*`, `?` and `#` wildcards), `Is Null`, `Not ...`, combined with
+   * `And` and `Or`; dates are written `#2024-01-31#`. Serializable, unlike `predicate`.
+   */
+  criteria?: string;
 
   /** Arbitrary filter (like the "Where" criteria of an MS Access query); not serializable */
   predicate?: (value: any, row: any) => boolean;
@@ -513,13 +527,32 @@ export interface PivotDataProvider {
 export type PivotSource<T = any> = T[] | { getItems: () => T[]; };
 
 export interface PivotOption {
-  /** Field definitions */
-  fields: PivotField[];
+  /**
+   * Field definitions. On a grid created with its own columns, the fields are made from the columns
+   * (see `fieldsFromColumns`) and these fields are added to them, or replace the field of the same id.
+   */
+  fields?: PivotField[];
+
+  /**
+   * On a grid created with its own data and columns, make a field of every column that has a `field`
+   * and is not excluded from the column picker (its id, name and `field`), defaults to true
+   */
+  fieldsFromColumns?: boolean;
+
+  /**
+   * Show the pivot in the grid when the plugin is registered, defaults to true. On a grid created with its
+   * own data and columns, `setPivotMode(false)` gives them back and `setPivotMode(true)` shows the pivot
+   * again, keeping the spec.
+   */
+  pivotMode?: boolean;
 
   /** Initial pivot spec */
   spec?: Partial<PivotSpec>;
 
-  /** Source rows (array or DataView); a DataView is watched and re-pivoted when its items change */
+  /**
+   * Source rows (array or DataView); a DataView is watched and re-pivoted when its items change. Defaults to
+   * the data of a grid created with its own data.
+   */
   source?: PivotSource;
 
   /** Custom aggregators, keyed by id, added to the built-in ones */
@@ -713,6 +746,11 @@ export interface OnPivotWriteBackEventArgs extends PivotCellEdit {
 
   /** What wrote the values: a cell edit, `undo()` or `redo()` (`onBeforeWriteBack` is only raised for edits) */
   source: 'edit' | 'undo' | 'redo';
+}
+
+export interface OnPivotModeChangedEventArgs {
+  /** Whether the grid shows the pivot (true) or its own data and columns (false) */
+  pivotMode: boolean;
 }
 
 export interface OnPivotHistoryChangedEventArgs {

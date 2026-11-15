@@ -47,6 +47,8 @@ interface MockGrid {
   container: HTMLDivElement;
   preHeaderPanel: HTMLDivElement;
   gridOptions: GridOption;
+  /** Give the grid its data, like the grid constructor */
+  useData: (data: any) => void;
 }
 
 /** A grid double: the methods and events the plugin uses, the options merged like the grid merges its docking lists */
@@ -60,6 +62,9 @@ function createMockGrid(options: Partial<GridOption> = {}, containerWidth = 0): 
   Object.defineProperty(container, 'clientWidth', { configurable: true, value: containerWidth });
   const gridOptions = SlickPivot.getGridOptions({ editable: true, ...options }) as GridOption;
   let columns: Column[] = [];
+  let data: any = [];
+  let sortColumns: any[] = [];
+  const editorLock = { isActive: vi.fn(() => false), commitCurrentEdit: vi.fn(() => true), cancelCurrentEdit: vi.fn() };
   const list = (references?: any[]) => (references ? [...references] : []);
   const includes = (references: any, id: string | number) => Array.isArray(references) && references.includes(id);
 
@@ -92,6 +97,13 @@ function createMockGrid(options: Partial<GridOption> = {}, containerWidth = 0): 
     setColumns: vi.fn((newColumns: Column[]) => {
       columns = newColumns;
     }),
+    getData: vi.fn(() => data),
+    setData: vi.fn((newData: any) => {
+      data = newData;
+    }),
+    getDataLength: vi.fn(() => (Array.isArray(data) ? data.length : data.getLength())),
+    resetActiveCell: vi.fn(),
+    getEditorLock: vi.fn(() => editorLock),
     setPreHeaderPanelVisibility: vi.fn(),
     resizeCanvas: vi.fn(),
     getHeadersWidth: vi.fn(() => 0),
@@ -99,8 +111,12 @@ function createMockGrid(options: Partial<GridOption> = {}, containerWidth = 0): 
     invalidateAllRows: vi.fn(),
     updateRowCount: vi.fn(),
     render: vi.fn(),
-    setSortColumns: vi.fn(),
+    getSortColumns: vi.fn(() => sortColumns),
+    setSortColumns: vi.fn((newSortColumns: any[]) => {
+      sortColumns = newSortColumns;
+    }),
     getCellEditor: vi.fn(() => null),
+    onBeforeDestroy: new SlickEvent(),
     onClick: new SlickEvent(),
     onKeyDown: new SlickEvent(),
     onDblClick: new SlickEvent(),
@@ -114,7 +130,7 @@ function createMockGrid(options: Partial<GridOption> = {}, containerWidth = 0): 
     onCellChange: new SlickEvent(),
   } as unknown as SlickGrid;
 
-  return { grid, container, preHeaderPanel, gridOptions };
+  return { grid, container, preHeaderPanel, gridOptions, useData: (newData: any) => (data = newData) };
 }
 
 describe('SlickPivot plugin', () => {
@@ -124,6 +140,8 @@ describe('SlickPivot plugin', () => {
   const createPivot = (options: Partial<PivotOption> = {}, gridOptions: Partial<GridOption> = {}, containerWidth = 0) => {
     const mock = createMockGrid(gridOptions, containerWidth);
     const pivot = new SlickPivot({ fields, source: createRows(), spec: baseSpec, numberFormat: { locale: 'en-US' }, locale: 'en-US', ...options });
+    // a grid that only shows the pivot
+    mock.useData(pivot.rowModel);
     pivot.init(mock.grid);
     created.push(pivot);
     return { pivot, ...mock };
@@ -149,8 +167,8 @@ describe('SlickPivot plugin', () => {
   });
 
   it('adds the pre-header panel options needed by the column group headers to the grid options', () => {
-    expect(SlickPivot.getGridOptions({ enableCellNavigation: true, preHeaderPanelHeight: 30 })).toEqual({ enableCellNavigation: true, preHeaderPanelHeight: 30, createPreHeaderPanel: true, showPreHeaderPanel: true });
-    expect(SlickPivot.getGridOptions()).toEqual({ preHeaderPanelHeight: 25, createPreHeaderPanel: true, showPreHeaderPanel: true });
+    expect(SlickPivot.getGridOptions({ enableCellNavigation: true, preHeaderPanelHeight: 30 })).toEqual({ enableCellNavigation: true, preHeaderPanelHeight: 30, createPreHeaderPanel: true });
+    expect(SlickPivot.getGridOptions()).toEqual({ preHeaderPanelHeight: 25, createPreHeaderPanel: true });
   });
 
   describe('compact layout', () => {
@@ -1265,6 +1283,7 @@ describe('SlickPivot plugin', () => {
       vi.mocked(mock.grid.getPreHeaderPanel).mockReturnValue(undefined as any);
       const pivot = new SlickPivot({ fields, source: createRows(), spec: baseSpec, enableWriteBack: true, columnDefaults: { editor: null as any } });
       created.push(pivot);
+      mock.useData(pivot.rowModel);
       pivot.init(mock.grid);
       expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('[SlickPivot] the column group headers need a pre-header panel'));
       expect(pivot.getColumns()[1].editor).toBe(Editors.Float);
@@ -1283,6 +1302,234 @@ describe('SlickPivot plugin', () => {
       expect(grid.onClick.subscriberCount).toBe(0);
       expect(grid.onCellChange.subscriberCount).toBe(0);
       expect(pivot.onPivotChanged.subscriberCount).toBe(0);
+    });
+  });
+
+  describe('Pivot Mode on the grid of the application', () => {
+    const hostColumns = (): Column[] => [
+      { id: '_checkbox_selector', name: '', field: 'sel', excludeFromColumnPicker: true },
+      { id: 'region', name: 'Region', field: 'region', sortable: true },
+      { id: 'country', name: '<span class="flag"></span> Country', field: 'country' },
+      { id: 'year', name: 'Year', field: 'year' },
+      { id: 'amount', name: 'Amount', field: 'amount' },
+      { id: 'actions', name: 'Actions' },
+    ];
+
+    /** A grid created with its own data and columns, and the pivot registered with it */
+    const createHostPivot = (options: Partial<PivotOption> = {}, gridOptions: Partial<GridOption> = {}) => {
+      const mock = createMockGrid(gridOptions);
+      const rows = createRows();
+      const columns = hostColumns();
+      mock.useData(rows);
+      mock.grid.setColumns(columns);
+      vi.mocked(mock.grid.setColumns).mockClear();
+      const pivot = new SlickPivot({ spec: baseSpec, locale: 'en-US', fields: [{ id: 'year', type: 'number' }, { id: 'amountK', label: 'Amount (K)', type: 'number', getter: (row: SalesRow) => row.amount / 1000 }], ...options });
+      created.push(pivot);
+      pivot.init(mock.grid);
+      return { pivot, rows, columns, ...mock };
+    };
+
+    it('makes the fields from the columns, completed by the fields option, and pivots the data of the grid', () => {
+      const consoleError = vi.spyOn(console, 'error');
+      const { pivot, grid, rows, container } = createHostPivot();
+      // the fields of the spec were only known once the plugin was registered: nothing was computed before
+      expect(consoleError).not.toHaveBeenCalled();
+      expect(pivot.getFields().map((field) => [field.id, field.label, field.field])).toEqual([
+        ['region', 'Region', 'region'],
+        ['country', 'Country', 'country'],
+        ['year', 'Year', 'year'],
+        ['amount', 'Amount', 'amount'],
+        ['amountK', 'Amount (K)', undefined],
+      ]);
+      expect(pivot.getEngine().getField('year')!.type).toBe('number');
+      expect(pivot.getSource()).toBe(rows);
+
+      expect(pivot.isPivotMode()).toBe(true);
+      expect(pivot.canTogglePivotMode()).toBe(true);
+      expect(grid.setData).toHaveBeenCalledWith(pivot.rowModel);
+      expect(grid.getColumns()).toBe(pivot.getColumns());
+      expect(container.classList.contains('slick-pivot')).toBe(true);
+      expect(pivot.getResult()!.cells[ROOT][ROOT][0]).toBe(730);
+    });
+
+    it('does not make fields from the columns with fieldsFromColumns: false', () => {
+      const { pivot } = createHostPivot({ fieldsFromColumns: false, fields, spec: { rows: ['region'], columns: [], values: [{ field: 'units', aggregator: 'sum' }] } });
+      expect(pivot.getFields()).toEqual(fields);
+      expect(pivot.getResult()!.cells[ROOT][ROOT][0]).toBe(73);
+    });
+
+    it('gives the grid back its data, columns, sorting, pinning and pre-header panel when Pivot Mode is turned off', async () => {
+      const mock = createMockGrid({ preHeaderPanelHeight: 30, showPreHeaderPanel: true, pinning: { columns: { left: ['region'] } }, stickyRows: { top: [0] } });
+      const rows = createRows();
+      const columns = hostColumns();
+      mock.useData(rows);
+      mock.grid.setColumns(columns);
+      mock.grid.setSortColumns([{ columnId: 'region', sortAsc: false }]);
+      // the application draws its own column groups in the pre-header panel
+      const ownGroups = document.createElement('div');
+      ownGroups.className = 'my-column-groups';
+      mock.preHeaderPanel.appendChild(ownGroups);
+      mock.preHeaderPanel.style.width = '640px';
+      const pivot = new SlickPivot({ spec: baseSpec, locale: 'en-US' });
+      created.push(pivot);
+      const modeChanged = vi.fn();
+      pivot.onPivotModeChanged.subscribe((_e, args) => modeChanged(args.pivotMode));
+      pivot.init(mock.grid);
+      expect(ownGroups.isConnected).toBe(false);
+      expect(mock.grid.getSortColumns()).toEqual([]);
+      expect(mock.gridOptions.pinning!.columns!.left).toEqual(['__pivot_rows']);
+      expect(mock.gridOptions.stickyRows!.bottom).toEqual(['grandTotal:[]']);
+
+      await pivot.setPivotMode(false);
+      expect(pivot.isPivotMode()).toBe(false);
+      expect(modeChanged).toHaveBeenLastCalledWith(false);
+      expect(mock.grid.getData()).toBe(rows);
+      expect(mock.grid.getColumns()).toBe(columns);
+      expect(mock.grid.getSortColumns()).toEqual([{ columnId: 'region', sortAsc: false }]);
+      expect(mock.gridOptions.pinning!.columns).toEqual({ left: ['region'], right: [] });
+      expect(mock.gridOptions.pinning!.rows).toEqual({ top: [], bottom: [] });
+      expect(mock.gridOptions.stickyRows).toEqual({ top: [0], bottom: [], both: [] });
+      expect(mock.gridOptions.preHeaderPanelHeight).toBe(30);
+      expect(mock.grid.setPreHeaderPanelVisibility).toHaveBeenLastCalledWith(true);
+      expect(Array.from(mock.preHeaderPanel.children)).toEqual([ownGroups]);
+      expect(mock.preHeaderPanel.style.width).toBe('640px');
+      expect(mock.container.classList.contains('slick-pivot')).toBe(false);
+      expect(mock.grid.resetActiveCell).toHaveBeenCalled();
+      // the plugin no longer listens to the grid
+      expect(mock.grid.onClick.subscriberCount).toBe(0);
+      expect(mock.grid.onSort.subscriberCount).toBe(0);
+
+      // the spec still changes while Pivot Mode is off, without computing the pivot
+      const changed = vi.fn();
+      const specChanged = vi.fn();
+      pivot.onPivotChanged.subscribe(changed);
+      pivot.onSpecChanged.subscribe(specChanged);
+      await pivot.updateSpec({ rows: ['region'] });
+      expect(specChanged).toHaveBeenCalledTimes(1);
+      expect(changed).not.toHaveBeenCalled();
+      expect(mock.grid.getColumns()).toBe(columns);
+      await pivot.setPivotMode(false);
+      expect(modeChanged).toHaveBeenCalledTimes(1);
+
+      await pivot.togglePivotMode();
+      expect(modeChanged).toHaveBeenLastCalledWith(true);
+      expect(changed).toHaveBeenCalledTimes(1);
+      expect(mock.grid.getData()).toBe(pivot.rowModel);
+      expect(pivot.rowModel.getItems().map((row) => row.__pivot.label)).toEqual(['East', 'West', 'Grand Total']);
+      expect(mock.grid.onClick.subscriberCount).toBe(1);
+      expect(ownGroups.isConnected).toBe(false);
+    });
+
+    it('leaves the grid alone until Pivot Mode is turned on with pivotMode: false', async () => {
+      const { pivot, grid, columns } = createHostPivot({ pivotMode: false });
+      expect(pivot.isPivotMode()).toBe(false);
+      expect(grid.setData).not.toHaveBeenCalled();
+      expect(grid.getColumns()).toBe(columns);
+      expect(pivot.getResult()).toBeUndefined();
+      await pivot.setPivotMode(true);
+      expect(grid.getColumns()).toBe(pivot.getColumns());
+      expect(pivot.getResult()!.cells[ROOT][ROOT][0]).toBe(730);
+    });
+
+    it('commits the cell being edited before the grid changes what it shows', async () => {
+      const { pivot, grid } = createHostPivot();
+      const editorLock = grid.getEditorLock() as any;
+      editorLock.isActive.mockReturnValue(true);
+      editorLock.commitCurrentEdit.mockReturnValue(false);
+      await pivot.setPivotMode(false);
+      expect(editorLock.commitCurrentEdit).toHaveBeenCalled();
+      expect(editorLock.cancelCurrentEdit).toHaveBeenCalled();
+    });
+
+    it('follows the columns changed while Pivot Mode was off, and makes the fields again with refreshFields()', async () => {
+      const { pivot, grid } = createHostPivot();
+      await pivot.setPivotMode(false);
+      // the application translates the columns and removes the country one
+      grid.setColumns([{ id: 'region', name: 'Région', field: 'region' }, { id: 'year', name: 'Année', field: 'year' }, { id: 'amount', name: 'Montant', field: 'amount' }]);
+      const specChanged = vi.fn();
+      pivot.onSpecChanged.subscribe((_e, args) => specChanged(args.spec.rows));
+      await pivot.setPivotMode(true);
+      expect(pivot.getEngine().getFieldLabel('region')).toBe('Région');
+      expect(pivot.getSpec().rows).toEqual(['region']);
+      expect(specChanged).toHaveBeenCalledWith(['region']);
+
+      await pivot.setPivotMode(false);
+      grid.setColumns([{ id: 'region', name: 'Region', field: 'region' }, { id: 'year', name: 'Year', field: 'year' }, { id: 'amount', name: 'Amount', field: 'amount' }]);
+      await pivot.refreshFields();
+      expect(pivot.getEngine().getFieldLabel('year')).toBe('Year');
+    });
+
+    it('cannot turn Pivot Mode off on a grid created with the row model as its data', async () => {
+      const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const { pivot, grid } = createPivot({ pivotMode: false });
+      expect(pivot.isPivotMode()).toBe(true);
+      expect(pivot.canTogglePivotMode()).toBe(false);
+      await pivot.setPivotMode(false);
+      expect(consoleWarn).toHaveBeenCalledWith(expect.stringContaining('Pivot Mode cannot be turned off'));
+      expect(pivot.isPivotMode()).toBe(true);
+      expect(grid.getData()).toBe(pivot.rowModel);
+    });
+
+    it('gives the grid back when the plugin is destroyed, but not while the grid is being destroyed', () => {
+      const first = createHostPivot();
+      first.pivot.destroy();
+      created.pop();
+      expect(first.grid.getData()).toBe(first.rows);
+      expect(first.grid.getColumns()).toBe(first.columns);
+
+      const second = createHostPivot();
+      second.grid.onBeforeDestroy.notify({ grid: second.grid } as any);
+      vi.mocked(second.grid.setColumns).mockClear();
+      second.pivot.destroy();
+      created.pop();
+      expect(second.grid.setColumns).not.toHaveBeenCalled();
+      expect(second.container.classList.contains('slick-pivot')).toBe(false);
+    });
+
+    it('re-pivots the DataView of the grid when its items change, but only in Pivot Mode', async () => {
+      vi.useFakeTimers();
+      try {
+        const dataView = new SlickDataView({});
+        dataView.setItems(createRows());
+        const mock = createMockGrid();
+        mock.useData(dataView);
+        mock.grid.setColumns(hostColumns());
+        const pivot = new SlickPivot({ spec: baseSpec, refreshDelay: 10 });
+        created.push(pivot);
+        pivot.init(mock.grid);
+        expect(pivot.getSource()).toBe(dataView);
+        const changed = vi.fn();
+        pivot.onPivotChanged.subscribe(changed);
+        dataView.addItem({ id: 6, region: 'North', country: 'Norway', year: 2024, when: new Date(), amount: 70, units: 7 });
+        await vi.advanceTimersByTimeAsync(20);
+        expect(changed).toHaveBeenCalledTimes(1);
+        expect(pivot.getResult()!.cells[ROOT][ROOT][0]).toBe(800);
+
+        await pivot.setPivotMode(false);
+        dataView.deleteItem(6);
+        await vi.advanceTimersByTimeAsync(20);
+        expect(changed).toHaveBeenCalledTimes(1);
+        await pivot.setPivotMode(true);
+        expect(pivot.getResult()!.cells[ROOT][ROOT][0]).toBe(730);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
+
+  describe('row totals', () => {
+    it('shows the values shown in the grand totals only in the grand total columns, captioned by their own label', () => {
+      const { pivot } = createPivot({
+        spec: {
+          ...baseSpec,
+          values: [{ field: 'amount', aggregator: 'sum' }, { id: 'rowTotal', field: 'amount', aggregator: 'sum', totalsOnly: true, label: 'Total Of Amount' }],
+          grandTotals: { columns: 'start', values: ['rowTotal'] },
+        },
+      });
+      const names = pivot.getColumns().map((column) => column.name);
+      expect(names).toEqual(['Row Labels', 'Total Of Amount', '2023', '2024']);
+      expect(pivot.getColumnInfo(pivot.getColumns()[1].id)).toEqual(expect.objectContaining({ valueId: 'rowTotal', isGrandTotal: true }));
+      expect(render(pivot, 0, 1)).toBe('450');
     });
   });
 });

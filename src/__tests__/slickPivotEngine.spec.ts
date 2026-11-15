@@ -229,6 +229,85 @@ describe('PivotEngine', () => {
     });
   });
 
+  describe('criteria', () => {
+    const matches = (criteria: string, values: any[]) => values.filter(PivotEngine.parseCriteria(criteria));
+
+    it('compares the item values with a value or an operator, numbers by value and text without case', () => {
+      expect(matches('2024', [2023, 2024, '2024', null])).toEqual([2024, '2024']);
+      expect(matches('>= 100', [50, 100, 300, null, ''])).toEqual([100, 300]);
+      expect(matches('< 100', [50, 100, '7'])).toEqual([50, '7']);
+      expect(matches('<> "north"', ['North', 'South', null])).toEqual(['South']);
+      expect(matches('=East', ['east', 'EAST', 'West'])).toEqual(['east', 'EAST']);
+      // unquoted words in a row are one text, a doubled quote is a quote
+      expect(matches('New York', ['new york', 'York'])).toEqual(['new york']);
+      expect(matches('"say ""hi"""', ['say "hi"', 'say hi'])).toEqual(['say "hi"']);
+      expect(matches(`'B'`, ['a', 'b'])).toEqual(['b']);
+      expect(matches('True', [true, false])).toEqual([true]);
+      // an empty criteria keeps everything
+      expect(matches('  ', [1, null])).toEqual([1, null]);
+    });
+
+    it('combines conditions with Or, And, Not and parentheses', () => {
+      expect(matches('"East" Or "West"', ['East', 'West', 'North'])).toEqual(['East', 'West']);
+      expect(matches('> 1 And < 4', [1, 2, 3, 4])).toEqual([2, 3]);
+      expect(matches('Not "North"', ['North', 'South'])).toEqual(['South']);
+      expect(matches('Not (1 Or 2) And < 5', [1, 2, 3, 6])).toEqual([3]);
+      expect(matches('1 Or 2 And 3', [1, 2, 3])).toEqual([1]);
+    });
+
+    it('supports Between, In, Like and Null', () => {
+      expect(matches('Between 10 And 50', [5, 10, 30, 50, 60])).toEqual([10, 30, 50]);
+      expect(matches('Not Between 10 And 50', [5, 30, 60])).toEqual([5, 60]);
+      expect(matches('In ("Coffee", "Brie")', ['coffee', 'Brie', 'Salmon'])).toEqual(['coffee', 'Brie']);
+      expect(matches('Not In (1, 2)', [1, 2, 3])).toEqual([3]);
+      expect(matches('Like "S*"', ['Salmon', 'shrimp', 'Brie', null])).toEqual(['Salmon', 'shrimp']);
+      expect(matches('Like "?ie"', ['Pie', 'Brie'])).toEqual(['Pie']);
+      expect(matches('Like "Q#"', ['Q1', 'Qa'])).toEqual(['Q1']);
+      expect(matches('Like "[a-c]*"', ['apple', 'Cherry', 'date'])).toEqual(['apple', 'Cherry']);
+      expect(matches('Like "[!a-c]*"', ['apple', 'date'])).toEqual(['date']);
+      expect(matches('Like "a.b"', ['a.b', 'axb'])).toEqual(['a.b']);
+      expect(matches('Is Null', [null, undefined, '', 0])).toEqual([null, undefined, '']);
+      expect(matches('Is Not Null', [null, 0, 'x'])).toEqual([0, 'x']);
+      expect(matches('Null Or 1', [null, 1, 2])).toEqual([null, 1]);
+    });
+
+    it('compares dates by time, written between # or as text', () => {
+      const days = [new Date(2024, 0, 30), new Date(2024, 0, 31), new Date(2024, 1, 1)];
+      expect(matches('>= #2024-01-31T00:00#', days)).toEqual(days.slice(1));
+      expect(matches('Between #2024-01-30T00:00# And #2024-01-31T00:00#', days)).toEqual(days.slice(0, 2));
+      expect(matches('"2024-02-01T00:00"', days)).toEqual([days[2]]);
+      expect(matches('> #2024-01-30T12:00#', ['2024-01-31T00:00', 'not a date'])).toEqual(['2024-01-31T00:00']);
+    });
+
+    it('tells what is wrong with an invalid criteria', () => {
+      expect(() => PivotEngine.parseCriteria('"East')).toThrow('[PivotEngine] invalid criteria: a text is not closed, add a "');
+      expect(() => PivotEngine.parseCriteria('#2024-01-31')).toThrow('a date is not closed, add a #');
+      expect(() => PivotEngine.parseCriteria('#yesterday#')).toThrow('"#yesterday#" is not a date');
+      expect(() => PivotEngine.parseCriteria('Between 1', 'units')).toThrow('[PivotEngine] invalid criteria of "units": And is expected at the end');
+      expect(() => PivotEngine.parseCriteria('In (1, 2')).toThrow('")" is expected at the end');
+      expect(() => PivotEngine.parseCriteria('(1 Or 2')).toThrow('")" is expected at the end');
+      expect(() => PivotEngine.parseCriteria('Is 1')).toThrow('Null is expected before "1"');
+      expect(() => PivotEngine.parseCriteria('> And')).toThrow('a value is expected before "and"');
+      expect(() => PivotEngine.parseCriteria('1 2')).toThrow('Or, And or the end is expected before "2"');
+      expect(() => PivotEngine.parseCriteria('> #2024-01-31# 3')).toThrow('Or, And or the end is expected before "3"');
+    });
+
+    it('filters the source rows with the criteria of a filter, which stays serializable', () => {
+      const engine = new PivotEngine({ fields: salesFields });
+      const spec: Partial<PivotSpec> = {
+        rows: ['country'],
+        columns: [],
+        values: [{ field: 'units', aggregator: 'sum' }],
+        filters: [{ field: 'year', criteria: '2023' }, { field: 'region', criteria: 'Not "West"', include: ['East', 'West'] }],
+      };
+      const result = engine.execute(sales, spec);
+      expect(result.rowTree.children.map((node) => node.label)).toEqual(['China', 'Japan']);
+      expect(result.cells[ROOT][ROOT][0]).toBe(15);
+      expect(JSON.parse(JSON.stringify(spec)).filters[0]).toEqual({ field: 'year', criteria: '2023' });
+      expect(() => engine.execute(sales, { ...spec, filters: [{ field: 'year', criteria: '>' }] })).toThrow('invalid criteria of "year"');
+    });
+  });
+
   describe('subtotals and grand totals', () => {
     const engine = new PivotEngine({ fields: salesFields });
 

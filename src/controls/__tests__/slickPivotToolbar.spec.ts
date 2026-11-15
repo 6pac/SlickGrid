@@ -154,6 +154,17 @@ describe('SlickPivotToolbar', () => {
     expect(button('undo').hidden).toBe(true);
   });
 
+  it('disables every item but the Field List toggle while Pivot Mode is off', async () => {
+    createToolbar({ items: ['layout', 'grandTotals', 'expandAll', 'collapseAll', 'undo', 'fieldList'] }, { enableWriteBack: true });
+    const disabled = () => [select('layout').disabled, select('grandTotals').disabled, button('expandAll').disabled, button('collapseAll').disabled, button('undo').disabled, button('fieldList').disabled];
+    expect(disabled()).toEqual([false, false, false, false, true, false]);
+    await pivot.setPivotMode(false);
+    expect(disabled()).toEqual([true, true, true, true, true, false]);
+    await pivot.setPivotMode(true);
+    // Undo stays disabled: there is nothing to undo
+    expect(disabled()).toEqual([false, false, false, false, true, false]);
+  });
+
   it('raises onFieldListToggle from its Field List button, which shows whether the field list is visible', () => {
     createToolbar({ items: ['fieldList'] });
     const toggled = vi.fn();

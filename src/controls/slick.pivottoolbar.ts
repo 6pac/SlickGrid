@@ -100,7 +100,8 @@ export class SlickPivotToolbar {
       .subscribe(this.pivot.onSpecChanged, () => this.render())
       // `setOptions()` re-pivots, which shows or hides Undo and Redo when the write-back is turned on or off
       .subscribe(this.pivot.onPivotChanged, () => this.render())
-      .subscribe(this.pivot.onHistoryChanged, () => this.render());
+      .subscribe(this.pivot.onHistoryChanged, () => this.render())
+      .subscribe(this.pivot.onPivotModeChanged, () => this.render());
     this.render();
   }
 
@@ -127,18 +128,24 @@ export class SlickPivotToolbar {
     this.render();
   }
 
-  /** Update the items from the spec, the history and the options of the pivot */
+  /** Update the items from the spec, the history and the options of the pivot; only the Field List toggle stays enabled while Pivot Mode is off */
   render(): void {
     const spec = this.pivot.getSpec();
+    const pivotMode = this.pivot.isPivotMode();
     this.setSelectValue('layout', spec.layout ?? 'compact');
     this.setSelectValue('subtotals', spec.subtotals ?? 'top');
     this.setSelectValue('grandTotals', SlickPivotToolbar.getGrandTotalsChoice(spec.grandTotals ?? {}));
+    this._itemElms.forEach((control, item) => {
+      if (item !== 'fieldList') {
+        (control as HTMLButtonElement | HTMLSelectElement).disabled = !pivotMode;
+      }
+    });
     const writeBack = !!this.pivot.getOptions().enableWriteBack;
     (['undo', 'redo'] as const).forEach((item) => {
       const button = this._itemElms.get(item) as HTMLButtonElement | undefined;
       if (button) {
         button.hidden = !writeBack;
-        button.disabled = item === 'undo' ? !this.pivot.canUndo() : !this.pivot.canRedo();
+        button.disabled = !pivotMode || (item === 'undo' ? !this.pivot.canUndo() : !this.pivot.canRedo());
       }
     });
     this._itemElms.get('fieldList')?.setAttribute('aria-pressed', String(this._fieldListVisible));

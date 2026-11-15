@@ -14,6 +14,8 @@ export * from './slick.headerbuttons.js';
 export * from './slick.headermenu.js';
 export * from './slick.hybridselectionmodel.js';
 export * from './slick.pivot.js';
+export * from './slick.pivotdesigner.js';
+export * from './slick.pivotfieldlist.js';
 export * from './slick.resizer.js';
 export * from './slick.rowdetailview.js';
 export * from './slick.rowmovemanager.js';

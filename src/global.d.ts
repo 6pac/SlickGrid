@@ -52,9 +52,10 @@ import type { SlickRemoteModel } from './slick.remotemodel.js';
 import type { SlickRemoteModelYahoo } from './slick.remotemodel-yahoo.js';
 import type { PIVOT_DATE_LEVELS, PIVOT_VALUES_FIELD, PivotAggregators, PivotEngine } from './slick.pivotengine.js';
 import type { SlickPivot } from './plugins/slick.pivot.js';
+import type { SlickPivotDesigner } from './plugins/slick.pivotdesigner.js';
+import type { SlickPivotFieldList } from './plugins/slick.pivotfieldlist.js';
 import type { SlickPivotDetails } from './controls/slick.pivotdetails.js';
 import type { SlickPivotPanel } from './controls/slick.pivotpanel.js';
-import type { SlickPivotTable } from './controls/slick.pivottable.js';
 import type { SlickPivotToolbar } from './controls/slick.pivottoolbar.js';
 import type { Draggable, MouseWheel, reconcileColumnOrder, Resizable, setupColumnReorderDrag, setupDropzonePillDrag } from './slick.interactions.js';
 import type { Aggregators } from './slick.dataview.js';
@@ -87,7 +88,6 @@ declare global {
       Pager: typeof SlickGridPager,
       PivotDetails: typeof SlickPivotDetails,
       PivotPanel: typeof SlickPivotPanel,
-      PivotTable: typeof SlickPivotTable,
       PivotToolbar: typeof SlickPivotToolbar
     },
     CrossGridRowMoveManager: SlickCrossGridRowMoveManager,
@@ -113,6 +113,8 @@ declare global {
     keyCode: typeof keyCode,
     MouseWheel: typeof MouseWheel,
     Pivot: typeof SlickPivot,
+    PivotDesigner: typeof SlickPivotDesigner,
+    PivotFieldList: typeof SlickPivotFieldList,
     PivotAggregators: typeof PivotAggregators,
     PivotEngine: typeof PivotEngine,
     PIVOT_VALUES_FIELD: typeof PIVOT_VALUES_FIELD,
