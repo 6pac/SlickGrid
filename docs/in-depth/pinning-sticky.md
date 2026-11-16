@@ -114,6 +114,22 @@ const options = {
 | `stickyActivationBuffer` | 2 | Activation buffer in pixels for sticky columns. Rows use the exact boundary. |
 | `minCenterRowCount` | 3 | When permanent top/bottom rows would leave less than this many centre rows visible, the container grows (`min-height`) instead of shrinking the centre to nothing. `0` disables. |
 
+### Sticky headers in auto-height grids
+
+Set `autoHeight: { stickyHeader: true }` to grow the grid to fit its rows while keeping the top-header panel, pre-header, column headers and header row visible as the page or nearest scrolling ancestor scrolls. `autoHeight: true` retains the existing non-sticky behavior. Since the option also accepts an object, use a truthy check when reading it.
+
+Sticky positioning is relative to the nearest ancestor with a scrolling mechanism. An ancestor with `overflow: auto` or `hidden` can therefore prevent the headers from sticking to the page if that ancestor is not the element being scrolled.
+
+Use `--slick-sticky-header-top` to offset the stack below fixed page content and `--slick-sticky-header-z-index` to change its stacking order (default `7`):
+
+```css
+.slick-container {
+  --slick-sticky-header-top: 56px;
+}
+```
+
+See [the auto-height example](https://6pac.github.io/SlickGrid/examples/example11-autoheight.html).
+
 ## Rendering notes
 
 - Colspans that cross a band boundary keep one logical host cell (formatters, selection,

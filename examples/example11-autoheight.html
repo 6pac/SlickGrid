@@ -11,7 +11,6 @@
     html, body {
       margin: 0;
       padding: 0;
-      overflow: auto;
     }
 
     body {
@@ -23,6 +22,7 @@
       border: solid 1px gray;
       width: 480px;
       background: white;
+      --slick-sticky-header-top: 20px;
     }
 
     #description {
@@ -42,7 +42,8 @@
       Demonstrates:
   </h2>
   <ul>
-    <li>autoHeight:true grid option</li>
+    <li>autoHeight: { stickyHeader: true } keeps the headers visible while the page scrolls.</li>
+    <li>The CSS variable --slick-sticky-header-top sets the offset from the top of the page.</li>
   </ul>
     <h2>View Source:</h2>
     <ul>
@@ -70,7 +71,12 @@
         editable: false,
         enableAddRow: false,
         enableCellNavigation: false,
-        autoHeight: true
+        autoHeight: { stickyHeader: true },
+        createTopHeaderPanel: true,
+        showTopHeaderPanel: true,
+        createPreHeaderPanel: true,
+        showPreHeaderPanel: true,
+        showHeaderRow: true
       };
 
   for (var i = 100; i-- > 0;) {
