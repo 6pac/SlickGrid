@@ -8,6 +8,7 @@ Topic-by-topic guides. Each teaches one capability in full, then links into the 
 - [Sorting](/in-depth/sorting)
 - [Filtering & paging](/in-depth/filtering-paging)
 - [Grouping & aggregators](/in-depth/grouping)
+- [Pivot tables](/in-depth/pivot)
 
 ## Display & interaction
 - [Auto column sizing](/in-depth/auto-column-sizing)
