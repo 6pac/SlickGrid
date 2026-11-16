@@ -362,6 +362,7 @@ export class SlickPivot implements SlickPlugin {
         preHeaderScrollerHeight: (preHeaderPanel?.parentElement as HTMLElement | null)?.style.height ?? '',
       };
       grid.resetActiveCell();
+      this.clearSelection();
       grid.setData(this.rowModel);
       if (this.applyFields(true)) {
         this._stale = true;
@@ -427,6 +428,7 @@ export class SlickPivot implements SlickPlugin {
     }
     this.stopEditing();
     grid.resetActiveCell();
+    this.clearSelection();
     const gridOptions = grid.getOptions();
     if (preHeaderPanel) {
       preHeaderPanel.appendChild(host.preHeaderContent);
@@ -460,6 +462,17 @@ export class SlickPivot implements SlickPlugin {
     const editorLock = this._grid?.getEditorLock();
     if (editorLock?.isActive() && !editorLock.commitCurrentEdit()) {
       editorLock.cancelCurrentEdit();
+    }
+  }
+
+  /**
+   * Clear the selection before the grid changes what it shows: a selected row index of the pivot does not point to a
+   * source row, nor the other way round. It is cleared while the grid still shows the selected rows.
+   */
+  protected clearSelection(): void {
+    const selectionModel = this._grid?.getSelectionModel();
+    if (selectionModel?.getSelectedRanges().length) {
+      selectionModel.setSelectedRanges([], 'SlickPivot.clearSelection');
     }
   }
 

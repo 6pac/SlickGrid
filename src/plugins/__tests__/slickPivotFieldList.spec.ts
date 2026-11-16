@@ -8,6 +8,7 @@ import { PivotEngine } from '../../slick.pivotengine';
 import { SlickPivot } from '../slick.pivot';
 import { SlickPivotFieldList } from '../slick.pivotfieldlist';
 import type { PivotFieldListOption } from '../slick.pivotfieldlist';
+import { SlickRowSelectionModel } from '../slick.rowselectionmodel';
 
 const createRows = () => [
   { id: 1, region: 'East', country: 'China', year: 2023, units: 10 },
@@ -339,6 +340,19 @@ describe('SlickPivotFieldList', () => {
     expect(grid.getData()).toBe(pivot.rowModel);
     expect(status().hidden).toBe(false);
     expect(status().textContent).toContain('4 of 4 source rows');
+  });
+
+  it('clears the selection of the grid when Pivot Mode changes, a row of the pivot not being a source row', async () => {
+    createFieldList();
+    grid.setSelectionModel(new SlickRowSelectionModel());
+    grid.setSelectedRows([1, 2]);
+    expect(grid.getSelectedRows()).toEqual([1, 2]);
+    await pivot.setPivotMode(false);
+    expect(grid.getSelectedRows()).toEqual([]);
+    grid.setSelectedRows([3]);
+    await pivot.setPivotMode(true);
+    expect(grid.getSelectedRows()).toEqual([]);
+    expect(grid.getData()).toBe(pivot.rowModel);
   });
 
   it('puts the pane at the end of a right-to-left grid, and gives the container its reading direction back', () => {

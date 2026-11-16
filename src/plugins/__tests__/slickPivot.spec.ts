@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Column, GridOption, PivotField, PivotOption, PivotRequest, PivotResult, PivotSpec } from '../../models';
-import { SlickEvent, SlickEventData } from '../../slick.core';
+import { SlickEvent, SlickEventData, SlickRange } from '../../slick.core';
 import { SlickDataView } from '../../slick.dataview';
 import { Editors } from '../../slick.editors';
 import type { SlickGrid } from '../../slick.grid';
@@ -103,6 +103,7 @@ function createMockGrid(options: Partial<GridOption> = {}, containerWidth = 0): 
     }),
     getDataLength: vi.fn(() => (Array.isArray(data) ? data.length : data.getLength())),
     resetActiveCell: vi.fn(),
+    getSelectionModel: vi.fn(() => undefined),
     getEditorLock: vi.fn(() => editorLock),
     setPreHeaderPanelVisibility: vi.fn(),
     resizeCanvas: vi.fn(),
@@ -1439,6 +1440,33 @@ describe('SlickPivot plugin', () => {
       await pivot.setPivotMode(false);
       expect(editorLock.commitCurrentEdit).toHaveBeenCalled();
       expect(editorLock.cancelCurrentEdit).toHaveBeenCalled();
+    });
+
+    it('clears the selection while the grid still shows the selected rows, each time Pivot Mode changes', async () => {
+      const { pivot, grid, rows } = createHostPivot({ pivotMode: false });
+      let ranges = [new SlickRange(1, 0)];
+      const clearedData: any[] = [];
+      const selectionModel = {
+        getSelectedRanges: vi.fn(() => ranges),
+        setSelectedRanges: vi.fn((newRanges: SlickRange[]) => {
+          clearedData.push(grid.getData());
+          ranges = newRanges;
+        }),
+      };
+      vi.mocked(grid.getSelectionModel).mockReturnValue(selectionModel as any);
+      await pivot.setPivotMode(true);
+      expect(selectionModel.setSelectedRanges).toHaveBeenCalledWith([], 'SlickPivot.clearSelection');
+      expect(clearedData).toHaveLength(1);
+      expect(clearedData[0]).toBe(rows);
+      // there is nothing to clear
+      await pivot.setPivotMode(false);
+      expect(selectionModel.setSelectedRanges).toHaveBeenCalledTimes(1);
+      await pivot.setPivotMode(true);
+      ranges = [new SlickRange(0, 0, 1, 2)];
+      await pivot.setPivotMode(false);
+      expect(clearedData).toHaveLength(2);
+      expect(clearedData[1]).toBe(pivot.rowModel);
+      expect(grid.getData()).toBe(rows);
     });
 
     it('follows the columns changed while Pivot Mode was off, and makes the fields again with refreshFields()', async () => {
