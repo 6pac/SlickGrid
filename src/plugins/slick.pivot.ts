@@ -224,6 +224,7 @@ export class SlickPivot implements SlickPlugin {
   protected _columns: Column[] = [];
   protected _columnInfo = new Map<string | number, InternalColumnInfo>();
   protected _rowNodeIndex = new Map<string, PivotHeaderNode>();
+  protected _columnNodeIndex = new Map<string, PivotHeaderNode>();
   protected _collapsedRows = new Set<string>();
   protected _collapsedColumns = new Set<string>();
   protected _userWidths = new Map<string, number>();
@@ -747,7 +748,8 @@ export class SlickPivot implements SlickPlugin {
       return false;
     }
     const provider = this._options.provider;
-    return provider ? !!provider.writeBack && value.writeBack !== false && !value.showAs : this._engine.canWriteBack(value);
+    const method = (value.writeBack || {}).method ?? this._options.writeBack.method;
+    return provider ? !!provider.writeBack && value.writeBack !== false && !value.showAs : this._engine.canWriteBack(value, method);
   }
 
   /**
@@ -764,7 +766,9 @@ export class SlickPivot implements SlickPlugin {
     const settings = { ...this._options.writeBack, ...(value.writeBack || {}) };
     const edit: PivotCellEdit = {
       ...cell,
-      oldValue: this._result?.cells[cell.rowKey]?.[cell.columnKey]?.[valueIndex] ?? null,
+      rowPath: { ...this._rowNodeIndex.get(cell.rowKey)?.path },
+      columnPath: { ...this._columnNodeIndex.get(cell.columnKey)?.path },
+      oldValue:this._result?.cells[cell.rowKey]?.[cell.columnKey]?.[valueIndex] ?? null,
       newValue,
       method: settings.method ?? 'weighted',
       precision: settings.precision,
@@ -1079,12 +1083,16 @@ export class SlickPivot implements SlickPlugin {
 
   protected applyResult(result: PivotResult): void {
     this._result = result;
-    this._rowNodeIndex.clear();
-    const indexNode = (node: PivotHeaderNode) => {
-      this._rowNodeIndex.set(node.key, node);
-      node.children.forEach(indexNode);
+    const indexNodes = (index: Map<string, PivotHeaderNode>, tree: PivotHeaderNode) => {
+      index.clear();
+      const indexNode = (node: PivotHeaderNode) => {
+        index.set(node.key, node);
+        node.children.forEach(indexNode);
+      };
+      indexNode(tree);
     };
-    indexNode(result.rowTree);
+    indexNodes(this._rowNodeIndex, result.rowTree);
+    indexNodes(this._columnNodeIndex, result.columnTree);
     this.pruneCollapsedKeys();
     this.buildColumns();
     this.buildRows();

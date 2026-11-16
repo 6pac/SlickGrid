@@ -1062,12 +1062,15 @@ export class PivotEngine {
   // -----------------
 
   /**
-   * Whether the cells of a value can be edited (write-back): its aggregator allocates, its field can be
+   * Whether the cells of a value can be edited (write-back) with an allocation method (by default the one of
+   * the value): its aggregator allocates (with `fill`, its result is one of the values), its field can be
    * written (a plain property or a field with a `setter`) and the value is not shown as a calculation
    */
-  canWriteBack(value: PivotValue): boolean {
+  canWriteBack(value: PivotValue, method = value.writeBack ? value.writeBack.method : undefined): boolean {
     const field = this.getField(value.field);
-    return value.writeBack !== false && !value.showAs && !!this._aggregators.get(value.aggregator)?.allocate && !!field && (!!field.setter || !field.getter);
+    const aggregator = this._aggregators.get(value.aggregator);
+    const allocates = method === 'fill' ? aggregator?.resultType === 'same' : !!aggregator?.allocate;
+    return value.writeBack !== false && !value.showAs && allocates && !!field && (!!field.setter || !field.getter);
   }
 
   /**
@@ -1083,7 +1086,9 @@ export class PivotEngine {
   ): PivotWriteBackChange[] {
     const spec = this.normalizeSpec(inputSpec);
     const value = spec.values.find((item) => item.id === cell.valueId);
-    if (!value || !this.canWriteBack(value)) {
+    const valueOptions = value?.writeBack || {};
+    const method = options?.method ?? valueOptions.method ?? 'weighted';
+    if (!value || !this.canWriteBack(value, method)) {
       return [];
     }
     const sourceRows = this.getSourceRows(rows, spec, cell.rowKey, cell.columnKey);
@@ -1093,9 +1098,9 @@ export class PivotEngine {
     const field = this.requireField(value.field);
     const getter = this.createGetter(field);
     const oldValues = sourceRows.map((row) => getter(row));
-    const valueOptions = value.writeBack || {};
-    const context: PivotAllocationContext = { method: options?.method ?? valueOptions.method ?? 'weighted', precision: options?.precision ?? valueOptions.precision, rows: sourceRows };
-    const newValues = this._aggregators.get(value.aggregator)!.allocate!(target, oldValues, context);
+    const context: PivotAllocationContext = { method, precision: options?.precision ?? valueOptions.precision, rows: sourceRows };
+    const filled = typeof target === 'number' && context.precision !== undefined ? roundTo(target, context.precision) : target;
+    const newValues = method === 'fill' ? oldValues.map(() => filled) : this._aggregators.get(value.aggregator)!.allocate!(target, oldValues, context);
     return sourceRows
       .map((row, i) => ({ row, field: field.id, oldValue: oldValues[i], newValue: newValues[i] }))
       .filter((change) => change.newValue !== change.oldValue);

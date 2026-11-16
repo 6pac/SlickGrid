@@ -598,7 +598,7 @@ describe('PivotEngine', () => {
     const spec = (aggregator: string): Partial<PivotSpec> => ({ rows: ['g'], columns: [], values: [{ field: 'v', aggregator }] });
 
     /** Allocate a new cell value over the given source values with the engine, returning the written values */
-    const allocate = (aggregator: string, values: any[], target: any, options?: { method?: 'weighted' | 'equal' | 'equalIncrement'; precision?: number; }) => {
+    const allocate = (aggregator: string, values: any[], target: any, options?: { method?: 'weighted' | 'equal' | 'equalIncrement' | 'fill'; precision?: number; }) => {
       const rows = values.map((v) => ({ g: 'a', v }));
       const engine = new PivotEngine({ fields });
       const changes = engine.allocate(rows, spec(aggregator), { rowKey: key('a'), columnKey: ROOT, valueId: `${aggregator}:v` }, target, options);
@@ -640,6 +640,17 @@ describe('PivotEngine', () => {
       expect(allocate('last', [null, null], 9)).toEqual([null, 9]);
     });
 
+    it('fills every source row with the typed value itself, of any type, with the fill method', () => {
+      expect(allocate('first', [3, 3, 3], 9, { method: 'fill' })).toEqual([9, 9, 9]);
+      expect(allocate('max', [3, null, 4], 9, { method: 'fill' })).toEqual([9, 9, 9]);
+      expect(allocate('last', ['ON3', '3'], 'ON9', { method: 'fill' })).toEqual(['ON9', 'ON9']);
+      // a number is rounded to the precision, the same for every row
+      expect(allocate('min', [1, 2], 2.346, { method: 'fill', precision: 2 })).toEqual([2.35, 2.35]);
+      // the cell shows the typed value only when the result of its aggregator is one of the values
+      expect(allocate('sum', [1, 2], 9, { method: 'fill' })).toEqual([1, 2]);
+      expect(allocate('avg', [1, 2], 9, { method: 'fill' })).toEqual([1, 2]);
+    });
+
     it('tells which values can be written back', () => {
       const engine = new PivotEngine({ fields: [...fields, { id: 'withSetter', getter: (row: any) => row.v, setter: (row: any, value: any) => (row.v = value) }] });
       expect(engine.canWriteBack({ field: 'v', aggregator: 'sum' })).toBe(true);
@@ -653,6 +664,13 @@ describe('PivotEngine', () => {
       expect(engine.canWriteBack({ field: 'v', aggregator: 'sum', writeBack: false })).toBe(false);
       expect(engine.canWriteBack({ field: 'unknown', aggregator: 'sum' })).toBe(false);
       expect(engine.canWriteBack({ field: 'v', aggregator: 'nope' })).toBe(false);
+      // with the fill method (given, or the one of the value), an aggregator whose result is one of the values
+      expect(engine.canWriteBack({ field: 'v', aggregator: 'max' }, 'fill')).toBe(true);
+      expect(engine.canWriteBack({ field: 'v', aggregator: 'min', writeBack: { method: 'fill' } })).toBe(true);
+      expect(engine.canWriteBack({ field: 'withSetter', aggregator: 'last' }, 'fill')).toBe(true);
+      expect(engine.canWriteBack({ field: 'v', aggregator: 'sum' }, 'fill')).toBe(false);
+      expect(engine.canWriteBack({ field: 'v', aggregator: 'count' }, 'fill')).toBe(false);
+      expect(engine.canWriteBack({ field: 'double', aggregator: 'first' }, 'fill')).toBe(false);
     });
 
     it('returns the changes of the source rows behind the cell without applying them, skipping the rows that keep their value', () => {

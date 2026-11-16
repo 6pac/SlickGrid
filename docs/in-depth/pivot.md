@@ -222,6 +222,7 @@ With `enableWriteBack: true` (and `editable: true` in the grid options), users c
 | `weighted` (default) | every value is scaled by the same factor, keeping their proportions (an equal split when the total is 0) |
 | `equal` | every row gets the same share |
 | `equalIncrement` | every row changes by the same amount |
+| `fill` | every row gets the typed value itself, of any type |
 
 `writeBack.precision` rounds the written values (`0` for quantities) and gives the rounding residue to the largest one, so the total is exactly the typed value. A value's own `writeBack` setting overrides the plugin one, and `writeBack: false` makes it read-only.
 
@@ -230,6 +231,42 @@ A value can be edited when its aggregator allocates (`sum`, `avg`, `first`, `las
 ```ts
 { id: 'AmountK', getter: (row) => row.Amount / 1000, setter: (row, value) => (row.Amount = value * 1000) }
 ```
+
+### Settings of a cell
+
+Some values are not amounts to spread but a setting of the cell, repeated on every source row behind it, like a repeat rate kept per programming tag and age block. `first` would only write the first row, leaving the others, and what is computed from them, with the old setting. The `fill` method gives every row the typed value instead. It is meant for the aggregators whose result is one of the values (`first`, `last`, `min`, `max`, or a custom aggregator whose `resultType` is `same`), so the cell then shows the typed value; a value aggregated otherwise cannot be edited with it. A text value needs a text editor:
+
+```ts
+const pivot = new SlickPivot({
+  enableWriteBack: true,
+  writeBack: { editor: Editors.Text },
+  fields: [{
+    // "ON9": 9 weeks, referring to the ON tag
+    id: 'Repeat',
+    getter: (row) => `${row.ReferToTag ?? ''}${row.RepeatWeeks}`,
+    setter: (row, value) => {
+      const [, referTo, weeks] = /^(ON)?(\d+)$/i.exec(value)!;
+      row.ReferToTag = referTo ? 'ON' : null;
+      row.RepeatWeeks = Number(weeks);
+    },
+  }],
+  spec: {
+    rows: ['Tag'],
+    columns: ['Block'],
+    values: [{ field: 'Repeat', aggregator: 'first', writeBack: { method: 'fill' } }],
+  },
+});
+```
+
+The write-back events give the cell by the item values of its row and its column, keyed by field id (`rowPath` and `columnPath`, empty for a grand total), as well as by its keys. When the setting is stored once per cell, for example in a table keyed by tag and block, save it from them rather than from the changed source rows:
+
+```ts
+pivot.onWriteBack.subscribe((_e, { rowPath, columnPath, newValue }) => {
+  saveRepeat(rowPath.Tag, columnPath.Block, newValue);
+});
+```
+
+Check the typed value in `onBeforeWriteBack`, which can cancel the edit, so that the setter only gets values it can read.
 
 `onBeforeWriteBack` can cancel an edit, and `onWriteBack` receives the changes of the source rows (`{ row, field, oldValue, newValue }`), for example to save them. `pivot.setCellValue()` does the same as typing into a cell, and `engine.allocate()` computes the changes without applying them, for a server. A DataView source is told which items changed. The cell editor defaults to `Editors.Float`, so load `slick.editors.js` (or set `writeBack.editor`).
 
@@ -337,7 +374,7 @@ pivot.setOptions({
     },
     async getItems(fieldId, { search, signal }) { /* distinct items for the filter dropdowns */ },
     async getSourceRows(request, rowKey, columnKey) { /* drill-down */ },
-    async writeBack(request, edit) { /* write the typed value back to the data */ },
+    async writeBack(request, edit) { /* write edit.newValue back to the data of the cell given by edit.rowPath and edit.columnPath */ },
   },
 });
 ```

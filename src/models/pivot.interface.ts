@@ -38,8 +38,10 @@ export type PivotDateLevel = 'year' | 'quarter' | 'month' | 'day';
  *   (an equal split when the current total is 0)
  * - `equal`: every source row gets the same value
  * - `equalIncrement`: every source row changes by the same amount
+ * - `fill`: every source row gets the typed value itself, of any type, for a setting repeated on every row
+ *   of a cell; only for aggregators whose result is one of the values (`first`, `last`, `min`, `max`)
  */
-export type PivotAllocationMethod = 'weighted' | 'equal' | 'equalIncrement';
+export type PivotAllocationMethod = 'weighted' | 'equal' | 'equalIncrement' | 'fill';
 
 export interface PivotField<T = any> {
   /** Unique id of the field, used by the spec */
@@ -143,7 +145,8 @@ export interface PivotAggregator<S = any, R = any> {
 
   /**
    * Write-back: return the new source values (one per source row behind the cell) that give the cell
-   * the `target` result. Values aggregated by an aggregator without `allocate` cannot be edited.
+   * the `target` result. Values aggregated by an aggregator without `allocate` cannot be edited, except with
+   * the `fill` method, which the engine applies itself for the aggregators whose `resultType` is `same`.
    * The built-in `sum`, `avg`, `first` and `last` aggregators allocate.
    */
   allocate?: (target: any, values: any[], context: PivotAllocationContext) => any[];
@@ -238,6 +241,15 @@ export interface PivotCellEdit {
 
   /** Key of the column header node of the cell */
   columnKey: string;
+
+  /**
+   * Item values of the row of the cell, keyed by field id (`{ Region: 'East', Country: 'China' }`), empty for
+   * the grand total row; with `columnPath`, they identify the cell, for example to save it in a table keyed by them
+   */
+  rowPath: Record<string, any>;
+
+  /** Item values of the column of the cell, keyed by field id, empty for the grand total column */
+  columnPath: Record<string, any>;
 
   /** Id of the edited value */
   valueId: string;

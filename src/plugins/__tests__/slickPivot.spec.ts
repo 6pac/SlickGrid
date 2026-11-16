@@ -632,6 +632,65 @@ describe('SlickPivot plugin', () => {
       expect(plain.grid.onBeforeEditCell.notify({ row: 1, cell: 2, item: plain.pivot.rowModel.getItem(1), column: valueColumn(plain.pivot, 'sum:amountK', '[2023]'), grid: plain.grid } as any).getReturnValue()).toBeUndefined();
     });
 
+    it('fills a setting repeated on every source row of a cell, telling the cell by the items of its row and its column', async () => {
+      // a repeat rate kept per tag and block, "ON9" being 9 weeks referring to the ON tag
+      const rows = [
+        { tag: 'Drama', block: 'A', referTo: null as string | null, weeks: 4, minutes: 30 },
+        { tag: 'Drama', block: 'A', referTo: null as string | null, weeks: 4, minutes: 50 },
+        { tag: 'Drama', block: 'B', referTo: null as string | null, weeks: 6, minutes: 20 },
+      ];
+      const settingFields: PivotField[] = [
+        { id: 'tag' },
+        { id: 'block' },
+        { id: 'weeks', type: 'number' },
+        { id: 'minutes', type: 'number' },
+        {
+          id: 'repeat',
+          getter: (row) => `${row.referTo ?? ''}${row.weeks}`,
+          setter: (row, value) => {
+            const [, referTo, weeks] = /^(ON)?(\d+)$/i.exec(String(value))!;
+            row.referTo = referTo ? 'ON' : null;
+            row.weeks = Number(weeks);
+          },
+        },
+        { id: 'perWeek', type: 'number', getter: (row) => row.minutes / row.weeks },
+      ];
+      const settingSpec: Partial<PivotSpec> = {
+        rows: ['tag'],
+        columns: ['block'],
+        values: [{ field: 'repeat', aggregator: 'first', writeBack: { method: 'fill' } }, { field: 'perWeek', aggregator: 'sum' }],
+      };
+      const { pivot } = createPivot({ enableWriteBack: true, source: rows, fields: settingFields, spec: settingSpec });
+      expect(pivot.isValueEditable('first:repeat')).toBe(true);
+      const saved = vi.fn();
+      pivot.onWriteBack.subscribe((_e, args) => saved(args.rowPath, args.columnPath, args.newValue, args.source));
+      const drama = PivotEngine.getNodeKey(['Drama']);
+      const blockA = PivotEngine.getNodeKey(['A']);
+
+      await expect(pivot.setCellValue({ rowKey: drama, columnKey: blockA, valueId: 'first:repeat' }, 'ON8')).resolves.toBe(true);
+      expect(rows.map((row) => [row.referTo, row.weeks])).toEqual([['ON', 8], ['ON', 8], [null, 6]]);
+      expect(saved).toHaveBeenLastCalledWith({ tag: 'Drama' }, { block: 'A' }, 'ON8', 'edit');
+      // every row of the cell holds the new setting, so what is computed from it follows: (30 + 50) / 8
+      expect(pivot.getResult()!.cells[drama][blockA]).toEqual(['ON8', 10]);
+
+      await pivot.undo();
+      expect(rows.map((row) => [row.referTo, row.weeks])).toEqual([[null, 4], [null, 4], [null, 6]]);
+      expect(saved).toHaveBeenLastCalledWith({ tag: 'Drama' }, { block: 'A' }, '4', 'undo');
+
+      // the fill method of the plugin applies to the values without their own
+      const { pivot: byPlugin } = createPivot({
+        enableWriteBack: true,
+        source: rows,
+        fields: settingFields,
+        writeBack: { method: 'fill' },
+        spec: { rows: ['tag'], columns: [], values: [{ field: 'weeks', aggregator: 'max' }, { field: 'minutes', aggregator: 'sum' }] },
+      });
+      expect(byPlugin.isValueEditable('max:weeks')).toBe(true);
+      expect(byPlugin.isValueEditable('sum:minutes')).toBe(false);
+      await expect(byPlugin.setCellValue({ rowKey: drama, columnKey: ROOT, valueId: 'max:weeks' }, 12)).resolves.toBe(true);
+      expect(rows.map((row) => row.weeks)).toEqual([12, 12, 12]);
+    });
+
     it('writes a value typed into a cell back to the source rows behind it and raises onWriteBack with their changes', async () => {
       const rows = createRows();
       const { pivot } = createPivot({ enableWriteBack: true, source: rows, spec: writeBackSpec });
@@ -647,6 +706,9 @@ describe('SlickPivot plugin', () => {
       const args = after.mock.calls[0][1];
       expect(args).toEqual({
         ...cell,
+        // the cell is also given by the item values of its row and its column
+        rowPath: { region: 'East', country: 'China' },
+        columnPath: {},
         oldValue: 40,
         newValue: 60,
         method: 'weighted',
@@ -1092,7 +1154,7 @@ describe('SlickPivot plugin', () => {
 
       expect(pivot.isValueEditable('sum:amount')).toBe(true);
       await expect(pivot.setCellValue({ rowKey: EAST, columnKey: ROOT, valueId: 'sum:amount' }, 1)).resolves.toBe(true);
-      expect(provider.writeBack).toHaveBeenCalledWith(expect.objectContaining({ spec: expect.anything() }), { rowKey: EAST, columnKey: ROOT, valueId: 'sum:amount', oldValue: 450, newValue: 1, method: 'weighted', precision: undefined });
+      expect(provider.writeBack).toHaveBeenCalledWith(expect.objectContaining({ spec: expect.anything() }), { rowKey: EAST, columnKey: ROOT, rowPath: { region: 'East' }, columnPath: {}, valueId: 'sum:amount', oldValue: 450, newValue: 1, method: 'weighted', precision: undefined });
       expect(provider.execute).toHaveBeenCalledTimes(3);
     });
 
