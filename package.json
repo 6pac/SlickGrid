@@ -104,9 +104,7 @@
     "src"
   ],
   "browserslist": [
-    "last 2 version",
-    "> 0.5%",
-    "not dead"
+    "baseline widely available"
   ],
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
