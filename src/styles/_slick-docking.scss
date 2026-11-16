@@ -19,9 +19,14 @@
     z-index: var(--slick-sticky-header-z-index, 7);
   }
 
+  // Rows scroll underneath, so every layer needs an opaque background, including an empty pre-header.
+  > .slick-topheader-panel,
+  > .slick-header-root {
+    background-color: var(--slick-header-bg-color, #f8f8f8);
+  }
+
   > .slick-topheader-panel {
     top: var(--slick-sticky-header-top, 0px);
-    background-color: var(--slick-header-bg-color, #ececec);
   }
 
   > .slick-header-root {
