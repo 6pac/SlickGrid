@@ -1,11 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Column, GridOption, PivotField, PivotOption, PivotRequest, PivotResult, PivotSpec } from '../../models';
+import type { Column, GridOption, PivotField, PivotOption, PivotRequest, PivotResult, PivotSpec, SelectionModel } from '../../models';
 import { SlickEvent, SlickEventData, SlickRange } from '../../slick.core';
 import { SlickDataView } from '../../slick.dataview';
 import { Editors } from '../../slick.editors';
-import type { SlickGrid } from '../../slick.grid';
+import { SlickGrid } from '../../slick.grid';
 import { PivotEngine } from '../../slick.pivotengine';
+import { SlickCellSelectionModel } from '../slick.cellselectionmodel';
 import { SlickPivot } from '../slick.pivot';
+import { SlickRowSelectionModel } from '../slick.rowselectionmodel';
 
 interface SalesRow {
   id: number;
@@ -1504,7 +1506,7 @@ describe('SlickPivot plugin', () => {
       expect(editorLock.cancelCurrentEdit).toHaveBeenCalled();
     });
 
-    it('clears the selection while the grid still shows the selected rows, each time Pivot Mode changes', async () => {
+    it('clears the selection each time Pivot Mode changes, while the grid shows the pivot', async () => {
       const { pivot, grid, rows } = createHostPivot({ pivotMode: false });
       let ranges = [new SlickRange(1, 0)];
       const clearedData: any[] = [];
@@ -1519,7 +1521,8 @@ describe('SlickPivot plugin', () => {
       await pivot.setPivotMode(true);
       expect(selectionModel.setSelectedRanges).toHaveBeenCalledWith([], 'SlickPivot.clearSelection');
       expect(clearedData).toHaveLength(1);
-      expect(clearedData[0]).toBe(rows);
+      // once the grid shows the pivot, so that a DataView synced with the grid does not hear of it
+      expect(clearedData[0]).toBe(pivot.rowModel);
       // there is nothing to clear
       await pivot.setPivotMode(false);
       expect(selectionModel.setSelectedRanges).toHaveBeenCalledTimes(1);
@@ -1620,6 +1623,102 @@ describe('SlickPivot plugin', () => {
       expect(names).toEqual(['Row Labels', 'Total Of Amount', '2023', '2024']);
       expect(pivot.getColumnInfo(pivot.getColumns()[1].id)).toEqual(expect.objectContaining({ valueId: 'rowTotal', isGrandTotal: true }));
       expect(render(pivot, 0, 1)).toBe('450');
+    });
+  });
+  describe('selection on the grid of the application', () => {
+    const grids: SlickGrid[] = [];
+    afterEach(() => {
+      grids.splice(0).forEach((grid) => {
+        const elm = grid.getContainerNode();
+        grid.destroy();
+        elm.remove();
+      });
+    });
+
+    /** A grid of a DataView synced with its selection, the pivot registered with it */
+    const createSelectionGrid = (pivotOptions: Partial<PivotOption> = {}, selectionModel: SelectionModel = new SlickRowSelectionModel()) => {
+      const elm = document.createElement('div');
+      document.body.appendChild(elm);
+      const dataView = new SlickDataView<SalesRow>();
+      const columns: Column[] = [
+        { id: 'region', name: 'Region', field: 'region' },
+        { id: 'country', name: 'Country', field: 'country' },
+        { id: 'units', name: 'Units', field: 'units' },
+      ];
+      const grid = new SlickGrid<SalesRow>(elm, dataView, columns, SlickPivot.getGridOptions({ enableCellNavigation: true, multiSelect: true }));
+      grids.push(grid);
+      grid.setSelectionModel(selectionModel);
+      dataView.setItems(createRows());
+      dataView.syncGridSelection(grid, true);
+      const pivot = new SlickPivot({
+        fields,
+        spec: { rows: ['region', 'country'], columns: [], values: [{ field: 'units', aggregator: 'sum' }] },
+        locale: 'en-US',
+        refreshDelay: 0,
+        ...pivotOptions,
+      });
+      grid.registerPlugin(pivot);
+      const selectedPivotRows = () => grid.getSelectedRows().map((row) => pivot.rowModel.getItem(row).id);
+      return { grid, dataView, pivot, selectedPivotRows };
+    };
+    const leaf = (...path: string[]) => SlickPivot.getRowId('leaf', path);
+    const group = (...path: string[]) => SlickPivot.getRowId('group', path);
+
+    it('keeps the source rows selected in a DataView by id while the grid shows the pivot, and selects them again with Pivot Mode off', async () => {
+      const { grid, dataView, pivot, selectedPivotRows } = createSelectionGrid({ pivotMode: false });
+      grid.setSelectedRows([0, 2]);
+      expect(dataView.getAllSelectedIds()).toEqual([1, 3]);
+      const idsChanged = vi.fn();
+      dataView.onSelectedRowIdsChanged.subscribe(idsChanged);
+
+      await pivot.setPivotMode(true);
+      expect(grid.getSelectedRows()).toEqual([]);
+      // a pivot row is not a source row: the DataView does not take it for one
+      grid.setSelectedRows([4]);
+      expect(selectedPivotRows()).toEqual([leaf('West', 'France')]);
+      expect(dataView.getAllSelectedIds()).toEqual([1, 3]);
+      // a source row added while pivoting: the DataView leaves the grid alone, and the pivot row stays selected where it moved
+      dataView.addItem({ id: 6, region: 'North', country: 'Norway', year: 2024, when: new Date(2024, 0, 2), amount: 10, units: 1 });
+      await vi.waitFor(() => expect(pivot.rowModel.getRowById(group('North'))).toBe(3));
+      expect(grid.getSelectedRows()).toEqual([6]);
+      expect(selectedPivotRows()).toEqual([leaf('West', 'France')]);
+      expect(idsChanged).not.toHaveBeenCalled();
+
+      await pivot.setPivotMode(false);
+      expect(grid.getData()).toBe(dataView);
+      expect(grid.getSelectedRows()).toEqual([0, 2]);
+      expect(dataView.getAllSelectedIds()).toEqual([1, 3]);
+      expect(idsChanged).not.toHaveBeenCalled();
+    });
+
+    it('keeps the selected pivot rows by id when the pivot rows change, dropping the rows that are gone', async () => {
+      const { grid, pivot, selectedPivotRows } = createSelectionGrid();
+      grid.setSelectedRows([3, 4]);
+      expect(selectedPivotRows()).toEqual([group('West'), leaf('West', 'France')]);
+      const lastCell = grid.getColumns().length - 1;
+
+      // a group collapsed above them
+      pivot.rowModel.collapseGroup(EAST);
+      expect(grid.getSelectedRows()).toEqual([1, 2]);
+      expect(selectedPivotRows()).toEqual([group('West'), leaf('West', 'France')]);
+      expect(grid.getSelectionModel()!.getSelectedRanges()).toEqual([expect.objectContaining({ fromRow: 1, toRow: 2, fromCell: 0, toCell: lastCell })]);
+
+      // a spec without the countries: the France row is gone, the West row is now a leaf of other columns
+      await pivot.updateSpec({ rows: ['region'], columns: ['year'] });
+      expect(selectedPivotRows()).toEqual([]);
+      grid.setSelectedRows([1]);
+      expect(selectedPivotRows()).toEqual([leaf('West')]);
+      await pivot.updateSpec({ columns: [] });
+      expect(selectedPivotRows()).toEqual([leaf('West')]);
+      // a whole row stays a whole row with other columns
+      expect(grid.getSelectionModel()!.getSelectedRanges()[0].toCell).toBe(grid.getColumns().length - 1);
+    });
+
+    it('keeps the selected cells of a cell selection on their pivot rows', () => {
+      const { grid, pivot } = createSelectionGrid({}, new SlickCellSelectionModel());
+      grid.getSelectionModel()!.setSelectedRanges([new SlickRange(4, 1, 5, 1)]);
+      pivot.rowModel.collapseGroup(EAST);
+      expect(grid.getSelectionModel()!.getSelectedRanges()).toEqual([expect.objectContaining({ fromRow: 2, toRow: 3, fromCell: 1, toCell: 1 })]);
     });
   });
 });

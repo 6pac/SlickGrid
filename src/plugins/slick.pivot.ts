@@ -32,7 +32,7 @@ import type {
   SlickPlugin,
   StickyRows,
 } from '../models/index.js';
-import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core.js';
+import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core.js';
 import { Editors as Editors_ } from '../slick.editors.js';
 import { PIVOT_VALUES_FIELD as PIVOT_VALUES_FIELD_, PivotEngine as PivotEngine_ } from '../slick.pivotengine.js';
 import type { SlickGrid } from '../slick.grid.js';
@@ -41,6 +41,7 @@ import type { SlickGrid } from '../slick.grid.js';
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
 const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
+const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 const PivotEngine = IIFE_ONLY ? Slick.PivotEngine : PivotEngine_;
 const PIVOT_VALUES_FIELD = IIFE_ONLY ? Slick.PIVOT_VALUES_FIELD : PIVOT_VALUES_FIELD_;
@@ -98,6 +99,15 @@ type ResolvedPivotOption = Required<Omit<PivotOption, 'spec' | 'source' | 'aggre
 
 /** Band in which a column is drawn: pinned to an edge, sticky, or scrolling with the centre */
 type ColumnBand = 'left' | 'right' | 'sticky' | 'center';
+
+/** Selected cells of one pivot row, kept by the id of the row while the pivot rows change */
+interface KeptSelection {
+  id: string;
+  fromCell: number;
+  toCell: number;
+  /** Whether every cell of the row was selected, as with a row selection model */
+  wholeRow: boolean;
+}
 
 /** What the grid had before showing the pivot, given back when Pivot Mode is turned off */
 interface HostGridState {
@@ -215,6 +225,7 @@ export class SlickPivot implements SlickPlugin {
   protected _result?: PivotResult;
   protected _rows: PivotRowItem[] = [];
   protected _rowIndexById = new Map<string, number>();
+  protected _keptSelection?: KeptSelection[];
   protected _managedColumnPins = { left: false, right: false };
   protected _resizeObserver?: ResizeObserver;
   protected _stickySyncFrame?: number;
@@ -363,8 +374,9 @@ export class SlickPivot implements SlickPlugin {
         preHeaderScrollerHeight: (preHeaderPanel?.parentElement as HTMLElement | null)?.style.height ?? '',
       };
       grid.resetActiveCell();
-      this.clearSelection();
       grid.setData(this.rowModel);
+      // once the grid shows the pivot, so that a DataView synced with the grid keeps the ids of its selected rows
+      this.clearSelection();
       if (this.applyFields(true)) {
         this._stale = true;
       }
@@ -455,6 +467,8 @@ export class SlickPivot implements SlickPlugin {
     grid.setColumns(host.columns);
     grid.setSortColumns(host.sortColumns);
     grid.setPreHeaderPanelVisibility(host.showPreHeaderPanel);
+    // a DataView synced with the grid selects its rows again, which it kept by id while the grid showed the pivot
+    (host.data as { resyncGrid?: () => void; }).resyncGrid?.();
     grid.resizeCanvas();
   }
 
@@ -467,8 +481,8 @@ export class SlickPivot implements SlickPlugin {
   }
 
   /**
-   * Clear the selection before the grid changes what it shows: a selected row index of the pivot does not point to a
-   * source row, nor the other way round. It is cleared while the grid still shows the selected rows.
+   * Clear the selection when the grid changes between the pivot and its own rows: a selected row index of the pivot
+   * does not point to a source row, nor the other way round
    */
   protected clearSelection(): void {
     const selectionModel = this._grid?.getSelectionModel();
@@ -1533,7 +1547,59 @@ export class SlickPivot implements SlickPlugin {
     this.setRows(rows);
   }
 
+  /** Selected cells of the grid by the ids of their pivot rows, to select them again in the rows that replace them */
+  protected getSelectionByRowId(): KeptSelection[] | undefined {
+    const grid = this._grid;
+    const ranges = grid?.getData() === this.rowModel ? grid.getSelectionModel()?.getSelectedRanges() : undefined;
+    if (!grid || !ranges?.length) {
+      return undefined;
+    }
+    const lastCell = grid.getColumns().length - 1;
+    const kept: KeptSelection[] = [];
+    ranges.forEach((range) => {
+      for (let row = range.fromRow; row <= range.toRow; row++) {
+        const id = this._rows[row]?.id;
+        if (id !== undefined) {
+          kept.push({ id, fromCell: range.fromCell, toCell: range.toCell, wholeRow: range.fromCell === 0 && range.toCell >= lastCell });
+        }
+      }
+    });
+    return kept;
+  }
+
+  /**
+   * Select the kept rows again where they now are, as a DataView does with its rows: a group expanded above them or
+   * a new result moves them. The rows that no longer exist are dropped, and the cells are kept within the columns.
+   */
+  protected restoreSelection(): void {
+    const kept = this._keptSelection;
+    this._keptSelection = undefined;
+    const grid = this._grid;
+    const selectionModel = grid?.getData() === this.rowModel ? grid.getSelectionModel() : undefined;
+    if (!grid || !kept || !selectionModel) {
+      return;
+    }
+    const lastCell = grid.getColumns().length - 1;
+    const ranges: SlickRange_[] = [];
+    kept.forEach(({ id, fromCell, toCell, wholeRow }) => {
+      const row = this._rowIndexById.get(id);
+      if (row === undefined || fromCell > lastCell) {
+        return;
+      }
+      const cells = { fromCell, toCell: wholeRow ? lastCell : Math.min(toCell, lastCell) };
+      const previous = ranges[ranges.length - 1];
+      if (previous && previous.toRow === row - 1 && previous.fromCell === cells.fromCell && previous.toCell === cells.toCell) {
+        previous.toRow = row;
+      } else {
+        ranges.push(new SlickRange(row, cells.fromCell, row, cells.toCell));
+      }
+    });
+    selectionModel.setSelectedRanges(ranges, 'SlickPivot.restoreSelection');
+  }
+
   protected setRows(rows: PivotRowItem[]): void {
+    // the rows that were shown, until the grid is updated with the new ones
+    this._keptSelection ??= this.getSelectionByRowId();
     this._rows = rows;
     this._rowIndexById.clear();
     rows.forEach((row, index) => this._rowIndexById.set(row.id, index));
@@ -1656,6 +1722,7 @@ export class SlickPivot implements SlickPlugin {
     }
     grid.invalidateAllRows();
     grid.updateRowCount();
+    this.restoreSelection();
     this.applyPinning('rows');
     grid.render();
     if (columnsChanged) {
