@@ -114,6 +114,22 @@ const options = {
 | `stickyActivationBuffer` | 2 | Activation buffer in pixels for sticky columns. Rows use the exact boundary. |
 | `minCenterRowCount` | 3 | When permanent top/bottom rows would leave less than this many centre rows visible, the container grows (`min-height`) instead of shrinking the centre to nothing. `0` disables. |
 
+### Sticky headers in auto-height grids
+
+Set `autoHeight: { stickyHeader: true }` to grow the grid to fit its rows while keeping the top-header panel, pre-header, column headers and header row visible as the page or nearest scrolling ancestor scrolls. `autoHeight: true` retains the existing non-sticky behavior. Since the option also accepts an object, use a truthy check when reading it.
+
+Sticky positioning is relative to the nearest ancestor with a scrolling mechanism. An ancestor with `overflow: auto` or `hidden` can therefore prevent the headers from sticking to the page if that ancestor is not the element being scrolled.
+
+Use `--slick-sticky-header-top` to offset the stack below fixed page content and `--slick-sticky-header-z-index` to change its stacking order (default `7`):
+
+```css
+.slick-container {
+  --slick-sticky-header-top: 56px;
+}
+```
+
+See [the auto-height example](https://6pac.github.io/SlickGrid/examples/example11-autoheight.html).
+
 ## Rendering notes
 
 - Colspans that cross a band boundary keep one logical host cell (formatters, selection,
@@ -182,9 +198,9 @@ resolves to the column drawn there, not to the column the natural layout would p
 | `frozenRightViewportMinWidth` | removed; use `docking.maxColumnViewportWidthPercent` |
 | `skipFreezeColumnValidation` | `skipPinningValidation` |
 | `invalidColumnFreezePickerMessage/Callback`, `invalidColumnFreezeWidthMessage/Callback`, `throwWhenFrozenNotAllViewable` | `invalidColumnPinningPickerMessage`, `invalidColumnPinningWidthMessage`, and the shared `errorCallback` (no throwing variant) |
-| `grid.getFrozenColumnId()`, `grid.getFrozenRowOffset()`, `grid.validateColumnFreeze()`, `grid.validateColumnFreezeWidth()` | `grid.getPinnedColumns()`, `grid.validateColumnPinning()`; row offsets are internal |
+| `grid.getFrozenColumnId()`, `grid.getFrozenRowOffset()`, `grid.validateColumnFreezeWidth()`, `grid.validateSetColumnFreeze()` | `grid.getPinnedColumns()`, `grid.validateColumnPinning()`; row offsets are internal |
 | `getCanvases()`, `getViewports()`, `getHeaderRow()`, `getFooterRow()` returning left/right pairs | One element each; the array-returning forms still return one entry |
-| `.slick-pane-*`, `.slick-viewport-right`, `.slick-viewport-bottom`, `.grid-canvas-right`, `.grid-canvas-bottom`, `.slick-header-right`, `.slick-headerrow-right`, `.slick-footerrow-right` | Removed. Use the selectors in the table above. `slick-viewport-top slick-viewport-left` and `grid-canvas-top grid-canvas-left` remain on the single viewport/canvas. |
+| `.slick-pane-*`, `.slick-viewport-right`, `.slick-viewport-bottom`, `.grid-canvas-right`, `.grid-canvas-bottom`, `.slick-header-right` | Removed. Use the selectors in the table above. `slick-viewport-top slick-viewport-left` and `grid-canvas-top grid-canvas-left` remain on the single viewport/canvas. `.slick-header-columns-right`, `.slick-headerrow-columns-right` and `.slick-footerrow-columns-right` remain only as right-pinned band wrappers. |
 | Column reorder across the frozen boundary | Not possible; pin/unpin explicitly |
 | Grid State plugin `frozenColumn` | Not persisted; store `pinning` from `grid.getOptions()` |
 
@@ -198,8 +214,9 @@ The new `onHeaderKeyDown` event is typed `OnHeaderKeyDownEventArgs` and publishe
 
 Header, header-row, footer and cell events keep their argument shapes. `getGridPosition()` and
 `getActiveCellPosition()` still return document-relative positions. `applyHtmlCode()`,
-`trigger()`, `validateAndEnforceOptions()` and the `set*Visibility(visible, animate)` signatures
-are unchanged from v5.
+`validateAndEnforceOptions()` and the `set*Visibility(visible, animate)` signatures are unchanged
+from v5. The protected `trigger()` became the public `triggerEvent()`; see the
+[v6 migration guide](/migration/v6#subclasses-protected-members).
 
 ## Known limitations
 
@@ -228,7 +245,7 @@ Browser coverage lives in `cypress/e2e/*pinning*`, `*sticky*`, `quirk-pinning-*`
 
 ## See also
 
-- [Migrating to v6](/in-depth/migration-v6)
+- [Migrating to v6](/migration/v6)
 - Reference: [`pinning`](/reference/grid#opt-pinning), [`stickyRows`](/reference/grid#opt-stickyRows),
   [`docking`](/reference/grid#opt-docking), [`skipPinningValidation`](/reference/grid#opt-skipPinningValidation),
   the column properties [`pinned`](/reference/column#col-pinned) and [`sticky`](/reference/column#col-sticky),

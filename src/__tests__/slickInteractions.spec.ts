@@ -305,6 +305,51 @@ describe('column and grouping drag interactions', () => {
     expect(onPillDragEnd).toHaveBeenCalledWith(a);
     instance.destroy();
   });
+
+  it('handles column drops and drag feedback when no grouping pill is being dragged', () => {
+    const dropzone = document.createElement('div');
+    document.body.appendChild(dropzone);
+    const onColumnDragEnter = vi.fn();
+    const onColumnDragLeave = vi.fn();
+    const onColumnDrop = vi.fn();
+    const instance = setupDropzonePillDrag({ dropzoneElm: dropzone, onColumnDragEnter, onColumnDragLeave, onColumnDrop });
+    const dragEnter = dragEvent('dragenter');
+    const dragLeave = dragEvent('dragleave');
+    const drop = dragEvent('drop');
+    Object.defineProperty(drop, 'dataTransfer', { value: { getData: vi.fn().mockReturnValue('column-a') } });
+
+    dropzone.dispatchEvent(dragEnter);
+    dropzone.dispatchEvent(dragLeave);
+    dropzone.dispatchEvent(drop);
+
+    expect(onColumnDragEnter).toHaveBeenCalledWith(dragEnter);
+    expect(onColumnDragLeave).toHaveBeenCalledWith(dragLeave);
+    expect(onColumnDrop).toHaveBeenCalledWith('column-a', drop);
+    instance.destroy();
+  });
+
+  it('supports touch fallback reordering after the movement threshold', () => {
+    const dropzone = document.createElement('div');
+    const a = document.createElement('div');
+    const b = document.createElement('div');
+    a.className = b.className = 'slick-dropped-grouping';
+    dropzone.append(a, b);
+    document.body.appendChild(dropzone);
+    vi.spyOn(b, 'getBoundingClientRect').mockReturnValue(new DOMRect(100, 0, 100, 20));
+    Object.defineProperty(document, 'elementFromPoint', { configurable: true, value: vi.fn().mockReturnValue(b) });
+    const onPillDragEnd = vi.fn();
+    const instance = setupDropzonePillDrag({ dropzoneElm: dropzone, onPillDragEnd, draggingCssClass: 'dragging' });
+    const touch = (clientX: number, clientY: number) => ({ clientX, clientY, pageX: clientX });
+    const touchStart = Object.assign(new Event('touchstart', { bubbles: true }), { touches: [touch(10, 10)], changedTouches: [touch(10, 10)] });
+    a.dispatchEvent(touchStart);
+    expect(a.classList.contains('dragging')).toBe(true);
+    document.dispatchEvent(Object.assign(new Event('touchmove', { cancelable: true }), { touches: [touch(180, 10)], changedTouches: [touch(180, 10)] }));
+    expect([...dropzone.children]).toEqual([b, a]);
+    document.dispatchEvent(Object.assign(new Event('touchend'), { touches: [], changedTouches: [touch(180, 10)] }));
+    expect(a.classList.contains('dragging')).toBe(false);
+    expect(onPillDragEnd).toHaveBeenCalledWith(a);
+    instance.destroy();
+  });
 });
 
 describe('MouseWheel class', () => {

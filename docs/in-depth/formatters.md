@@ -103,7 +103,7 @@ The registry holds these:
 | `Formatters.PercentComplete` | The number with a `%` sign, red below 50, green above. `-` when empty. | Uses an inline style color. |
 | `Formatters.PercentCompleteBar` | A colored bar whose width is the value percent. | Needs CSS for `.percent-complete-bar`. |
 | `Formatters.YesNo` | `Yes` for a truthy value, else `No`. | Plain text. |
-| `Formatters.Checkmark` | A check icon when truthy, else empty. | Needs the SlickGrid icon CSS (`sgi` classes). |
+| `Formatters.Checkmark` | A check icon when truthy, else an empty element labelled `No` for assistive technology. | Needs the SlickGrid icon CSS (`sgi` classes). |
 | `Formatters.Checkbox` | A checkbox icon that reflects the value. | Needs the SlickGrid icon CSS. |
 
 Each formatter is also exported on its own, for example `PercentCompleteFormatter` or `YesNoFormatter`.

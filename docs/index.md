@@ -13,7 +13,7 @@ hero:
       link: /reference/
     - theme: alt
       text: Examples
-      link: https://github.com/6pac/SlickGrid/wiki/Examples
+      link: examples.md
 features:
   - title: Introduction
     details: Build your first grid and learn the everyday options, columns, events and DataView basics.

@@ -115,7 +115,7 @@ export class SlickHybridSelectionModel implements SelectionModel {
       this._eventHandler
         .subscribe(this._selector.onCellRangeSelecting, (e, args) => this.handleCellRangeSelected(e, { ...args, caller: 'onCellRangeSelecting' }))
         .subscribe(this._selector.onCellRangeSelected, (e, args) => this.handleCellRangeSelected(e, { ...args, caller: 'onCellRangeSelected' }))
-      this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this));
+        .subscribe(this._selector.onBeforeCellRangeSelected, this.handleBeforeCellRangeSelected.bind(this));
     }
   }
 
@@ -690,6 +690,7 @@ export class SlickHybridSelectionModel implements SelectionModel {
 }
 
 // extend Slick namespace on window object when building as iife
+/* v8 ignore next -- IIFE_ONLY is compiled as false in the unit-test build. */
 if (IIFE_ONLY && window.Slick) {
   Utils.extend(true, window, {
     Slick: {

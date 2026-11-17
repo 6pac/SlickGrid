@@ -97,13 +97,12 @@ describe('Example - Grid Menu', () => {
   });
 
   it('should click on "Help" and expect an Alert to show the Help text', () => {
-    cy.on('window:alert', (str) => {
-      expect(str).to.equal(`Command: help`);
-    });
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('.slick-gridmenu-item')
       .contains('Help')
       .click({ force: true });
+    cy.get('@alertStub').should('have.been.calledWith','Command: help');
   });
 
   it('should toggle Filter Row and expect the row to be hidden', () => {
@@ -282,8 +281,7 @@ describe('Example - Grid Menu', () => {
 
   it('should be able to open Grid Menu and click on Export->Text and expect alert triggered with Text Export', () => {
     const subCommands1 = ['Text', 'Excel'];
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('#myGrid')
       .find('button.slick-gridmenu-button')
@@ -303,14 +301,13 @@ describe('Example - Grid Menu', () => {
       .find('.slick-gridmenu-item')
       .contains('Text')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Text'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Exporting as Text'));
   });
 
   it('should be able to open Grid Menu and click on Export->Excel->xls and expect alert triggered with Excel (xls) Export', () => {
     const subCommands1 = ['Text', 'Excel'];
     const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('#myGrid')
       .find('button.slick-gridmenu-button')
@@ -348,7 +345,8 @@ describe('Example - Grid Menu', () => {
       .find('.slick-gridmenu-item')
       .contains('Excel (xls)')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Excel (xls)'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Exporting as Excel (xls)'));
+
     cy.get('.slick-submenu').should('have.length', 0);
   });
 
@@ -356,9 +354,7 @@ describe('Example - Grid Menu', () => {
     const subCommands1 = ['Text', 'Excel'];
     const subCommands2 = ['Request update from supplier', '', 'Contact Us'];
     const subCommands2_1 = ['Email us', 'Chat with us', 'Book an appointment'];
-
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('#myGrid')
       .find('button.slick-gridmenu-button')
@@ -406,7 +402,7 @@ describe('Example - Grid Menu', () => {
       .find('.slick-gridmenu-item')
       .contains('Chat with us')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command: contact-chat'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Command: contact-chat'));
 
     cy.get('.slick-submenu').should('have.length', 0);
   });

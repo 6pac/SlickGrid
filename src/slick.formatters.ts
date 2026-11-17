@@ -39,7 +39,7 @@ export const PercentCompleteBarFormatter: Formatter = (_row, _cell, value) => {
     color = 'green';
   }
 
-  return `<span class="percent-complete-bar" style="background:${color};width:${value}%" title="${value}%"></span>`;
+  return `<span class="percent-complete-bar" role="img" aria-label="${value}%" style="background:${color};width:${value}%" title="${value}%"></span>`;
 };
 
 export const YesNoFormatter: Formatter = (_row, _cell, value) => {
@@ -47,11 +47,11 @@ export const YesNoFormatter: Formatter = (_row, _cell, value) => {
 };
 
 export const CheckboxFormatter: Formatter = (_row, _cell, value) => {
-  return `<span class="sgi sgi-checkbox-${value ? 'intermediate' : 'blank-outline'}"></span>`;
+  return `<span class="sgi sgi-checkbox-${value ? 'intermediate' : 'blank-outline'}" role="img" aria-label="${value ? 'Yes' : 'No'}"></span>`;
 };
 
 export const CheckmarkFormatter: Formatter = (_row, _cell, value) => {
-  return value ? `<span class="sgi sgi-check"></span>` : '';
+  return value ? `<span class="sgi sgi-check" role="img" aria-label="Yes"></span>` : '<span role="img" aria-label="No"></span>';
 };
 
 export const Formatters = {
@@ -63,6 +63,7 @@ export const Formatters = {
 };
 
 // extend Slick namespace on window object when building as iife
+/* v8 ignore next -- IIFE_ONLY is compiled as false in the unit-test build. */
 if (IIFE_ONLY && window.Slick) {
   Utils.extend(Slick, {
     Formatters

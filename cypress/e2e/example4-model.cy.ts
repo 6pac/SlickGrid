@@ -22,6 +22,12 @@ describe('Example 4 - Model', () => {
       .each(($child, index) => expect($child.text()).to.eq(titles[index]));
   });
 
+  it('toggles pager settings using the keyboard', () => {
+    cy.get('.sgi-lightbulb').focus().trigger('keydown', { key: 'Enter' }).should('have.attr', 'aria-expanded', 'true');
+    cy.get('.slick-pager-settings-expanded [data-val="50"]').should('have.attr', 'tabindex', '0');
+    cy.get('.sgi-lightbulb').trigger('keydown', { key: ' ' }).should('have.attr', 'aria-expanded', 'false');
+  });
+
   it('should expect first row to include "Task 0" and other specific properties', () => {
     cy.get(`[style*="transform: translateY(${GRID_ROW_HEIGHT * 0}px);"] > .slick-cell:nth(1)`).should('contain', 'Task 0');
     cy.get(`[style*="transform: translateY(${GRID_ROW_HEIGHT * 0}px);"] > .slick-cell:nth(2)`).should('contain', '5 days');

@@ -148,8 +148,7 @@ describe('Example - Context Menu & Cell Menu', () => {
   });
 
   it('should change the Effort Driven to "False" in that same Action and then expect the "Command 2" to be enabled and clickable', () => {
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('.slick-cell-menu.slick-menu-level-0 .slick-cell-menu-option-list')
       .find('.slick-cell-menu-item')
@@ -164,12 +163,11 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('.slick-cell-menu .slick-cell-menu-item')
       .contains('Command 2')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command 2'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Command 2'));
   });
 
   it('should change the Effort Driven to "True" by using sub-options in that same Action and then expect the "Command 2" to be disabled and not clickable and "Delete Row" to not be shown', () => {
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')
@@ -206,8 +204,7 @@ describe('Example - Context Menu & Cell Menu', () => {
   });
 
   it('should change the Effort Driven back to "False" by using sub-options in that same Action and then expect the "Command 2" to enabled and clickable and also show "Delete Row" command', () => {
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')
@@ -236,7 +233,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('.slick-cell-menu .slick-cell-menu-item')
       .contains('Command 2')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command 2'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Command 2'));
   });
 
   it('should expect the Context Menu now have the "Help" menu when Effort Driven is set to False', () => {
@@ -287,8 +284,7 @@ describe('Example - Context Menu & Cell Menu', () => {
 
   it('should be able to open Cell Menu and click on Export->Text sub-commands to see 1 cell menu + 1 sub-menu then clicking on Text should call alert action', () => {
     const subCommands = ['Text', 'Excel'];
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')
@@ -309,13 +305,12 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-cell-menu-item')
       .contains('Text')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Text'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Exporting as Text'));
   });
 
   it('should be able to open Cell Menu and click on Export->Text and expect alert triggered with Text Export', () => {
     const subCommands1 = ['Text', 'Excel'];
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')
@@ -336,14 +331,13 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-cell-menu-item')
       .contains('Text')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Text'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Exporting as Text'));
   });
 
   it('should be able to open Cell Menu and click on Export->Excel-> sub-commands to see 1 cell menu + 1 sub-menu then clicking on Text should call alert action', () => {
     const subCommands1 = ['Text', 'Excel'];
     const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')
@@ -380,7 +374,7 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-cell-menu-item')
       .contains('Excel (xls)')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Excel (xls)'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Exporting as Excel (xls)'));
   });
 
   it('should open Export->Excel sub-menu & open again Sub-Options on top and expect sub-menu to be recreated with that Sub-Options list instead of the Export->Excel list', () => {
@@ -435,8 +429,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     const subCommands2 = ['Request update from supplier', '', 'Contact Us'];
     const subCommands2_1 = ['Email us', 'Chat with us', 'Book an appointment'];
 
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')
@@ -485,7 +478,7 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-cell-menu-item')
       .contains('Chat with us')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command: contact-chat'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Command: contact-chat'));
   });
 
   it('should click on the "Show Commands & Priority Options" button and see both list when opening Context Menu', () => {
@@ -675,6 +668,7 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-row .slick-cell:nth(1)')
       .rightclick();
 
+    cy.window().then((win) => cy.stub(win, 'confirm').returns(true));
     cy.get('.slick-context-menu .slick-context-menu-command-list')
       .find('.slick-context-menu-item.bold')
       .find('.slick-context-menu-content.red')
@@ -699,6 +693,7 @@ describe('Example - Context Menu & Cell Menu', () => {
       .contains('Action')
       .click({ force: true });
 
+    cy.window().then((win) => cy.stub(win, 'confirm').returns(true));
     cy.get('.slick-cell-menu .slick-cell-menu-command-list')
       .find('.slick-cell-menu-item.bold')
       .find('.slick-cell-menu-content.red')
@@ -740,8 +735,7 @@ describe('Example - Context Menu & Cell Menu', () => {
 
   it('should be able to open Context Menu and click on Export->Text and expect alert triggered with Text Export', () => {
     const subCommands1 = ['Text', 'Excel'];
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(1)')
@@ -761,14 +755,13 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-context-menu-item')
       .contains('Text')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Text'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Exporting as Text'));
   });
 
   it('should be able to open Context Menu and click on Export->Excel-> sub-commands to see 1 context menu + 1 sub-menu then clicking on Text should call alert action', () => {
     const subCommands1 = ['Text', 'Excel'];
     const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(1)')
@@ -804,7 +797,7 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-context-menu-item')
       .contains('Excel (xls)')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Excel (xls)'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Exporting as Excel (xls)'));
   });
 
   it('should open Export->Excel sub-menu & open again Sub-Options on top and expect sub-menu to be recreated with that Sub-Options list instead of the Export->Excel list', () => {
@@ -862,8 +855,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     const subCommands2 = ['Request update from supplier', '', 'Contact Us'];
     const subCommands2_1 = ['Email us', 'Chat with us', 'Book an appointment'];
 
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(2)')
@@ -911,7 +903,7 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-context-menu-item')
       .contains('Chat with us')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command: contact-chat'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Command: contact-chat'));
 
     cy.get('.slick-submenu').should('have.length', 0);
   });

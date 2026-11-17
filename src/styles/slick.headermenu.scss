@@ -22,7 +22,15 @@
   margin-left: 4px;
 }
 
+/*
+ * Shown while the column is hovered, while the keyboard focus is on the column or inside it, and while its menu is open.
+ * A column that only has the focus from a mouse click does not count (it is `:focus` without being `:focus-visible`).
+ * The button is `display: none` otherwise, so the column must keep matching while the focus moves from the column to
+ * the button, which `:focus-within` does.
+ */
 .slick-header-column:hover > .slick-header-menubutton,
+.slick-header-column:focus-visible > .slick-header-menubutton,
+.slick-header-column:not(:focus):focus-within > .slick-header-menubutton,
 .slick-header-column-active .slick-header-menubutton {
   display: inline-block;
 }

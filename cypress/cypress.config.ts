@@ -3,7 +3,7 @@ import { defineConfig } from 'cypress';
 import plugins from './plugins/index';
 
 export default defineConfig({
-  allowCypressEnv: false,
+  defaultBrowser: 'chrome',
   video: false,
   viewportWidth: 1200,
   viewportHeight: 900,

@@ -61,4 +61,15 @@ describe('SlickColumnMenu', () => {
     document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
     expect(document.querySelector<HTMLElement>('.slick-columnpicker')?.style.display).toBe('none');
   });
+
+  it('unsubscribes only its own grid handlers when destroyed', () => {
+    const headerContextMenuSpy = vi.fn();
+    grid.onHeaderContextMenu.subscribe(headerContextMenuSpy);
+    expect(grid.onHeaderContextMenu.subscriberCount).toBe(2);
+
+    menu.destroy();
+
+    expect(grid.onHeaderContextMenu.subscriberCount).toBe(1);
+    expect(grid.onColumnsReordered.subscriberCount).toBe(0);
+  });
 });

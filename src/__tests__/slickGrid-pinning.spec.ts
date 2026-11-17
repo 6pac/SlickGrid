@@ -398,7 +398,7 @@ describe('SlickGrid unified pinning', () => {
     expect(dockingScroller.tabIndex).toBe(0);
     expect(dockingScroller.ariaLabel).toBe('Horizontal grid scroll');
     expect(dockedRow.getAttribute('role')).toBe('row');
-    expect(dockedRow.getAttribute('aria-rowindex')).toBe('1');
+    expect(dockedRow.getAttribute('aria-rowindex')).toBe('2');
     expect(dockedRow.querySelectorAll(':scope > [role="presentation"]')).toHaveLength(3);
     const cells = [...dockedRow.querySelectorAll<HTMLElement>('[role="gridcell"]')];
     expect(cells.length).toBeGreaterThan(0);

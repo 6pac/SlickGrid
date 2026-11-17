@@ -135,7 +135,7 @@ Three more plugins support selection. Register these with `registerPlugin`:
 
 | Plugin | `pluginName` | What it does |
 | --- | --- | --- |
-| [`SlickCheckboxSelectColumn`](/reference/plugins) | `CheckboxSelectColumn` | Add a checkbox column with a select-all header. Pair it with a selection model and add its `getColumnDefinition()` to your columns. |
+| [`SlickCheckboxSelectColumn`](/reference/plugins) | `CheckboxSelectColumn` | Add a checkbox column with a select-all header. Pair it with a selection model and add its `getColumnDefinition()` to your columns. Name its checkboxes with `rowAriaLabel` and `selectAllAriaLabel`. |
 | [`SlickCellRangeSelector`](/reference/plugins) | `CellRangeSelector` | Drag a rubber-band rectangle to select a range. The cell and row models use it internally. |
 | [`SlickCellRangeDecorator`](/reference/plugins) | `CellRangeDecorator` | Draw the border overlay around a selected range. A helper used by the selectors. |
 
@@ -178,7 +178,7 @@ Pass Row Detail options such as `panelRows`, `preTemplate`, `postTemplate`, and 
 
 In v6, each detail panel is a `.slick-row-detail-container.row-detail-{id}` mounted directly in the grid canvas. It sits over the padding rows reserved below its parent, including shifts introduced by pinned rows, and is sized from those rows' heights; when the parent itself is pinned, the panel stays with its padding rows in the scrolling area rather than under the pinned band. Panels are kept within the visible viewport width when the grid scrolls horizontally. Saving a mounted detail preserves its live DOM, including input values and event listeners. Panels whose padding rows leave the rendered range are removed and recreated; use `saveDetailViewOnScroll` to save their HTML content before they leave the range.
 
-For custom styles or tests, target `.slick-row-detail-container` or the item-specific `.row-detail-{id}` class. Detail content mounts directly in this panel, so selectors for `.dynamic-cell-detail`, `.detail-container`, and `.innerDetailView_{id}` must be updated. The panel sets the `13px` line-height that its content inherits; override it on `.slick-row-detail-container` rather than on the template's first element. Panels are not siblings of `.slick-cell`. Row positioning is automatic: remove `rowTopOffsetRenderType` from your grid options. This project's plugin has no `renderMode` option. See [Migrating to v6](/in-depth/migration-v6#row-positioning-rowtopoffsetrendertype) for the configuration and selector changes.
+For custom styles or tests, target `.slick-row-detail-container` or the item-specific `.row-detail-{id}` class. Detail content mounts directly in this panel, so selectors for `.dynamic-cell-detail`, `.detail-container`, and `.innerDetailView_{id}` must be updated. The panel sets the `13px` line-height that its content inherits; override it on `.slick-row-detail-container` rather than on the template's first element. Panels are not siblings of `.slick-cell`. Row positioning is automatic: remove `rowTopOffsetRenderType` from your grid options. This project's plugin has no `renderMode` option. See [Migrating to v6](/migration/v6#row-detail-view) for the configuration and selector changes.
 
 ### Row move
 

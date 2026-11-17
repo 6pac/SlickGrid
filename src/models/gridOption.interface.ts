@@ -1,4 +1,5 @@
 import type {
+  AutoHeightOption,
   Column as BaseColumn,
   CellMenuOption,
   ColumnPickerOption,
@@ -89,8 +90,12 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
    */
   autoEditNewRow?: boolean;
 
-  /** Defaults to false, which leads to automatically adjust the size (height) of the grid to display the entire content without any scrolling in the grid. */
-  autoHeight?: boolean;
+  /**
+   * Defaults to false. When enabled, adjusts the grid height to display the entire content without vertical scrolling in the grid.
+   * You can also provide an object to enable it with extra options, for example `{ stickyHeader: true }` to keep the headers visible while scrolling the page.
+   * Note: when reading this option, use a truthy check (e.g. `!!gridOptions.autoHeight`) since it can be an object.
+   */
+  autoHeight?: boolean | AutoHeightOption;
 
   /** defaults to LegacyOff, Grid Autosize Columns Mode used when calling "autosizeColumns()" method */
   autosizeColsMode?: GridAutosizeColsModeValue;

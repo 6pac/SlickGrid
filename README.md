@@ -18,14 +18,14 @@ This repo builds on the legacy of the [mleibman/SlickGrid](https://github.com/ml
 
 We extended the project from the original SlickGrid foundation while also including the following changes:
 - added a few more Plugins: RowDetail, CellMenu, ContextMenu, GridMenu, CustomTooltip, GridState
-- merged [X-SlickGrid](https://github.com/ddomingues/X-SlickGrid) code into the project to bring permanent column/row pinning
-- removed jQueryUI requirement in [v3](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) (replaced it with [SortableJS](https://sortablejs.github.io/Sortable/))
+- merged [X-SlickGrid](https://github.com/ddomingues/X-SlickGrid) code into the project in v2 to bring permanent column/row freezing (later replaced by Pinning in v6, see below)
+- removed jQueryUI requirement in [v3](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) (replaced it with [SortableJS](https://sortablejs.github.io/Sortable/) which was later dropped in v6)
 - removed jQuery requirement in [v4](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
 - modernized the project in [v5](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) by migrating to TypeScript (we kept IIFE and added ES6/ESM build targets) and we also gave SlickGrid a fresh and more modern look via a new Alpine Theme (CSS/SASS)
-- rewrite Pinning feature and add a new Sticky columns/rows in [v6](https://6pac.github.io/SlickGrid/in-depth/migration-v6) and make it a **zero dependencies** project (the previous `SortableJS` requirement was replaced by a built-in native HTML5 drag & drop implementation for column reordering and draggable grouping)
+- in [v6](https://6pac.github.io/SlickGrid/migration/v6), we completely rewrote Freezing into Pinning and also brought a new Sticky columns/rows, we also dropped `SortableJS` which makes SlickGrid a **zero dependencies** project (we now use native HTML5 drag & drop for column reordering and draggable grouping)
 
 ### Common Questions & Answers
-- Do I need TypeScript to use version >=5.x?
+- Do I need TypeScript to use version >=5.0?
   - Not at all, you can use regular JavaScript if you wish by using the [dist/browser](https://github.com/6pac/SlickGrid/tree/master/dist/browser) folder, ESM folder or from CDN. The Stackblitz and installation examples shown below are mostly written with JavaScript.
 - Can I use it with _"xyz"_ framework?
   - Sure we provide an ES6/ESM build which should work with most frameworks... but for more specific frameworks (Angular, React and Vue) you may want to take a look at [Slickgrid-Universal](https://github.com/ghiscoding/slickgrid-universal) which has official wrappers for all these frameworks and more.
@@ -47,9 +47,9 @@ You can try out the live Vite demo (mentioned just above) via the Stackblitz but
 > _Note: the Stackblitz demo is only including a couple of examples, note however that there are a lot more examples available in the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki page_
 
 ### Examples
-Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki for a full list of examples demonstrating new features and use cases, such as dynamic grid creation and editors with third party controls.
+Check out the **[Examples](https://6pac.github.io/SlickGrid/examples)** from the docs website or the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki page for a full list of examples demonstrating new features and use cases, such as dynamic grid creation and editors with third party controls.
 
-Also take a look at the [Wiki](https://github.com/6pac/SlickGrid/wiki) and [Releases](https://github.com/6pac/SlickGrid/releases) for documentation and recent news.
+Also take a look at the new SlickGrid [docs](https://6pac.github.io/SlickGrid/) website and GitHub [Releases](https://github.com/6pac/SlickGrid/releases) for recent news.
 
 _For a basic TypeScript example, take a look at the v5.0 Annoucement & Migration guide shown below and also the [TypeScript Example Wiki](https://github.com/6pac/SlickGrid/wiki/TypeScript-Examples)._
 
@@ -106,7 +106,7 @@ Once the Cypress UI is open, you can then click on "Run all Specs" to execute al
 | 3.x       | [Announcing v3.0](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) | dropping [jQueryUI](https://jqueryui.com/) requirement and replaced it with [SortableJS](https://sortablejs.github.io/Sortable/) which is a lot more modern and touch friendly |
 | 4.x       | [Announcing v4.0](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement) | dropping [jQuery](https://jquery.com/) requirement, SlickGrid is now using browser native code |
 | 5.x       | [Announcing v5.0](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) | project modernization, we added ES6/ESM builds by migrating to TypeScript and also a new Alpine Theme |
-| 6.x       | [Announcing v6.0](https://6pac.github.io/SlickGrid/in-depth/migration-v6) | Pinning rewrite, new Sticky feature and drop of `SortableJS` to be a **zero dependencies** project |
+| 6.x       | [Announcing v6.0](https://6pac.github.io/SlickGrid/migration/v6) | Pinning rewrite, new Sticky feature and drop of `SortableJS` to be a **zero dependencies** project |
 
 ## CSP Compliance
 The library is now, for the big part, CSP (Content Security Policy) compliant since `v5.5.0`, however there are some exceptions to be aware of; when using any html strings as template (for example with Custom Formatter returning an html string), you will not be fully compliant unless you return `TrustedHTML`. You can achieve it by using the `sanitizer` grid option callback in combo with [DOMPurify](https://github.com/cure53/DOMPurify) to return [`TrustedHTML`](https://developer.mozilla.org/en-US/docs/Web/API/TrustedHTML). For more info, please take a look at the [CSP Compliance](https://github.com/6pac/SlickGrid/wiki/CSP-Compliance) Wiki.

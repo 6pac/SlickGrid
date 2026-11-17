@@ -1,12 +1,12 @@
 {
   "meta": {
-    "generatedAt": "2026-10-27T23:30:27.187Z",
+    "generatedAt": "2026-11-08T05:14:52.760Z",
     "repo": "/home/ghislainb/sourcecode/SlickGrid",
     "counts": {
       "gridOptions": 115,
       "gridOptionsWithDoc": 114,
       "gridOptionsWithDefault": 93,
-      "columns": 51,
+      "columns": 52,
       "gridEvents": 61,
       "gridMethods": 154,
       "dataViewOptions": 2,
@@ -17,7 +17,7 @@
       "coreClasses": 15,
       "editors": 8,
       "formatters": 5,
-      "enums": 3
+      "enums": 1
     }
   },
   "gridOptions": [
@@ -132,7 +132,7 @@
     },
     {
       "name": "autosizeColsMode",
-      "type": "string",
+      "type": "GridAutosizeColsModeValue",
       "optional": true,
       "description": "defaults to LegacyOff, Grid Autosize Columns Mode used when calling \"autosizeColumns()\" method",
       "default": "GridAutosizeColsMode.LegacyOff"
@@ -907,6 +907,12 @@
       "type": "Editor | EditorConstructor | null",
       "optional": true,
       "description": "Any inline editor function that implements Editor for the cell value or ColumnEditor"
+    },
+    {
+      "name": "editorAriaLabel",
+      "type": "string",
+      "optional": true,
+      "description": "Accessible name for the built-in editor; defaults to the column title."
     },
     {
       "name": "editorFixedDecimalPlaces",
@@ -3366,11 +3372,11 @@
     {
       "name": "autosizeColumns",
       "group": "Column Management - Autosizing",
-      "signature": "autosizeColumns(autosizeMode?: string, isInit?: boolean)",
+      "signature": "autosizeColumns(autosizeMode?: GridAutosizeColsModeValue, isInit?: boolean)",
       "params": [
         {
           "name": "autosizeMode",
-          "type": "string",
+          "type": "GridAutosizeColsModeValue",
           "optional": true,
           "description": ""
         },
@@ -8111,6 +8117,33 @@
               "description": ""
             },
             {
+              "name": "clickOnActivationKey",
+              "group": "",
+              "signature": "clickOnActivationKey(e: KeyboardEvent, element: HTMLElement, extraKeys?: string[]): boolean",
+              "params": [
+                {
+                  "name": "e",
+                  "type": "KeyboardEvent",
+                  "optional": false,
+                  "description": ""
+                },
+                {
+                  "name": "element",
+                  "type": "HTMLElement",
+                  "optional": false,
+                  "description": ""
+                },
+                {
+                  "name": "extraKeys",
+                  "type": "string[]",
+                  "optional": true,
+                  "description": ""
+                }
+              ],
+              "returns": "boolean",
+              "description": "Gives an element that acts as a button (`role=\"button\"`) the keyboard behaviour of a native button:\nEnter and Space, plus any `extraKeys`, click it. Call it from a `keydown` listener."
+            },
+            {
               "name": "isDefined",
               "group": "",
               "signature": "isDefined(value: T | undefined | null): value is T",
@@ -8922,19 +8955,6 @@
         "TAB": 9,
         "UP": 38,
         "A": 65
-      },
-      "GridAutosizeColsMode": {
-        "None": "NOA",
-        "LegacyOff": "LOF",
-        "LegacyForceFit": "LFF",
-        "IgnoreViewport": "IGV",
-        "FitColsToViewport": "FCV",
-        "FitViewportToCols": "FVC"
-      },
-      "WidthEvalMode": {
-        "Auto": "AUTO",
-        "TextOnly": "CANV",
-        "HTML": "HTML"
       }
     },
     "controls": [
@@ -10699,7 +10719,7 @@
               {
                 "name": "createCheckboxElement",
                 "group": "",
-                "signature": "createCheckboxElement(inputId: string, checked?)",
+                "signature": "createCheckboxElement(inputId: string, checked?, ariaLabel?)",
                 "params": [
                   {
                     "name": "inputId",
@@ -10712,6 +10732,12 @@
                     "type": "",
                     "optional": true,
                     "description": "- is the input checkbox checked? (defaults to false)"
+                  },
+                  {
+                    "name": "ariaLabel",
+                    "type": "",
+                    "optional": true,
+                    "description": ""
                   }
                 ],
                 "returns": "",
@@ -11191,6 +11217,14 @@
                 "description": "Destroy plugin."
               },
               {
+                "name": "getOptions",
+                "group": "",
+                "signature": "getOptions()",
+                "params": [],
+                "returns": "",
+                "description": ""
+              },
+              {
                 "name": "hideTooltip",
                 "group": "",
                 "signature": "hideTooltip()",
@@ -11367,7 +11401,7 @@
         "classes": [
           {
             "name": "SlickHeaderButtons",
-            "description": "A plugin to add custom buttons to column headers.\n\nUSAGE:\n\nAdd the plugin .js & .css files and register it with the grid.\n\nTo specify a custom button in a column header, extend the column definition like so:\n\n  let columns = [\n    {\n      id: 'myColumn',\n      name: 'My column',\n\n      // This is the relevant part\n      header: {\n         buttons: [\n             {\n               // button options\n             },\n             {\n               // button options\n             }\n         ]\n      }\n    }\n  ];\n\nAvailable button options:\n   cssClass:     CSS class to add to the button.\n   image:        Relative button image path.\n   disabled:     Whether the item is disabled.\n   tooltip:      Button tooltip.\n   showOnHover:  Only show the button on hover.\n   handler:      Button click handler.\n   command:      A command identifier to be passed to the onCommand event handlers.\n\nAvailable menu item options:\n   action:                   Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event)\n   command:                  A command identifier to be passed to the onCommand event handlers.\n   cssClass:                 CSS class to add to the button.\n   handler:                  Button click handler.\n   image:                    Relative button image path.\n   showOnHover:              Only show the button on hover.\n   tooltip:                  Button tooltip.\n   itemVisibilityOverride:   Callback method that user can override the default behavior of showing/hiding an item from the list\n   itemUsabilityOverride:    Callback method that user can override the default behavior of enabling/disabling an item from the list\n\nThe plugin exposes the following events:\n   onCommand:    Fired on button click for buttons with 'command' specified.\n       Event args:\n           grid:     Reference to the grid.\n           column:   Column definition.\n           command:  Button command identified.\n           button:   Button options.  Note that you can change the button options in your\n                     event handler, and the column header will be automatically updated to\n                     reflect them.  This is useful if you want to implement something like a\n                     toggle button.",
+            "description": "A plugin to add custom buttons to column headers.\n\nUSAGE:\n\nAdd the plugin .js & .css files and register it with the grid.\n\nTo specify a custom button in a column header, extend the column definition like so:\n\n  let columns = [\n    {\n      id: 'myColumn',\n      name: 'My column',\n\n      // This is the relevant part\n      header: {\n         buttons: [\n             {\n               // button options\n             },\n             {\n               // button options\n             }\n         ]\n      }\n    }\n  ];\n\nAvailable button options:\n   cssClass:     CSS class to add to the button.\n   image:        Relative button image path.\n   disabled:     Whether the item is disabled.\n   tooltip:      Button tooltip.\n   ariaLabel:    Accessible name of the button, defaults to its tooltip or command.\n   showOnHover:  Only show the button on hover.\n   handler:      Button click handler.\n   command:      A command identifier to be passed to the onCommand event handlers.\n\nAvailable menu item options:\n   action:                   Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event)\n   command:                  A command identifier to be passed to the onCommand event handlers.\n   cssClass:                 CSS class to add to the button.\n   handler:                  Button click handler.\n   image:                    Relative button image path.\n   showOnHover:              Only show the button on hover.\n   tooltip:                  Button tooltip.\n   itemVisibilityOverride:   Callback method that user can override the default behavior of showing/hiding an item from the list\n   itemUsabilityOverride:    Callback method that user can override the default behavior of enabling/disabling an item from the list\n\nThe plugin exposes the following events:\n   onCommand:    Fired on button click for buttons with 'command' specified.\n       Event args:\n           grid:     Reference to the grid.\n           column:   Column definition.\n           command:  Button command identified.\n           button:   Button options.  Note that you can change the button options in your\n                     event handler, and the column header will be automatically updated to\n                     reflect them.  This is useful if you want to implement something like a\n                     toggle button.",
             "methods": [
               {
                 "name": "init",

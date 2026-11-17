@@ -397,6 +397,34 @@ describe('SlickGrid core file', () => {
     expect(grid.getCellFromEvent({ target: spanCell } as unknown as Event)).toEqual({ row: 0, cell: 1 });
   });
 
+  it('retains an offscreen span host and renders its newly visible columns', () => {
+    const dataView = new SlickDataView({
+      globalItemMetadataProvider: { getRowMetadata: (_item, row) => (row === 0 ? { columns: { 0: { rowspan: 3 }, 1: { rowspan: 3 } } } : undefined) },
+    });
+    dataView.setItems([{ id: 0 }, { id: 1 }, { id: 2 }]);
+    grid = new SlickGrid<any, Column>(container, dataView, [
+      { id: 'id', field: 'id', width: 100 },
+      { id: 'other', field: 'id', width: 100 },
+    ], { ...defaultOptions, enableCellRowSpan: true });
+    grid.init();
+    const internalGrid = grid as any;
+    const range = { top: 1, bottom: 1, leftPx: 0, rightPx: 50 };
+    internalGrid.removeRowFromCache(0);
+    internalGrid.removeRowFromCache(1);
+    internalGrid.renderRows(range);
+    const host = container.querySelector('.slick-row[data-row="0"]');
+    expect(host?.querySelector('.slick-cell.rowspan')).toBeTruthy();
+    expect(host?.querySelector('.slick-cell.l1')).toBeNull();
+
+    internalGrid.cleanUpAndRenderCells({ ...range, leftPx: 100, rightPx: 200 });
+    expect(host?.querySelector('.slick-cell.l1.rowspan')).toBeTruthy();
+
+    internalGrid.removeRowFromCache(1);
+    internalGrid.scrollLeft = internalGrid.lastRenderedScrollLeft + 10;
+    internalGrid.renderRows(range);
+    expect(container.querySelector('.slick-row[data-row="0"]')).toBe(host);
+  });
+
   it('should be able to instantiate SlickGrid and get columns', () => {
     const columns = [
       { id: 'firstName', field: 'firstName', name: 'First Name', headerCssClass: 'header-class', headerCellAttrs: { 'some-attr': 3 } },
@@ -820,6 +848,74 @@ describe('SlickGrid core file', () => {
       { id: 0, firstName: 'John', lastName: 'Doe', age: 30 },
       { id: 1, firstName: 'Jane', lastName: 'Doe', age: 28 },
     ];
+
+    it('exposes selection changes and preserves them when rows are rendered again', () => {
+      const selectionModel = new SlickHybridSelectionModel({ selectionType: 'cell' });
+      grid = new SlickGrid<any, Column>(container, data, columns, defaultOptions);
+      grid.setSelectionModel(selectionModel);
+      grid.render();
+      selectionModel.setSelectedRanges([new SlickRange(0, 0)]);
+      expect(grid.getCellNode(0, 0)?.getAttribute('aria-selected')).toBe('true');
+      grid.invalidateRow(0);
+      grid.render();
+      expect(grid.getCellNode(0, 0)?.getAttribute('aria-selected')).toBe('true');
+      selectionModel.setSelectedRanges([]);
+      expect(grid.getCellNode(0, 0)?.getAttribute('aria-selected')).toBeNull();
+    });
+
+    it('clears aria-selected and the selected class on a row that was rendered after the selection was made', () => {
+      const selectionModel = new SlickHybridSelectionModel({ selectionType: 'cell' });
+      grid = new SlickGrid<any, Column>(container, data, columns, defaultOptions);
+      grid.setSelectionModel(selectionModel);
+      grid.render();
+      grid.invalidateRow(1);
+      selectionModel.setSelectedRanges([new SlickRange(0, 0, 1, 0)]);
+      grid.render();
+      // read the DOM only: getCellNode() indexes the cell nodes of the row, which is the step a selection change must not depend on
+      const cellOfRow1 = () => container.querySelector<HTMLElement>('.slick-row[data-row="1"] .slick-cell')!;
+      expect(cellOfRow1().getAttribute('aria-selected')).toBe('true');
+      expect(cellOfRow1().classList.contains('selected')).toBe(true);
+
+      selectionModel.setSelectedRanges([]);
+
+      expect(cellOfRow1().getAttribute('aria-selected')).toBeNull();
+      expect(cellOfRow1().classList.contains('selected')).toBe(false);
+      expect(grid.getSelectedRows()).toEqual([]);
+    });
+
+    it('also clears the selected class from the colspan fragments of a cell that leaves the selection', () => {
+      const selectionModel = new SlickHybridSelectionModel({ selectionType: 'cell' });
+      grid = new SlickGrid<any, Column>(container, data, columns, defaultOptions);
+      grid.setSelectionModel(selectionModel);
+      grid.render();
+      selectionModel.setSelectedRanges([new SlickRange(0, 0)]);
+      // a cell spanning pinned bands is drawn as several fragments, the grid keeps them beside the cell node
+      const fragment = document.createElement('div');
+      fragment.className = 'slick-cell selected';
+      (grid as any).rowsCache[0].cellSpanFragments = { 0: [fragment] };
+
+      selectionModel.setSelectedRanges([new SlickRange(1, 0)]);
+
+      expect(grid.getCellNode(0, 0)?.hasAttribute('aria-selected')).toBe(false);
+      expect(fragment.classList.contains('selected')).toBe(false);
+      expect(grid.getCellNode(1, 0)?.getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('exposes aria-selected when no selected cell class is configured', () => {
+      const selectionModel = new SlickHybridSelectionModel({ selectionType: 'cell' });
+      grid = new SlickGrid<any, Column>(container, data, columns, { ...defaultOptions, selectedCellCssClass: '' });
+      grid.setSelectionModel(selectionModel);
+      grid.render();
+
+      selectionModel.setSelectedRanges([new SlickRange(0, 0)]);
+      expect(grid.getCellNode(0, 0)?.getAttribute('aria-selected')).toBe('true');
+      grid.invalidateRow(0);
+      grid.render();
+      expect(grid.getCellNode(0, 0)?.getAttribute('aria-selected')).toBe('true');
+
+      selectionModel.setSelectedRanges([]);
+      expect(grid.getCellNode(0, 0)?.getAttribute('aria-selected')).toBeNull();
+    });
 
     describe('Cell selection drag handle', () => {
       it.each([
@@ -2234,6 +2330,20 @@ describe('SlickGrid core file', () => {
       expect(rowSelectSpy).toHaveBeenCalled();
     });
 
+    it('should unsubscribe from the previous selection model onSelectedRangesChanged event when calling setSelectionModel() with a different model', () => {
+      const hybridSelectionModel = new SlickHybridSelectionModel({ selectionType: 'row' });
+      const cellSelectionModel = new SlickHybridSelectionModel({ selectionType: 'cell' });
+
+      grid = new SlickGrid<any, Column>(container, [], columns, defaultOptions);
+      grid.setSelectionModel(hybridSelectionModel);
+      expect(hybridSelectionModel.onSelectedRangesChanged.subscriberCount).toBe(1);
+
+      grid.setSelectionModel(cellSelectionModel);
+
+      expect(hybridSelectionModel.onSelectedRangesChanged.subscriberCount).toBe(0);
+      expect(cellSelectionModel.onSelectedRangesChanged.subscriberCount).toBe(1);
+    });
+
     it('should change border color for darkMode', () => {
       const cellSelectionModel = new SlickHybridSelectionModel({ selectionType: 'cell' });
 
@@ -2640,8 +2750,8 @@ describe('SlickGrid core file', () => {
 
         expect(remapRowspanSpy).toHaveBeenCalled();
         expect(slickCell0).toBeTruthy();
-        expect(slickCells.length).toBe(48);
-        expect(getDataSpy).toHaveBeenCalledTimes(32);
+        expect(slickCells.length).toBe(54);
+        expect(getDataSpy).toHaveBeenCalledTimes(31);
       });
 
       describe('getViewportHeight() method', () => {
@@ -2710,6 +2820,51 @@ describe('SlickGrid core file', () => {
           expect(grid.getViewportHeight()).toBe(DEFAULT_COLUMN_HEIGHT * data.length);
           expect(grid.getCanvasWidth()).toBeGreaterThanOrEqual(799);
           expect(grid.getCanvasWidth()).toBeLessThanOrEqual(801);
+        });
+
+        it('should make the header layers sticky and expose their stacked heights when "autoHeight.stickyHeader" is enabled', () => {
+          grid = new SlickGrid<any, Column>(container, data, columns, {
+            ...defaultOptions,
+            autoHeight: { stickyHeader: true },
+            createTopHeaderPanel: true,
+            showTopHeaderPanel: true,
+            topHeaderPanelHeight: 30,
+            showHeaderRow: true,
+            headerRowHeight: 40,
+          });
+          grid.init();
+          const topHeaderPanelElm = container.querySelector('.slick-topheader-panel') as HTMLDivElement;
+          const headerRootElm = container.querySelector('.slick-header-root') as HTMLDivElement;
+          const contentRootElm = container.querySelector('.slick-content-root') as HTMLDivElement;
+          Object.defineProperty(topHeaderPanelElm, 'offsetHeight', { configurable: true, value: 31 });
+          Object.defineProperty(headerRootElm, 'offsetHeight', { configurable: true, value: 50 });
+          grid.resizeCanvas();
+
+          expect(grid.getViewportHeight()).toBe(DEFAULT_COLUMN_HEIGHT * data.length);
+          expect(container.classList.contains('slick-auto-height-sticky-header')).toBe(true);
+          expect(container.style.getPropertyValue('--slick-sticky-topheader-height')).toBe('31px');
+          expect(container.style.getPropertyValue('--slick-sticky-header-height')).toBe('50px');
+          expect(contentRootElm.style.top).toBe('0px');
+
+          grid.setOptions({ showTopHeaderPanel: false });
+          grid.resizeCanvas();
+          expect(container.style.getPropertyValue('--slick-sticky-topheader-height')).toBe('0px');
+
+          grid.setOptions({ autoHeight: true });
+          grid.resizeCanvas();
+          expect(container.classList.contains('slick-auto-height-sticky-header')).toBe(false);
+          expect(container.style.getPropertyValue('--slick-sticky-topheader-height')).toBe('');
+          expect(container.style.getPropertyValue('--slick-sticky-header-height')).toBe('');
+          expect(contentRootElm.style.top).toBe('40px');
+        });
+
+        it('should use "autoHeight" without sticky header layers when it is a boolean', () => {
+          grid = new SlickGrid<any, Column>(container, data, columns, { ...defaultOptions, autoHeight: true });
+          grid.init();
+
+          expect(grid.getViewportHeight()).toBe(DEFAULT_COLUMN_HEIGHT * data.length);
+          expect(container.classList.contains('slick-auto-height-sticky-header')).toBe(false);
+          expect(container.style.getPropertyValue('--slick-sticky-header-height')).toBe('');
         });
 
         it('should return original grid height when calling method', () => {
@@ -2852,6 +3007,20 @@ describe('SlickGrid core file', () => {
       const columns = [{ id: 'firstName', field: 'firstName', name: 'First Name', editor: LongTextEditor }] as Column[];
       let items: Array<{ id: number; name: string; age: number; active?: boolean }> = [];
 
+      it('uses the rendered column title as the editor name and respects an explicit label', () => {
+        const editorColumns = [{ id: 'name', field: 'name', name: '<strong>Name &amp; title</strong>', editor: InputEditor }] as Column[];
+        grid = new SlickGrid<any, Column>(container, [{ id: 0, name: 'Avery' }], editorColumns, {
+          ...defaultOptions, enableCellNavigation: true, editable: true, enableHtmlRendering: true,
+        });
+        grid.setActiveCell(0, 0);
+        grid.editActiveCell(InputEditor as any, true);
+        expect(container.querySelector('.editor-text')?.getAttribute('aria-label')).toBe('Name & title');
+        grid.getEditController()?.cancelCurrentEdit();
+        editorColumns[0].editorAriaLabel = 'Custom editor';
+        grid.editActiveCell(InputEditor as any, true);
+        expect(container.querySelector('.editor-text')?.getAttribute('aria-label')).toBe('Custom editor');
+      });
+
       beforeEach(() => {
         items = [
           { id: 0, name: 'Avery', age: 44 },
@@ -2886,7 +3055,63 @@ describe('SlickGrid core file', () => {
         expect(grid).toBeTruthy();
         expect(grid.getContainerNode().getAttribute('role')).toBe('grid');
         expect(grid.getContainerNode().getAttribute('aria-colcount')).toBe('1');
-        expect(grid.getContainerNode().getAttribute('aria-rowcount')).toBe('11');
+        expect(grid.getContainerNode().getAttribute('aria-rowcount')).toBe('12');
+      });
+
+      it('updates only aria-rowcount when the row count changes, and the row indexes when a header row is toggled', () => {
+        grid = new SlickGrid<any, Column>(container, items, columns, defaultOptions);
+        const firstRow = () => container.querySelector<HTMLElement>('.slick-row')!;
+        expect(firstRow().getAttribute('aria-rowindex')).toBe('2');
+        const setAttribute = vi.spyOn(firstRow(), 'setAttribute');
+
+        grid.updateRowCount();
+        grid.updatePagingStatusFromView({ pageSize: 0, pageNum: 0, totalPages: 1 });
+        grid.setHeaderRowVisibility(false, false); // already hidden: nothing changes
+        expect(setAttribute).not.toHaveBeenCalledWith('aria-rowindex', expect.anything());
+        expect(container.getAttribute('aria-rowcount')).toBe('12');
+
+        grid.setHeaderRowVisibility(true, false);
+        expect(firstRow().getAttribute('aria-rowindex')).toBe('3');
+        expect(container.querySelector('.slick-headerrow-columns')?.getAttribute('aria-rowindex')).toBe('2');
+        expect(container.getAttribute('aria-rowcount')).toBe('13');
+      });
+
+      it('includes the add row in the accessible row count', () => {
+        grid = new SlickGrid<any, Column>(container, items, columns, { ...defaultOptions, enableAddRow: true, editable: true });
+        expect(container.getAttribute('aria-rowcount')).toBe('13');
+        grid.updatePagingStatusFromView({ pageSize: 10, pageNum: 0, totalPages: 2 });
+        expect(container.getAttribute('aria-rowcount')).toBe('12');
+        grid.updatePagingStatusFromView({ pageSize: 10, pageNum: 1, totalPages: 2 });
+        expect(container.getAttribute('aria-rowcount')).toBe('13');
+        grid.setOptions({ enableAddRow: false });
+        expect(container.getAttribute('aria-rowcount')).toBe('12');
+      });
+
+      it('gives aria-sort to the first sorted column that has a header', () => {
+        const sortableColumns = [
+          { id: 'firstName', field: 'firstName', name: 'First Name', sortable: true, hidden: true },
+          { id: 'lastName', field: 'lastName', name: 'Last Name', sortable: true },
+          { id: 'age', field: 'age', name: 'Age', sortable: true },
+        ] as Column[];
+        grid = new SlickGrid<any, Column>(container, items, sortableColumns, { ...defaultOptions, multiColumnSort: true });
+
+        grid.setSortColumns([{ columnId: 'firstName', sortAsc: true }, { columnId: 'lastName', sortAsc: false }, { columnId: 'age', sortAsc: true }]);
+
+        const sortedHeaders = container.querySelectorAll('.slick-header-column[aria-sort]');
+        expect(sortedHeaders).toHaveLength(1);
+        expect(sortedHeaders[0].textContent).toContain('Last Name');
+        expect(sortedHeaders[0].getAttribute('aria-sort')).toBe('descending');
+      });
+
+      it('reports the column for a key pressed on a control inside its header cell', () => {
+        grid = new SlickGrid<any, Column>(container, items, columns, defaultOptions);
+        const headerControl = container.querySelector<HTMLElement>('.slick-header-column')!.appendChild(document.createElement('div'));
+        const reportedColumns: unknown[] = [];
+        grid.onHeaderKeyDown.subscribe((_e, args) => reportedColumns.push(args.column));
+
+        headerControl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+
+        expect(reportedColumns).toEqual([grid.getColumns()[0]]);
       });
 
       it('should expect the header structure to have required ARIA rowgroup/row roles', () => {
@@ -2903,6 +3128,16 @@ describe('SlickGrid core file', () => {
         expect(headerRowCellElm.getAttribute('role')).toBe('gridcell');
         expect(headerRowCellElm.parentElement!.getAttribute('role')).toBe('row');
         expect(headerRowCellElm.parentElement!.parentElement!.getAttribute('role')).toBe('rowgroup');
+        expect(headerColumnElm.parentElement!.getAttribute('aria-rowindex')).toBe('1');
+        expect(headerRowCellElm.parentElement!.getAttribute('aria-rowindex')).toBe('2');
+        expect(container.querySelector('.slick-row')?.getAttribute('aria-rowindex')).toBe('3');
+        expect(container.getAttribute('aria-rowcount')).toBe('13');
+        grid.setHeaderRowVisibility(false, false);
+        expect(container.querySelector('.slick-row')?.getAttribute('aria-rowindex')).toBe('2');
+        expect(container.getAttribute('aria-rowcount')).toBe('12');
+        grid.setColumnHeaderVisibility(false, false);
+        expect(container.querySelector('.slick-row')?.getAttribute('aria-rowindex')).toBe('1');
+        expect(container.getAttribute('aria-rowcount')).toBe('11');
       });
 
       it('should place focus sinks in the grid container and keep them focusable without aria-hidden', () => {
@@ -3050,6 +3285,7 @@ describe('SlickGrid core file', () => {
         const updateRowSpy = vi.spyOn(grid, 'updateRow');
         const onCellChangeSpy = vi.spyOn(grid.onCellChange, 'notify');
         vi.spyOn(editor!, 'serializeValue').mockReturnValueOnce(newValue);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
         expect(activeCellNode).toBeTruthy();
 
         const result = grid.getEditController()?.commitCurrentEdit();
@@ -3086,6 +3322,7 @@ describe('SlickGrid core file', () => {
         const updateRowSpy = vi.spyOn(grid, 'updateRow');
         const onCellChangeSpy = vi.spyOn(grid.onCellChange, 'notify');
         vi.spyOn(editor!, 'serializeValue').mockReturnValueOnce(newValue);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
         expect(activeCellNode).toBeTruthy();
 
         const result = grid.getEditController()?.commitCurrentEdit();
@@ -3115,6 +3352,7 @@ describe('SlickGrid core file', () => {
         const updateRowSpy = vi.spyOn(grid, 'updateRow');
         const onCellChangeSpy = vi.spyOn(grid.onCellChange, 'notify');
         vi.spyOn(editor!, 'serializeValue').mockReturnValue(newValue);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
 
         const result = grid.getEditController()?.commitCurrentEdit();
 
@@ -3194,6 +3432,7 @@ describe('SlickGrid core file', () => {
         const updateRowSpy = vi.spyOn(grid, 'updateRow');
         const onCellChangeSpy = vi.spyOn(grid.onCellChange, 'notify');
         vi.spyOn(editor!, 'serializeValue').mockReturnValueOnce(newValue);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
 
         const result = grid.getEditController()?.commitCurrentEdit();
 
@@ -3230,6 +3469,7 @@ describe('SlickGrid core file', () => {
         vi.spyOn(grid, 'getDataLength').mockReturnValueOnce(0); // trick grid to think it's a new item
         const onAddNewRowSpy = vi.spyOn(grid.onAddNewRow, 'notify');
         vi.spyOn(editor!, 'serializeValue').mockReturnValue(newValue);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
 
         const result = grid.getEditController()?.commitCurrentEdit();
 
@@ -3263,6 +3503,7 @@ describe('SlickGrid core file', () => {
         vi.spyOn(grid, 'getDataLength').mockReturnValueOnce(0); // trick grid to think it's a new item
         const onAddNewRowSpy = vi.spyOn(grid.onAddNewRow, 'notify');
         vi.spyOn(editor!, 'serializeValue').mockReturnValue(newValue);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
 
         const result = grid.getEditController()?.commitCurrentEdit();
         const newHeight = grid.getViewportHeight();
@@ -3286,6 +3527,7 @@ describe('SlickGrid core file', () => {
         const editor = grid.getCellEditor();
         const onValidationErrorSpy = vi.spyOn(grid.onValidationError, 'notify');
         vi.spyOn(editor!, 'validate').mockReturnValue(invalidResult);
+        vi.spyOn(editor!, 'isValueChanged').mockReturnValue(true);
         const activeCellNode = container.querySelector('.slick-cell.editable.l1.r1');
 
         const result = grid.getEditController()?.commitCurrentEdit();

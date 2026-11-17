@@ -1,6 +1,9 @@
 import type { Column, SlickGridModel } from './index.js';
 
 export interface HeaderButtonItem {
+  /** Accessible name for the button, falling back to its tooltip or command. */
+  ariaLabel?: string;
+
   /** A command identifier to be passed to the onCommand event handlers. */
   command?: string;
 

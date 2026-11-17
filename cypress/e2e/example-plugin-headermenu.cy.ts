@@ -20,6 +20,41 @@ describe('Example - Header Menu', () => {
       .each(($child, index) => expect($child.text()).to.eq(titles[index]));
   });
 
+  it('opens and closes the header menu with the keyboard and restores focus', () => {
+    cy.get('#myGrid .slick-header-column').first().focus();
+    cy.get('#myGrid .slick-header-menubutton').first()
+      .should('be.visible')
+      .focus()
+      .trigger('keydown', { key: 'Enter' })
+      .should('have.attr', 'aria-expanded', 'true');
+    cy.focused().should('have.attr', 'role', 'menuitem').and('contain.text', 'Help');
+    cy.focused().trigger('keydown', { key: 'Escape' });
+    cy.get('.slick-header-menu').should('not.exist');
+    cy.focused().should('have.class', 'slick-header-menubutton').and('have.attr', 'aria-expanded', 'false');
+    cy.focused().blur();
+  });
+
+  it('reaches the menu button with the Tab key', () => {
+    cy.get('#myGrid .slick-header-column').first().focus();
+    cy.realPress('Tab');
+    cy.focused().should('have.class', 'slick-header-menubutton').and('be.visible');
+    cy.focused().blur();
+  });
+
+  it('shows the menu button of a header while the pointer is over it, and no longer once the pointer has left after a click', () => {
+    cy.get('#myGrid .slick-header-column').eq(2).find('.slick-header-menubutton').should('not.be.visible');
+    cy.get('#myGrid .slick-header-column').eq(2).realHover();
+    cy.get('#myGrid .slick-header-column').eq(2).find('.slick-header-menubutton').should('be.visible');
+    cy.get('h2.title').realHover();
+    cy.get('#myGrid .slick-header-column').eq(2).find('.slick-header-menubutton').should('not.be.visible');
+
+    // the "Title" column is not sortable, a click only gives it the focus
+    cy.get('#myGrid .slick-header-column').first().realClick();
+    cy.get('h2.title').realHover();
+    cy.get('#myGrid .slick-header-column').first().find('.slick-header-menubutton').should('not.be.visible');
+    cy.focused().blur();
+  });
+
   it('should open the Header Menu on the "Title" column and expect onBeforeMenuShow then onAfterMenuShow to show in the console log', () => {
     cy.get('#myGrid')
       .find('.slick-header-column')
@@ -52,14 +87,13 @@ describe('Example - Header Menu', () => {
   });
 
   it(`should be still be able to click on the Help button and expect an alert`, () => {
-    const alertStub = cy.stub();
-    cy.on('window:alert', alertStub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('.slick-header-menuitem.bold')
       .find('.slick-header-menucontent.blue')
       .contains('Help')
       .click()
-      .then(() => expect(alertStub.getCall(0)).to.be.calledWith('Command: help'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Command: help'));
 
     cy.window().then((win) => {
       expect(win.console.log).to.have.callCount(1);
@@ -98,6 +132,7 @@ describe('Example - Header Menu', () => {
       .click();
 
     cy.get('.slick-header-column:nth(1).slick-header-sortable.slick-header-column-sorted')
+      .should('have.attr', 'aria-sort', 'ascending')
       .find('.slick-sort-indicator.slick-sort-indicator-asc')
       .should('exist');
 
@@ -174,8 +209,7 @@ describe('Example - Header Menu', () => {
 
   it('should open Pinning sub-menu with 2 options expect it to be aligned to left then trigger alert when command is clicked', () => {
     const subCommands = ['Pin Columns', 'Unpin all Columns'];
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('.slick-header-menuitem.slick-header-menuitem')
       .contains('Pinning')
@@ -191,16 +225,15 @@ describe('Example - Header Menu', () => {
       .find('.slick-header-menuitem')
       .contains('Pin Columns')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command: pin-columns'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Command: pin-columns'));
   });
 
   it('should open Pinning sub-menu and expect 2 options, then open Feedback->ContactUs sub-menus and expect previous Pinning menu to no longer exists', () => {
     const subCommands1 = ['Pin Columns', 'Unpin all Columns'];
     const subCommands2 = ['Column is great', 'Column is not useful', '', 'Contact Us'];
     const subCommands2_1 = ['Email us', 'Chat with us', 'Book an appointment'];
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
 
     cy.get('#myGrid')
       .find('.slick-header-column:nth(5)')
@@ -251,7 +284,7 @@ describe('Example - Header Menu', () => {
       .find('.slick-header-menuitem')
       .contains('Chat with us')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command: contact-chat'));
+      .then(() => cy.get('@alertStub').should('have.been.calledWith', 'Command: contact-chat'));
 
     cy.get('.slick-submenu').should('have.length', 0);
   });

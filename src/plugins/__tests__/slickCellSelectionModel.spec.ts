@@ -150,6 +150,23 @@ describe('CellSelectionModel Plugin', () => {
     expect(selectorDestroySpy).toHaveBeenCalled();
   });
 
+  it('should only unsubscribe its own grid and selector handlers when calling destroy', () => {
+    const keyDownSpy = vi.fn();
+    gridStub.onKeyDown.subscribe(keyDownSpy);
+    const activeCellChangedCount = gridStub.onActiveCellChanged.subscriberCount;
+    const keyDownCount = gridStub.onKeyDown.subscriberCount;
+    plugin.init(gridStub);
+    const rangeSelector = selector();
+    expect(rangeSelector.onCellRangeSelected.subscriberCount).toBe(1);
+
+    plugin.destroy();
+
+    expect(gridStub.onActiveCellChanged.subscriberCount).toBe(activeCellChangedCount);
+    expect(gridStub.onKeyDown.subscriberCount).toBe(keyDownCount);
+    expect(rangeSelector.onCellRangeSelected.subscriberCount).toBe(0);
+    expect(rangeSelector.onBeforeCellRangeSelected.subscriberCount).toBe(0);
+  });
+
   it('should create the plugin and initialize it', () => {
     const registerSpy = vi.spyOn(gridStub, 'registerPlugin');
 

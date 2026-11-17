@@ -1,4 +1,5 @@
 export type * from './aggregator.interface.js';
+export type * from './autoHeightOption.interface.js';
 export type * from './autoSize.interface.js';
 export type * from './autoTooltipOption.interface.js';
 export type * from './cancellablePromiseWrapper.interface.js';

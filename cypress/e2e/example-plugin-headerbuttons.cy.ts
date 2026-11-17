@@ -1,5 +1,11 @@
 describe('Example - Header Button', () => {
   const titles = ['Resize me!', 'Hover me!', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+  const expectClippedBelowHeader = ($button: JQuery<HTMLElement>) => {
+    const button = $button[0];
+    const header = button.closest('.slick-header-column') as HTMLElement;
+    expect(getComputedStyle(header).overflow).to.eq('hidden');
+    expect(button.getBoundingClientRect().top).to.be.at.least(header.getBoundingClientRect().bottom);
+  };
 
   beforeEach(() => {
     // create a console.log spy for later use
@@ -98,8 +104,7 @@ describe('Example - Header Button', () => {
       .scrollTo('left')
       .wait(50);
 
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    cy.window().then((win) => cy.stub(win, 'alert').returns(true).as('alertStub'));
 
     cy.get('.slick-header-columns')
       .children('.slick-header-column:nth(0)')
@@ -108,7 +113,7 @@ describe('Example - Header Button', () => {
     cy.get('.slick-header-columns')
       .children('.slick-header-column:nth(0)')
       .find('.slick-header-button:nth(3)')
-      .should('be.hidden');
+      .should(expectClippedBelowHeader);
 
     // Cypress does not yet support the .hover() method and because of that we need to manually resize the element
     // this is not ideal since it only resizes the cell not the entire column but it's enough to test the functionality
@@ -128,14 +133,8 @@ describe('Example - Header Button', () => {
       .should('have.length', 4);
   });
 
-  it('should click on first "Red Tag Day" header button and expect an alert with that text when clicked', (done) => {
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
-
-    cy.on('window:alert', (text) => {
-      expect(text).to.eq('command: Red Tag Day');
-      done();
-    });
+  it('should click on first "Red Tag Day" header button and expect an alert with that text when clicked', () => {
+    cy.window().then((win) => cy.stub(win, 'alert').as('alertStub'));
 
     // header buttons are displayed in inverse mode by default,
     // so we need to start at the end
@@ -143,22 +142,18 @@ describe('Example - Header Button', () => {
       .children('.slick-header-column:nth(0)')
       .find('.slick-header-button:nth(3)')
       .click();
+    cy.get('@alertStub').should('have.been.calledWith', 'command: Red Tag Day');
   });
 
-  it('should click on second "Write a comment!" header button and expect an alert with that text when clicked', (done) => {
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
-
-    cy.on('window:alert', (text) => {
-      expect(text).to.eq('Write a comment!');
-      done();
-    });
+  it('should click on second "Write a comment!" header button and expect an alert with that text when clicked', () => {
+    cy.window().then((win) => cy.stub(win, 'alert').as('alertStub'));
 
     // header buttons are displayed in inverse mode by default
     cy.get('.slick-header-columns')
-      .children('.slick-header-column:nth(0)')
-      .find('.slick-header-button:nth(2)')
-      .click();
+    .children('.slick-header-column:nth(0)')
+    .find('.slick-header-button:nth(2)')
+    .click();
+    cy.get('@alertStub').should('have.been.calledWith', 'Write a comment!');
   });
 
   it('should go on the 2nd column "Hover me!" and expect the header button to appear only when doing hover over it', () => {

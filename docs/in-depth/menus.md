@@ -210,7 +210,7 @@ headerButtons.onCommand.subscribe((_e, args) => {
 
 Notes:
 
-- A button is a `HeaderButtonItem`: `command`, `cssClass`, `image`, `tooltip`, `disabled`, `showOnHover`, `handler`, and `action`. Buttons are icons, so there is no `title`.
+- A button is a `HeaderButtonItem`: `command`, `cssClass`, `image`, `tooltip`, `ariaLabel`, `disabled`, `showOnHover`, `handler`, and `action`. Buttons are icons, so there is no `title`; the accessible name is the `ariaLabel`, else the `tooltip`, else the `command`.
 - A click can fire in three ways: the item `handler(e)`, the item `action(e, args)`, and the `onCommand` event (only when `command` is set and the button is enabled).
 - After `onCommand`, the plugin calls `updateColumnHeader` for that column, so edits you make to `button` in the handler show at once — useful for a toggle button.
 - `showOnHover: true` hides the icon until the pointer is over the header.

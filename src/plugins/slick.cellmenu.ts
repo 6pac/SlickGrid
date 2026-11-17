@@ -263,6 +263,9 @@ export class SlickCellMenu implements SlickPlugin {
       row: this._currentRow,
       grid: this._grid
     }, e, this).getReturnValue() === false) {
+      // dismiss the menu that was just shown, so it does not stay in the page without any reference to close it later
+      this.destroyAllMenus();
+      this._menuElm = null;
       return;
     }
 
@@ -666,12 +669,14 @@ export class SlickCellMenu implements SlickPlugin {
 
       if ((item as MenuCommandItem | MenuOptionItem).divider || item === 'divider') {
         liElm.classList.add('slick-cell-menu-item-divider');
+        liElm.role = 'separator';
         addClickListener = false;
       }
 
       // if the item is disabled then add the disabled css class
       if ((item as MenuCommandItem | MenuOptionItem).disabled || !isItemUsable) {
         liElm.classList.add('slick-cell-menu-item-disabled');
+        liElm.setAttribute('aria-disabled', 'true');
       }
 
       // if the item is hidden then add the hidden css class
@@ -805,6 +810,7 @@ export class SlickCellMenu implements SlickPlugin {
 }
 
 // extend Slick namespace on window object when building as iife
+/* v8 ignore next -- IIFE_ONLY is compiled as false in the unit-test build. */
 if (IIFE_ONLY && window.Slick) {
   Utils.extend(true, window, {
     Slick: {

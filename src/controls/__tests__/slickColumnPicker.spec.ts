@@ -229,4 +229,16 @@ describe('SlickColumnPicker', () => {
 
     expect(document.querySelector('.slick-columnpicker')).toBeNull();
   });
+
+  it('unsubscribes only its own grid handlers when destroyed', () => {
+    const headerContextMenuSpy = vi.fn();
+    grid.onHeaderContextMenu.subscribe(headerContextMenuSpy);
+    expect(grid.onHeaderContextMenu.subscriberCount).toBe(2);
+
+    picker.destroy();
+
+    expect(grid.onHeaderContextMenu.subscriberCount).toBe(1);
+    expect(grid.onPreHeaderContextMenu.subscriberCount).toBe(0);
+    expect(grid.onColumnsReordered.subscriberCount).toBe(0);
+  });
 });

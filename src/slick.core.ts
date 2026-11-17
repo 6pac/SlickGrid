@@ -196,10 +196,17 @@ export class SlickEvent<ArgType = any> {
 
   /**
    * Removes an event handler added with <code>subscribe(fn)</code>.
+   * When called without any argument, every handler is removed (e.g. when the object raising the event is destroyed).
+   * Only remove every handler of an event owned by the caller, use a <code>SlickEventHandler</code> for the events of other objects.
    * @method unsubscribe
-   * @param {Function} [fn] - Event handler to be removed.
+   * @param {Function} [fn] - Event handler to be removed, omit it to remove every handler.
    */
   unsubscribe(fn?: Handler<ArgType>) {
+    // check the arguments count, so that passing a handler reference that was never assigned remains a no-op
+    if (arguments.length === 0) {
+      this._handlers = [];
+      return;
+    }
     for (let i = this._handlers.length - 1; i >= 0; i--) {
       if (this._handlers[i] === fn) {
         this._handlers.splice(i, 1);
@@ -209,6 +216,7 @@ export class SlickEvent<ArgType = any> {
 
   /**
    * Fires an event notifying all subscribers.
+   * Handlers unsubscribed while notifying are not called, handlers subscribed while notifying are only called on the next notify.
    * @method notify
    * @param {Object} args Additional data object to be passed to all handlers.
    * @param {EventData} [event] - An <code>EventData</code> object to be passed to all handlers.
@@ -222,9 +230,13 @@ export class SlickEvent<ArgType = any> {
       : new SlickEventData(evt, args);
     scope = scope || this;
 
-    for (let i = 0; i < this._handlers.length && !(sed.isPropagationStopped() || sed.isImmediatePropagationStopped()); i++) {
-      const returnValue = this._handlers[i].call(scope, sed, args);
-      sed.addReturnValue(returnValue);
+    // loop over a copy, so a handler unsubscribing itself (e.g. by destroying its plugin) doesn't make the next handler be skipped
+    const handlers = this._handlers.slice();
+    for (let i = 0; i < handlers.length && !(sed.isPropagationStopped() || sed.isImmediatePropagationStopped()); i++) {
+      if (this._handlers.includes(handlers[i])) {
+        const returnValue = handlers[i].call(scope, sed, args);
+        sed.addReturnValue(returnValue);
+      }
     }
 
     // user can optionally add a global PubSub Service which makes it easy to publish/subscribe to events
@@ -953,6 +965,21 @@ export class Utils {
       }
     }
     return size;
+  }
+
+  /**
+   * Gives an element that acts as a button (`role="button"`) the keyboard behaviour of a native button:
+   * Enter and Space, plus any `extraKeys`, click it. Call it from a `keydown` listener.
+   * @returns `true` when the key clicked the element, the event is then consumed (default prevented, propagation stopped)
+   */
+  public static clickOnActivationKey(e: KeyboardEvent, element: HTMLElement, extraKeys: string[] = []): boolean {
+    if (e.key === 'Enter' || e.key === ' ' || extraKeys.includes(e.key)) {
+      e.preventDefault();
+      e.stopPropagation();
+      element.click();
+      return true;
+    }
+    return false;
   }
 
   public static isDefined<T>(value: T | undefined | null): value is T {
