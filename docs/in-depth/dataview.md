@@ -222,6 +222,8 @@ dataView.syncGridSelection(grid, true);
 
 `syncGridSelection` works with the row selection model, not the cell selection model. There is a matching [`syncGridCellCssStyles(grid, key)`](/reference/dataview#m-syncGridCellCssStyles) for cell CSS styles. See [Selection models](/in-depth/selection).
 
+Both only sync while the grid shows the DataView. If the grid is given other data for a while with `grid.setData()`, such as a [pivot](/in-depth/pivot) of these items, its rows are not rows of the DataView: the DataView keeps its selected ids and styles meanwhile, without reading or changing the grid. Call [`resyncGrid()`](/reference/dataview#m-resyncGrid) once the grid shows the DataView again, to give it back its selected rows and cell styles (the pivot plugin does it when Pivot Mode is turned off).
+
 ## Events
 
 The DataView fires these events. Subscribe with `.subscribe((e, args) => { ... })`.

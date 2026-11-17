@@ -2161,6 +2161,42 @@ describe('SlickDatView core file', () => {
       expect(dv.getAllSelectedIds()).toEqual([]);
       expect(dv.getAllSelectedItems()).toEqual([]);
     });
+
+    it('should not sync the selection with a grid showing other data, and select its rows again with resyncGrid()', () => {
+      const columns = [
+        { id: 'name', field: 'name', name: 'Name' },
+        { id: 'age', field: 'age', name: 'Age' },
+      ];
+      const gridOptions = { enableCellNavigation: true, multiSelect: true } as GridOption;
+      dv = new SlickDataView({});
+      const grid = new SlickGrid<any, any, any>('#myGrid', dv, columns, gridOptions);
+      grid.setSelectionModel(new SlickHybridSelectionModel({ selectActiveRow: false, selectionType: 'row' }));
+      dv.setItems(items);
+      dv.syncGridSelection(grid, true);
+      grid.setSelectedRows([0, 2]);
+      expect(dv.getAllSelectedIds()).toEqual([1, 4]);
+      const idsChanged = vi.fn();
+      dv.onSelectedRowIdsChanged.subscribe(idsChanged);
+
+      // the grid shows other rows for a while, like a pivot of these ones: their indexes are not rows of the DataView
+      grid.setData([{ id: 'a' }, { id: 'b' }, { id: 'c' }]);
+      grid.setSelectedRows([1]);
+      expect(dv.getAllSelectedIds()).toEqual([1, 4]);
+      dv.addItem({ id: 11, name: 'Zoe', age: 30 });
+      expect(grid.getSelectedRows()).toEqual([1]);
+      // the ids still change, without the grid
+      dv.setSelectedIds([3], { applyRowSelectionToGrid: true });
+      expect(dv.getAllSelectedIds()).toEqual([3]);
+      expect(grid.getSelectedRows()).toEqual([1]);
+      expect(idsChanged).toHaveBeenCalledTimes(1);
+
+      grid.setData(dv);
+      dv.resyncGrid();
+      expect(grid.getSelectedRows()).toEqual([1]);
+      expect(grid.getDataItem(1).id).toBe(3);
+      dv.setSelectedIds([5], { applyRowSelectionToGrid: true });
+      expect(grid.getSelectedRows()).toEqual([3]);
+    });
   });
 
   describe('CSS Style Sync', () => {
@@ -2256,6 +2292,36 @@ describe('SlickDatView core file', () => {
 
       expect(unsubscribeCellCssStyleSpy).toHaveBeenCalled();
       expect(unsubscribeRowOrCountSpy).toHaveBeenCalledWith(expect.any(Function));
+    });
+
+    it('should not sync the cell styles with a grid showing other data, give them back with resyncGrid(), and stop once they are removed', () => {
+      const columns = [
+        { id: 'name', field: 'name', name: 'Name' },
+        { id: 'age', field: 'age', name: 'Age' },
+      ];
+      const gridOptions = { enableCellNavigation: true, multiSelect: false } as GridOption;
+      dv = new SlickDataView({});
+      const grid = new SlickGrid<any, any, any>('#myGrid', dv, columns, gridOptions);
+      dv.setItems(items);
+      grid.setCellCssStyles('age_greater30_highlight', hash);
+      dv.syncGridCellCssStyles(grid, 'age_greater30_highlight');
+
+      // a hash of the other data has rows the DataView does not have
+      grid.setData(Array.from({ length: 30 }, (_value, i) => ({ id: `other${i}` })));
+      expect(() => grid.setCellCssStyles('age_greater30_highlight', { 20: { age: 'highlight' } })).not.toThrow();
+      const setCssStyleSpy = vi.spyOn(grid, 'setCellCssStyles');
+      dv.addItem({ id: 11, name: 'Zoe', age: 30 });
+      expect(setCssStyleSpy).not.toHaveBeenCalled();
+
+      grid.setData(dv);
+      dv.resyncGrid();
+      expect(setCssStyleSpy).toHaveBeenCalledWith('age_greater30_highlight', hash);
+
+      grid.removeCellCssStyles('age_greater30_highlight');
+      setCssStyleSpy.mockClear();
+      dv.addItem({ id: 12, name: 'Yann', age: 31 });
+      dv.resyncGrid();
+      expect(setCssStyleSpy).not.toHaveBeenCalled();
     });
   });
 
