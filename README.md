@@ -12,7 +12,7 @@
 ## This is the 6pac SlickGrid repo
 
 This is the main 'base' SlickGrid repository.
-For specific frameworks (Angular, React and Vue) see [Slickgrid-Universal](https://github.com/ghiscoding/slickgrid-universal) which has official wrappers for all these frameworks and more.
+For a more fully assembled library with built-in features and framework support, take a look at [Slickgrid-Universal](https://github.com/ghiscoding/slickgrid-universal) which also has official wrappers for Angular, React, and Vue.
 
 This repo builds on the legacy of the [mleibman/SlickGrid](https://github.com/mleibman/SlickGrid) original project, which stopped being updated in 2014.
 
@@ -28,7 +28,7 @@ We extended the project from the original SlickGrid foundation while also includ
 - Do I need TypeScript to use version >=5.0?
   - Not at all, you can use regular JavaScript if you wish by using the [dist/browser](https://github.com/6pac/SlickGrid/tree/master/dist/browser) folder, ESM folder or from CDN. The Stackblitz and installation examples shown below are mostly written with JavaScript.
 - Can I use it with _"xyz"_ framework?
-  - Sure we provide an ES6/ESM build which should work with most frameworks... but for more specific frameworks (Angular, React and Vue) you may want to take a look at [Slickgrid-Universal](https://github.com/ghiscoding/slickgrid-universal) which has official wrappers for all these frameworks and more.
+  - Sure we provide an ES6/ESM build which should work with most frameworks... but for more specific frameworks (Angular, React and Vue) you may want to take a look at [Slickgrid-Universal](https://github.com/ghiscoding/slickgrid-universal) which has official wrappers for all these frameworks and much more.
 - Do I still need jQuery?
   - Not anymore, it's totally optional since v4.0 (you can still use jQuery if you wish, but it's totally optional)
 
