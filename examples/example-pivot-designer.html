@@ -1,0 +1,216 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example: Pivot table with a crosstab designer</title>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.pivot.css" type="text/css"/>
+  <style>
+    .pivot-example {
+      width: 1000px;
+    }
+
+    #designer {
+      margin-bottom: 8px;
+    }
+
+    #myGrid {
+      height: 420px;
+    }
+
+    .pivot-spec {
+      max-height: 180px;
+      margin: 8px 0 0;
+      padding: 6px 8px;
+      overflow: auto;
+      font-size: 11px;
+      background: #f7f9fb;
+      border: 1px solid #d5dbe1;
+    }
+  </style>
+</head>
+<body>
+<div class="pivot-example">
+  <div class="options-panel" style="left:1020px; top:8px;">
+    <div style="padding:6px;">
+      <h2>Demonstrates:</h2>
+      <ul>
+        <li>an ordinary grid (a DataView and its columns) with two plugins registered on it: the pivot (<code>SlickPivot</code>) and the MS Access style crosstab designer (<code>SlickPivotDesigner</code>), added above the grid</li>
+        <li>the design grid of the MS Access query designer: one column per field, with its <b>Field</b>, <b>Total</b> (Group By, Sum, Avg, Min, Max, Count, StDev, Var, First, Last, … or Where), <b>Crosstab</b> (Row Heading, Column Heading, Value), <b>Sort</b> and <b>Criteria</b></li>
+        <li>add a column by double-clicking a field (or pressing Enter on it), dragging it onto the design grid, or picking it in the last column; move or remove a column with the buttons of its header</li>
+        <li>a Row Heading with a Total other than Group By is a row total (<b>Total Of Amount</b>), shown after the row headings like in MS Access</li>
+        <li>MS Access criteria, kept as text in the spec (<code>PivotFilter.criteria</code>): <code>2024</code>, <code>&gt;= 100</code>, <code>"East" Or "West"</code>, <code>Between 10 And 50</code>, <code>In ("Coffee", "Brie")</code>, <code>Like "S*"</code>, <code>Not "North"</code>, <code>Is Null</code></li>
+        <li>an MS Access style result: tabular, with the item captions on every row, no subtotals and no grand total row</li>
+        <li><b>Pivot Mode</b> (the switch of the designer): off, the grid shows its own rows and columns again; on, it shows the crosstab</li>
+      </ul>
+      <p>See <a href="./example-pivot-panel.html">the PivotTable Fields example</a> for the Excel style UI.</p>
+      <h2>View Source:</h2>
+      <ul>
+        <li><a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-pivot-designer.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="designer"></div>
+  <div id="myGrid" class="slick-container"></div>
+  <pre class="pivot-spec" data-test="spec-json"></pre>
+</div>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/slick.pivotengine.js"></script>
+<script src="../dist/browser/plugins/slick.pivot.js"></script>
+<script src="../dist/browser/plugins/slick.pivotdesigner.js"></script>
+
+<script>
+  // --
+  // dataset: order lines, the same as in the PivotTable Fields example
+  // -----------------
+
+  /** Small deterministic random number generator, so the example (and its tests) always show the same numbers */
+  function createRandom(seed) {
+    return function () {
+      seed |= 0;
+      seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  const REGIONS = {
+    North: ['Canada', 'Norway', 'Sweden'],
+    South: ['Argentina', 'Australia', 'Brazil'],
+    East: ['China', 'India', 'Japan'],
+    West: ['France', 'Spain', 'United States'],
+  };
+  const CATEGORIES = {
+    Bakery: [['Croissants', 10], ['Sourdough', 8]],
+    Beverages: [['Coffee', 18], ['Green Tea', 12], ['Sparkling Water', 4]],
+    Dairy: [['Brie', 22], ['Butter', 9], ['Greek Yogurt', 6]],
+    Produce: [['Avocados', 7], ['Blueberries', 11], ['Tomatoes', 5]],
+    Seafood: [['Salmon', 26], ['Shrimp', 19]],
+  };
+  const SALESPEOPLE = ['Avery Chen', 'Jordan Patel', 'Morgan Diaz', 'Riley Okafor', 'Sam Novak', 'Taylor Kim'];
+  const CHANNELS = ['Online', 'Retail', 'Wholesale'];
+  const round2 = (value) => Math.round(value * 100) / 100;
+
+  function createSalesData(count) {
+    const random = createRandom(1020);
+    const pick = (list) => list[Math.floor(random() * list.length)];
+    const rows = [];
+    let orderId = 10000;
+    let linesLeft = 0;
+    let order;
+    for (let i = 0; i < count; i++) {
+      if (!linesLeft) {
+        const region = pick(Object.keys(REGIONS));
+        order = {
+          OrderId: ++orderId,
+          OrderDate: new Date(2023, 0, 1 + Math.floor(random() * 1095)),
+          Region: region,
+          Country: pick(REGIONS[region]),
+          Salesperson: pick(SALESPEOPLE),
+          Channel: pick(CHANNELS),
+        };
+        linesLeft = 1 + Math.floor(random() * 4);
+      }
+      linesLeft--;
+      const category = pick(Object.keys(CATEGORIES));
+      const [product, price] = pick(CATEGORIES[category]);
+      rows.push({
+        id: i,
+        ...order,
+        Category: category,
+        Product: product,
+        Units: 1 + Math.floor(random() * (order.Channel === 'Wholesale' ? 120 : 24)),
+        UnitPrice: round2(price * (0.9 + random() * 0.2)),
+        Discount: pick([0, 0, 0, 0.05, 0.1, 0.15]),
+      });
+    }
+    return rows;
+  }
+
+  const amountOf = (row) => round2(row.Units * row.UnitPrice * (1 - row.Discount));
+  const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+  const dateFormatter = (_row, _cell, value) => (value ? value.toLocaleDateString('en-CA') : '');
+  const moneyFormatter = (_row, _cell, value) => money.format(value);
+
+  const columns = [
+    { id: 'Region', name: 'Region', field: 'Region', width: 80 },
+    { id: 'Country', name: 'Country', field: 'Country', width: 110 },
+    { id: 'Channel', name: 'Channel', field: 'Channel', width: 85 },
+    { id: 'Salesperson', name: 'Salesperson', field: 'Salesperson', width: 110 },
+    { id: 'Category', name: 'Category', field: 'Category', width: 85 },
+    { id: 'Product', name: 'Product', field: 'Product', width: 120 },
+    { id: 'OrderId', name: 'Order Id', field: 'OrderId', width: 75 },
+    { id: 'OrderDate', name: 'Order Date', field: 'OrderDate', width: 95, formatter: dateFormatter },
+    { id: 'Units', name: 'Units', field: 'Units', width: 60, cssClass: 'cell-right' },
+    { id: 'UnitPrice', name: 'Unit Price', field: 'UnitPrice', width: 80, cssClass: 'cell-right', formatter: moneyFormatter },
+    { id: 'Amount', name: 'Amount', field: 'Amount', width: 95, cssClass: 'cell-right', formatter: (_row, _cell, _value, _column, row) => money.format(amountOf(row)) },
+  ];
+
+  // --
+  // the grid, the pivot and the crosstab designer
+  // -----------------
+
+  const dataView = new Slick.Data.DataView();
+  const grid = new Slick.Grid('#myGrid', dataView, columns, Slick.Pivot.getGridOptions({ enableCellNavigation: true }));
+  dataView.onRowCountChanged.subscribe(() => {
+    grid.updateRowCount();
+    grid.render();
+  });
+  dataView.onRowsChanged.subscribe((_e, args) => {
+    grid.invalidateRows(args.rows);
+    grid.render();
+  });
+  dataView.setItems(createSalesData(5000));
+
+  const currency = { style: 'currency', currency: 'USD', maximumFractionDigits: 0, locale: 'en-US' };
+  const pivot = new Slick.Pivot({
+    // the fields are made from the columns, these complete them
+    fields: [
+      { id: 'OrderId', type: 'string' },
+      { id: 'OrderDate', type: 'date' },
+      { id: 'Amount', type: 'number', getter: amountOf },
+    ],
+    // like an MS Access crosstab query: two Row Headings, a Column Heading, a Value, a row total and a Where criteria
+    spec: {
+      rows: ['Category', 'Product'],
+      columns: ['OrderDate.quarter'],
+      values: [
+        { field: 'Amount', aggregator: 'sum', numberFormat: currency },
+        { field: 'Amount', aggregator: 'sum', totalsOnly: true, label: 'Total Of Amount', numberFormat: currency },
+      ],
+      filters: [{ field: 'OrderDate.year', criteria: '2024' }],
+    },
+    columnDefaults: { width: 100 },
+    // a crosstab has no groups to collapse
+    enableRowCollapse: false,
+    numberFormat: { locale: 'en-US' },
+    locale: 'en-US',
+  });
+  grid.registerPlugin(pivot);
+  const designer = new Slick.PivotDesigner({ container: '#designer' });
+  grid.registerPlugin(designer);
+
+  // the spec is plain JSON, the criteria included
+  const specElm = document.querySelector('[data-test="spec-json"]');
+  const showSpec = () => {
+    const { rows, columns, values, filters, sort, grandTotals } = pivot.getSpec();
+    specElm.textContent = JSON.stringify({ rows, columns, values: values.map(({ id, field, aggregator, totalsOnly }) => ({ id, field, aggregator, totalsOnly })), filters, sort, grandTotals }, null, 2);
+  };
+  pivot.onSpecChanged.subscribe(showSpec);
+  showSpec();
+
+  // for the console and the tests
+  Object.assign(window, { grid, dataView, pivot, designer });
+</script>
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example: Pivot table with PivotTable Fields</title>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.pivot.css" type="text/css"/>
+  <style>
+    .pivot-example {
+      width: 1000px;
+    }
+
+    .pivot-demo-options {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 14px;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      font-size: 12px;
+      border-bottom: 1px dashed #c9d2db;
+    }
+
+    .pivot-demo-options label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pivot-demo-options select,
+    .pivot-demo-options button {
+      font-size: 12px;
+    }
+
+    /* the container of the grid, in which the field list plugin adds its toolbar, its pane and its status bar */
+    #gridAndPivot {
+      height: 660px;
+    }
+
+    #myGrid {
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+<div class="pivot-example">
+  <div class="options-panel" style="left:1020px; top:8px;">
+    <div style="padding:6px;">
+      <h2>Demonstrates:</h2>
+      <ul>
+        <li>an ordinary grid (a DataView, its columns and its sorting) with two plugins registered on it: the pivot (<code>SlickPivot</code>), whose fields are made from the columns, and the Excel style pivot UI (<code>SlickPivotFieldList</code>), which adds a toolbar, a resizable <b>PivotTable Fields</b> pane, a status bar and a details dialog around the grid; the options above the line are the example's own</li>
+        <li><b>Pivot Mode</b> (the switch at the top of the pane): off, the grid shows its own rows and columns again (click a header to sort them); on, it shows the pivot, with the same layout as before</li>
+        <li>the <b>PivotTable Fields</b> pane (<code>SlickPivotPanel</code>): check fields, drag them between the Filters, Columns, Rows and Values areas, reorder them, or drag them out to remove them; drag the splitter (or use its arrow keys) to resize it, and hide or show it with <b>Field List</b></li>
+        <li>the <code>▾</code> pill menus (also opened with Enter): move, filter, sort, <b>Summarize Values By</b> (Sum, Count, Average…) and the <b>Value Field Settings</b> (every aggregator, show values as, number format)</li>
+        <li>keyboard: Alt+↑/↓ moves a pill, Alt+←/→ moves it to another area, Delete removes it</li>
+        <li>the toolbar (<code>SlickPivotToolbar</code>): compact, outline and tabular layouts, subtotals, grand totals, Expand All and Collapse All</li>
+        <li>sorting by label (row label header) or by value (value column header)</li>
+        <li>double-click a cell to list its source rows in a sortable grid (<code>SlickPivotDetails</code>)</li>
+        <li>"Defer layout update", saving the layout, and an asynchronous (simulated server) provider</li>
+        <li>the pivot follows the DataView: <b>Add 500 rows</b> adds orders to it while pivoting</li>
+        <li>automatic date hierarchy: checking <b>Order Date</b> groups it by years, quarters and months, like Excel; each level is also listed below the date field</li>
+        <li>write-back: with "Edit values", type a new total into a <b>Sum of Units</b> cell (subtotals and grand totals too) and it is spread over the source rows behind it, keeping their proportions; Undo and Redo in the toolbar (or Ctrl+Z and Ctrl+Y) restore them exactly</li>
+        <li>pinned or sticky grand totals (the column group headers follow docked columns), and a right-to-left grid</li>
+      </ul>
+      <p>The "Excel sample" dataset is the one from <a href="https://github.com/6pac/SlickGrid/issues/1020" target="_blank" rel="noopener">issue #1020</a>; its pivot gives 3, 7 and 10 as in Excel.</p>
+      <h2>View Source:</h2>
+      <ul>
+        <li><a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-pivot-panel.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="pivot-demo-options">
+    <label>Dataset
+      <select id="datasetSelect" data-test="dataset-select">
+        <option value="sales">Sales (5,000 rows)</option>
+        <option value="sales50k">Sales (50,000 rows)</option>
+        <option value="excel">Excel sample (issue #1020)</option>
+      </select>
+    </label>
+    <button class="btn" data-test="add-rows-btn" onclick="addRows()">Add 500 rows</button>
+    <label><input type="checkbox" id="serverProvider" data-test="server-provider"> Simulated server</label>
+    <button class="btn" data-test="save-layout-btn" onclick="saveLayout()">Save layout</button>
+    <button class="btn" data-test="restore-layout-btn" onclick="restoreLayout()">Restore layout</button>
+    <label>Grand total row
+      <select id="grandTotalRowDocking" data-test="grand-total-row-docking">
+        <option value="sticky">Sticky</option>
+        <option value="pinned">Pinned</option>
+        <option value="none">Scrolls</option>
+      </select>
+    </label>
+    <label>Grand total columns
+      <select id="grandTotalColumnDocking" data-test="grand-total-column-docking">
+        <option value="none">Scroll</option>
+        <option value="sticky">Sticky</option>
+        <option value="pinned">Pinned</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="writeBack" data-test="write-back"> Edit values (write-back)</label>
+    <label><input type="checkbox" id="rtl" data-test="rtl"> Right to left</label>
+  </div>
+
+  <div id="gridAndPivot">
+    <div id="myGrid" class="slick-container"></div>
+  </div>
+</div>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/slick.pivotengine.js"></script>
+<script src="../dist/browser/plugins/slick.pivot.js"></script>
+<script src="../dist/browser/controls/slick.pivotpanel.js"></script>
+<script src="../dist/browser/controls/slick.pivottoolbar.js"></script>
+<script src="../dist/browser/controls/slick.pivotdetails.js"></script>
+<script src="../dist/browser/plugins/slick.pivotfieldlist.js"></script>
+
+<script>
+  // --
+  // datasets
+  // -----------------
+
+  /** Small deterministic random number generator, so the example (and its tests) always show the same numbers */
+  function createRandom(seed) {
+    return function () {
+      seed |= 0;
+      seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  const REGIONS = {
+    North: ['Canada', 'Norway', 'Sweden'],
+    South: ['Argentina', 'Australia', 'Brazil'],
+    East: ['China', 'India', 'Japan'],
+    West: ['France', 'Spain', 'United States'],
+  };
+  const CATEGORIES = {
+    Bakery: [['Croissants', 10], ['Sourdough', 8]],
+    Beverages: [['Coffee', 18], ['Green Tea', 12], ['Sparkling Water', 4]],
+    Dairy: [['Brie', 22], ['Butter', 9], ['Greek Yogurt', 6]],
+    Produce: [['Avocados', 7], ['Blueberries', 11], ['Tomatoes', 5]],
+    Seafood: [['Salmon', 26], ['Shrimp', 19]],
+  };
+  const SALESPEOPLE = ['Avery Chen', 'Jordan Patel', 'Morgan Diaz', 'Riley Okafor', 'Sam Novak', 'Taylor Kim'];
+  const CHANNELS = ['Online', 'Retail', 'Wholesale'];
+  const round2 = (value) => Math.round(value * 100) / 100;
+
+  function createSalesData(count, seed = 1020, firstId = 0, firstOrderId = 10000) {
+    const random = createRandom(seed);
+    const pick = (list) => list[Math.floor(random() * list.length)];
+    const rows = [];
+    let orderId = firstOrderId;
+    let linesLeft = 0;
+    let order;
+    for (let i = 0; i < count; i++) {
+      if (!linesLeft) {
+        const region = pick(Object.keys(REGIONS));
+        order = {
+          OrderId: ++orderId,
+          OrderDate: new Date(2023, 0, 1 + Math.floor(random() * 1095)),
+          Region: region,
+          Country: pick(REGIONS[region]),
+          Salesperson: pick(SALESPEOPLE),
+          Channel: pick(CHANNELS),
+        };
+        linesLeft = 1 + Math.floor(random() * 4);
+      }
+      linesLeft--;
+      const category = pick(Object.keys(CATEGORIES));
+      const [product, price] = pick(CATEGORIES[category]);
+      rows.push({
+        id: firstId + i,
+        ...order,
+        Category: category,
+        Product: product,
+        Units: 1 + Math.floor(random() * (order.Channel === 'Wholesale' ? 120 : 24)),
+        UnitPrice: round2(price * (0.9 + random() * 0.2)),
+        Discount: pick([0, 0, 0, 0.05, 0.1, 0.15]),
+      });
+    }
+    return rows;
+  }
+
+  const currency = { style: 'currency', currency: 'USD', maximumFractionDigits: 0, locale: 'en-US' };
+  const amountOf = (row) => round2(row.Units * row.UnitPrice * (1 - row.Discount));
+  const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+  const dateFormatter = (_row, _cell, value) => (value ? value.toLocaleDateString('en-CA') : '');
+  const moneyFormatter = (_row, _cell, value) => money.format(value);
+  const percentFormatter = (_row, _cell, value) => `${Math.round(value * 100)}%`;
+
+  // the grid columns: the pivot makes a field of each of them (its id, name and field)
+  const salesColumns = [
+    { id: 'Region', name: 'Region', field: 'Region', sortable: true, width: 80 },
+    { id: 'Country', name: 'Country', field: 'Country', sortable: true, width: 110 },
+    { id: 'Channel', name: 'Channel', field: 'Channel', sortable: true, width: 85 },
+    { id: 'Salesperson', name: 'Salesperson', field: 'Salesperson', sortable: true, width: 110 },
+    { id: 'Category', name: 'Category', field: 'Category', sortable: true, width: 85 },
+    { id: 'Product', name: 'Product', field: 'Product', sortable: true, width: 120 },
+    { id: 'OrderId', name: 'Order Id', field: 'OrderId', sortable: true, width: 75 },
+    { id: 'OrderDate', name: 'Order Date', field: 'OrderDate', sortable: true, width: 95, formatter: dateFormatter },
+    { id: 'Units', name: 'Units', field: 'Units', sortable: true, width: 60, cssClass: 'cell-right' },
+    { id: 'UnitPrice', name: 'Unit Price', field: 'UnitPrice', sortable: true, width: 80, cssClass: 'cell-right', formatter: moneyFormatter },
+    { id: 'Discount', name: 'Discount', field: 'Discount', sortable: true, width: 70, cssClass: 'cell-right', formatter: percentFormatter },
+    // Amount is computed: the grid shows it with a formatter, the pivot with a getter
+    { id: 'Amount', name: 'Amount', field: 'Amount', sortable: true, width: 95, cssClass: 'cell-right', formatter: (_row, _cell, _value, _column, row) => money.format(amountOf(row)) },
+  ];
+  // what the pivot needs on top of the columns: the field groups of the pane, the types and the getter of Amount
+  const salesFields = [
+    { id: 'Region', group: 'Customer' },
+    { id: 'Country', group: 'Customer' },
+    { id: 'Channel', group: 'Customer' },
+    { id: 'Salesperson', group: 'Customer' },
+    { id: 'Category', group: 'Product' },
+    { id: 'Product', group: 'Product' },
+    { id: 'OrderId', type: 'string', group: 'Order' },
+    // a date field gets an automatic hierarchy: OrderDate.year, OrderDate.quarter, OrderDate.month and OrderDate.day
+    { id: 'OrderDate', type: 'date', group: 'Order' },
+    { id: 'Units', type: 'number', group: 'Measures' },
+    { id: 'UnitPrice', type: 'number', group: 'Measures' },
+    { id: 'Discount', type: 'number', group: 'Measures' },
+    { id: 'Amount', type: 'number', group: 'Measures', getter: amountOf },
+  ];
+  const salesSpec = {
+    rows: ['Region', 'Country'],
+    columns: ['OrderDate.year'],
+    values: [{ field: 'Amount', aggregator: 'sum', numberFormat: currency }],
+    filters: [{ field: 'Channel' }],
+  };
+
+  // the data shown in the Excel screenshot of issue #1020
+  const excelRows = [
+    { MyCol1: 1, MyCol2: 'Apples', MyCol3: 43, MyCol4: 'Hot' },
+    { MyCol1: 2, MyCol2: 'Apples', MyCol3: 43, MyCol4: 'Cold' },
+    { MyCol1: 3, MyCol2: 'Bananas', MyCol3: 23, MyCol4: 'Hot' },
+    { MyCol1: 4, MyCol2: 'Bananas', MyCol3: 56, MyCol4: 'Cold' },
+  ];
+  const excelColumns = ['MyCol1', 'MyCol2', 'MyCol3', 'MyCol4'].map((id) => ({ id, name: id, field: id, sortable: true }));
+  const excelFields = [{ id: 'MyCol1', type: 'number' }, { id: 'MyCol3', type: 'number' }];
+  const excelSpec = { rows: ['MyCol1'], columns: ['MyCol2'], values: [{ field: 'MyCol1', aggregator: 'sum' }] };
+
+  const datasets = {
+    sales: () => ({ columns: salesColumns, fields: salesFields, rows: createSalesData(5000), spec: salesSpec }),
+    sales50k: () => ({ columns: salesColumns, fields: salesFields, rows: createSalesData(50000), spec: salesSpec }),
+    excel: () => ({ columns: excelColumns, fields: excelFields, rows: excelRows.map((row, id) => ({ id, ...row })), spec: excelSpec }),
+  };
+
+  // --
+  // the grid, and the pivot plugins registered on it
+  // -----------------
+
+  let grid;
+  let dataView;
+  let pivot;
+  let fieldList;
+  let currentDataset = 'sales';
+
+  /**
+   * Create the grid as usual (a DataView, its columns and its sorting), then register the pivot and the Excel style
+   * pivot UI on it. The reading direction of a grid is set when it is created, so switching to right to left (or to
+   * another dataset, with other columns) creates the grid again.
+   */
+  function createGrid(datasetKey, { rtl = false, spec } = {}) {
+    grid?.destroy();
+    // a fresh element for the new grid, in the container of the field list
+    const gridElm = document.createElement('div');
+    gridElm.id = 'myGrid';
+    gridElm.className = 'slick-container';
+    document.querySelector('#myGrid').replaceWith(gridElm);
+
+    const dataset = datasets[datasetKey]();
+    currentDataset = datasetKey;
+    dataView = new Slick.Data.DataView();
+    // the pre-header panel of the column groups can only be created with the grid
+    grid = new Slick.Grid(gridElm, dataView, dataset.columns, Slick.Pivot.getGridOptions({ enableCellNavigation: true, editable: true, autoEdit: false, rtl }));
+    dataView.onRowCountChanged.subscribe(() => {
+      grid.updateRowCount();
+      grid.render();
+    });
+    dataView.onRowsChanged.subscribe((_e, args) => {
+      grid.invalidateRows(args.rows);
+      grid.render();
+    });
+    // the application sorts its own rows; in Pivot Mode, the pivot sorts the pivot rows
+    grid.onSort.subscribe((_e, args) => {
+      if (pivot.isPivotMode()) {
+        return;
+      }
+      const field = args.sortCol.field;
+      const value = (row) => (field === 'Amount' ? amountOf(row) : row[field]);
+      dataView.sort((a, b) => (value(a) > value(b) ? 1 : value(a) < value(b) ? -1 : 0), args.sortAsc);
+    });
+    dataView.setItems(dataset.rows);
+
+    // the fields are made from the columns, the source rows are the DataView of the grid
+    pivot = new Slick.Pivot({
+      fields: dataset.fields,
+      spec: spec ?? dataset.spec,
+      columnDefaults: { width: 105 },
+      numberFormat: { locale: 'en-US' },
+      locale: 'en-US',
+      ...getPivotOptions(),
+    });
+    grid.registerPlugin(pivot);
+    fieldList = new Slick.PivotFieldList({ container: '#gridAndPivot' });
+    grid.registerPlugin(fieldList);
+    // for the console and the tests
+    Object.assign(window, { grid, dataView, pivot, fieldList, panel: fieldList.getPanel() });
+  }
+
+  /** Add orders to the DataView, which the pivot follows */
+  function addRows() {
+    if (!currentDataset.startsWith('sales')) {
+      return;
+    }
+    const items = dataView.getItems();
+    const nextId = items.reduce((max, row) => Math.max(max, row.id), 0) + 1;
+    const nextOrderId = items.reduce((max, row) => Math.max(max, row.OrderId), 0);
+    dataView.beginUpdate();
+    createSalesData(500, nextId, nextId, nextOrderId).forEach((row) => dataView.addItem(row));
+    dataView.endUpdate();
+  }
+
+  function getPivotOptions() {
+    const rowDocking = document.querySelector('#grandTotalRowDocking').value;
+    const columnDocking = document.querySelector('#grandTotalColumnDocking').value;
+    return {
+      pinGrandTotalRow: rowDocking === 'sticky' ? 'sticky' : rowDocking === 'pinned',
+      pinGrandTotalColumns: columnDocking === 'sticky' ? 'sticky' : columnDocking === 'pinned',
+      enableWriteBack: document.querySelector('#writeBack').checked,
+      provider: document.querySelector('#serverProvider').checked ? serverProvider : undefined,
+    };
+  }
+
+  document.querySelector('#datasetSelect').addEventListener('change', (e) => createGrid(e.target.value, { rtl: document.querySelector('#rtl').checked }));
+  document.querySelector('#grandTotalRowDocking').addEventListener('change', () => pivot.setOptions({ pinGrandTotalRow: getPivotOptions().pinGrandTotalRow }));
+  document.querySelector('#grandTotalColumnDocking').addEventListener('change', () => pivot.setOptions({ pinGrandTotalColumns: getPivotOptions().pinGrandTotalColumns }));
+  document.querySelector('#rtl').addEventListener('change', (e) => createGrid(currentDataset, { rtl: e.target.checked, spec: pivot.getSpec() }));
+
+  // --
+  // write-back: Amount is computed (a getter without a setter), so it is read-only; Units is a plain
+  // property, whose sum can be typed into and spread over the source rows (in whole units)
+  // -----------------
+
+  document.querySelector('#writeBack').addEventListener('change', (e) => {
+    const spec = pivot.getSpec();
+    if (e.target.checked && !spec.values.some((value) => value.field === 'Units') && pivot.getEngine().getField('Units')) {
+      pivot.updateSpec({ values: [...spec.values, { field: 'Units', aggregator: 'sum', writeBack: { precision: 0 } }] });
+    }
+    pivot.setOptions({ enableWriteBack: e.target.checked });
+  });
+
+  // --
+  // simulated server: the request is serializable (it could be turned into SQL GROUP BY ... GROUPING SETS);
+  // here a pivot engine stands in for the server, after a short delay
+  // -----------------
+
+  const wait = (ms, signal) => new Promise((resolve, reject) => {
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener('abort', () => {
+      clearTimeout(timer);
+      reject(new DOMException('Aborted', 'AbortError'));
+    });
+  });
+  const serverEngine = () => new Slick.PivotEngine({ fields: pivot.getFields(), locale: 'en-US' });
+  const serverProvider = {
+    async execute(request, { signal }) {
+      await wait(400, signal);
+      return serverEngine().execute(dataView.getItems(), request.spec);
+    },
+    async getItems(fieldId, { search, signal }) {
+      await wait(150, signal);
+      return serverEngine().getFieldItems(dataView.getItems(), fieldId, { search });
+    },
+    async getSourceRows(request, rowKey, columnKey) {
+      await wait(150);
+      return serverEngine().getSourceRows(dataView.getItems(), request.spec, rowKey, columnKey);
+    },
+    async writeBack(request, edit) {
+      await wait(150);
+      const engine = serverEngine();
+      engine.applyChanges(engine.allocate(dataView.getItems(), request.spec, edit, edit.newValue, edit));
+    },
+  };
+  document.querySelector('#serverProvider').addEventListener('change', (e) => pivot.setOptions({ provider: e.target.checked ? serverProvider : undefined }));
+
+  createGrid('sales');
+
+  // --
+  // save & restore the layout (the spec is plain JSON)
+  // -----------------
+
+  function saveLayout() {
+    try {
+      localStorage.setItem('slickgrid-pivot-example-layout', JSON.stringify(pivot.getSpec()));
+    } catch (error) {
+      console.warn('The layout could not be saved', error);
+    }
+  }
+
+  function restoreLayout() {
+    try {
+      const saved = localStorage.getItem('slickgrid-pivot-example-layout');
+      if (saved) {
+        pivot.setSpec(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.warn('The layout could not be restored', error);
+    }
+  }
+</script>
+</body>
+</html>
