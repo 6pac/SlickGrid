@@ -21,8 +21,20 @@ const cell = document.createElement('div');
 row.appendChild(cell);
 canvas.appendChild(row);
 
+/** row heights by row index (variable row height mode); rows without an entry are 25px */
+let rowHeights: number[] = [];
+const heightOf = (row: number) => rowHeights[row] ?? 25;
+const topOf = (row: number) => Array.from({ length: row }, (_v, index) => heightOf(index)).reduce((sum, height) => sum + height, 0);
+
 const grid = {
   getCanvasNode: vi.fn(() => canvas),
+  getCellFromPoint: vi.fn((_x: number, y: number) => {
+    let row = 0;
+    while (topOf(row + 1) <= y) row++;
+    return { row, cell: 0 };
+  }),
+  getRowHeight: vi.fn((row: number) => heightOf(row)),
+  getRowTop: vi.fn((row: number) => topOf(row)),
   getCellFromEvent: vi.fn(() => ({ row: 2, cell: 0 })),
   getCellNode: vi.fn(() => cell),
   getColumns: vi.fn(() => columns),
@@ -51,6 +63,7 @@ describe('SlickRowMoveManager', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    rowHeights = [];
     editorLock.isActive.mockReturnValue(false);
     vi.mocked(grid.getCellFromEvent).mockReturnValue({ row: 2, cell: 0 });
     vi.mocked(grid.getSelectedRows).mockReturnValue([2]);
@@ -189,6 +202,33 @@ describe('SlickRowMoveManager', () => {
     expect(startData.canMove).toBe(true);
     expect(startData.guide?.style.top).toBe('50px');
     expect(beforeMove).toHaveBeenCalledWith({ grid, rows: [2], insertBefore: 2 });
+  });
+
+  it('goes by the row positions when rows have their own height', () => {
+    rowHeights = [25, 125, 25, 25]; // row 1 is an expanded row detail, for example
+    vi.mocked(grid.getSelectedRows).mockReturnValue([1, 2]);
+    vi.mocked(grid.getCellFromEvent).mockReturnValue({ row: 1, cell: 0 });
+    plugin.init(grid);
+    const startData = makeDragData();
+    grid.onDragStart.notify(startData, makeEventData());
+    const dragTo = (pageY: number) => {
+      const event = makeEventData();
+      Object.defineProperty(event.getNativeEvent<MouseEvent>(), 'pageY', { configurable: true, value: pageY });
+      grid.onDrag.notify(startData, event);
+    };
+
+    expect(startData.selectionProxy?.style.height).toBe('150px');
+
+    dragTo(80); // upper half of row 1 (25-150)
+    expect(startData.insertBefore).toBe(1);
+    expect(startData.guide?.style.top).toBe('25px');
+
+    dragTo(100); // lower half of row 1
+    expect(startData.insertBefore).toBe(2);
+    expect(startData.guide?.style.top).toBe('150px');
+
+    dragTo(400); // below the last row
+    expect(startData.insertBefore).toBe(10);
   });
 
   it('hides the guide when the before-move event rejects the move', () => {

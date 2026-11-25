@@ -134,7 +134,8 @@ export class SlickRowMoveManager {
       }
     }
 
-    const rowHeight = this._grid.getOptions().rowHeight;
+    // rows may have their own height (variable row height mode, e.g. an expanded row detail)
+    const selectedRowsHeight = selectedRows.reduce((height, row) => height + this._grid.getRowHeight(row), 0);
 
     dd.selectedRows = selectedRows;
 
@@ -144,7 +145,7 @@ export class SlickRowMoveManager {
     dd.selectionProxy.style.position = 'absolute';
     dd.selectionProxy.style.zIndex = '99999';
     dd.selectionProxy.style.width = `${this._canvas.clientWidth}px`;
-    dd.selectionProxy.style.height = `${rowHeight! * selectedRows.length}px`;
+    dd.selectionProxy.style.height = `${selectedRowsHeight}px`;
     this._canvas.appendChild(dd.selectionProxy);
 
     dd.guide = document.createElement('div');
@@ -177,7 +178,7 @@ export class SlickRowMoveManager {
       dd.clonedSlickRow.style.display = 'block';
     }
 
-    const insertBefore = Math.max(0, Math.min(Math.round(top / this._grid.getOptions().rowHeight!), this._grid.getDataLength()));
+    const insertBefore = this.getInsertBeforeRow(top);
     if (insertBefore !== dd.insertBefore) {
       const eventData = {
         grid: this._grid,
@@ -202,11 +203,22 @@ export class SlickRowMoveManager {
       if (!dd.canMove) {
         dd.guide.style.top = '-1000px';
       } else {
-        dd.guide.style.top = `${insertBefore * (this._grid.getOptions().rowHeight || 0)}px`;
+        dd.guide.style.top = `${this._grid.getRowTop(insertBefore)}px`;
       }
 
       dd.insertBefore = insertBefore;
     }
+  }
+
+  /**
+   * The row boundary nearest to a canvas position, i.e. the row before which the dragged rows would be inserted.
+   * Rows can have their own height (variable row height mode), so this goes by row positions rather than a fixed row height.
+   */
+  protected getInsertBeforeRow(top: number): number {
+    const dataLength = this._grid.getDataLength();
+    const row = Math.max(0, this._grid.getCellFromPoint(0, Math.max(0, top)).row);
+    const insertBefore = top - this._grid.getRowTop(row) >= this._grid.getRowHeight(row) / 2 ? row + 1 : row;
+    return Math.max(0, Math.min(insertBefore, dataLength));
   }
 
   protected handleDragEnd(e: SlickEventData_, dd: DragRowMove) {

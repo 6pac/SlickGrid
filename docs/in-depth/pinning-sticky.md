@@ -139,9 +139,8 @@ See [the auto-height example](https://6pac.github.io/SlickGrid/examples/example1
   the band beside it. The copy is `aria-hidden`; assistive technology and the API see only the
   host. Full-width group rows are rendered as one viewport-wide cell.
 - Row spans are supported; a spanning cell that starts in a pinned row stays in the overlay.
-- Row Detail panels use a separate canvas overlay. They sit over the padding rows reserved
-  below the parent, including shifts from pinned rows; a pinned parent's panel stays with its
-  padding rows in the scrolling area rather than under the pinned band.
+- A Row Detail panel is rendered inside its expanded row, so a pinned or sticky expanded row
+  docks together with its panel.
 - Pinned separators are painted with inset shadows, not layout borders, so header and body widths
   stay aligned across themes. The active theme can override the `--slick-pinned-*` custom
   properties read by `_slick-docking.scss`.

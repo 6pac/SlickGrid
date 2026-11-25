@@ -16,8 +16,20 @@ Object.defineProperty(targetCanvas, 'clientWidth', { configurable: true, value: 
 
 class GridMock {}
 
+/** target grid row heights by row index (variable row height mode); rows without an entry are 25px */
+let rowHeights: number[] = [];
+const heightOf = (row: number) => rowHeights[row] ?? 25;
+const topOf = (row: number) => Array.from({ length: row }, (_v, index) => heightOf(index)).reduce((sum, height) => sum + height, 0);
+
 const createGrid = (canvas: HTMLElement, editorLock: typeof sourceEditorLock) => Object.assign(new GridMock(), {
   getCanvasNode: vi.fn(() => canvas),
+  getCellFromPoint: vi.fn((_x: number, y: number) => {
+    let row = 0;
+    while (topOf(row + 1) <= y) row++;
+    return { row, cell: 0 };
+  }),
+  getRowHeight: vi.fn((row: number) => heightOf(row)),
+  getRowTop: vi.fn((row: number) => topOf(row)),
   getCellFromEvent: vi.fn(() => ({ row: 2, cell: 0 })),
   getCellNode: vi.fn(() => null),
   getColumns: vi.fn(() => columns),
@@ -52,6 +64,7 @@ describe('SlickCrossGridRowMoveManager', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    rowHeights = [];
     sourceEditorLock.isActive.mockReturnValue(false);
     targetEditorLock.isActive.mockReturnValue(false);
     vi.mocked(sourceGrid.getCellFromEvent).mockReturnValue({ row: 2, cell: 0 });
@@ -173,6 +186,29 @@ describe('SlickCrossGridRowMoveManager', () => {
     expect(dd.selectionProxy?.style.top).toBe('57px');
     expect(dd.guide?.style.top).toBe('50px');
     expect(beforeMove).toHaveBeenCalledWith({ fromGrid: sourceGrid, toGrid: targetGrid, rows: [2, 4], insertBefore: 2 });
+  });
+
+  it('goes by the row positions when rows have their own height', () => {
+    rowHeights = [25, 125, 25, 25, 75]; // row 1 is an expanded row detail, for example
+    plugin.init(sourceGrid);
+    const dd = makeDragData();
+    sourceGrid.onDragStart.notify(dd, makeEventData());
+
+    // the proxy is as tall as the dragged source rows (2 and 4)
+    expect(sourceGrid.getRowHeight).toHaveBeenCalledWith(2);
+    expect(dd.selectionProxy?.style.height).toBe('100px');
+
+    sourceGrid.onDrag.notify(dd, makeEventData(80)); // upper half of target row 1 (25-150)
+    expect(targetGrid.getCellFromPoint).toHaveBeenCalledWith(0, 80);
+    expect(dd.insertBefore).toBe(1);
+    expect(dd.guide?.style.top).toBe('25px');
+
+    sourceGrid.onDrag.notify(dd, makeEventData(100)); // lower half of target row 1
+    expect(dd.insertBefore).toBe(2);
+    expect(dd.guide?.style.top).toBe('150px');
+
+    sourceGrid.onDrag.notify(dd, makeEventData(1000)); // below the last target row
+    expect(dd.insertBefore).toBe(12);
   });
 
   it('rejects a destination when the before-move listener returns false', () => {

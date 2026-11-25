@@ -107,7 +107,9 @@
 .slick-row-docked > .slick-pinned-right-cells {
   position: relative;
   grid-row: 1;
-  height: 100%;
+  align-self: start;
+  // a plugin can reserve space below the cells of a taller row (e.g. the Row Detail panel)
+  height: calc(100% - var(--slick-row-extra-height, 0px));
   overflow: hidden;
   background: inherit;
 }

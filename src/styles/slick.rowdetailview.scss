@@ -20,13 +20,19 @@
   transform: rotate(2700deg);
 }
 
+// The detail panel is rendered inside its expanded row, below the cells: the grid keeps the
+// cells at the base row height through the `--slick-row-extra-height` variable set on the row,
+// and the plugin sets the panel's top, height, left and width.
 .slick-row-detail-container {
-    z-index:            10000;
+    z-index:            30; // above the pinned column regions of the same row
     position:           absolute;
+    left:               0;
+    box-sizing:         border-box;
     background-color:   #dae5e8;
     margin:             0;
     padding:            0;
     width:              100%;
     overflow:           auto;
     line-height:        13px;
+    cursor:             auto;
 }

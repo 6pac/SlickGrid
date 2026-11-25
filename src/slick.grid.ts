@@ -5143,7 +5143,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // this via inline `style="height: Xpx"`. The cell height is reduced by the measured
     // vertical padding/border difference so its content-box plus those edges matches the row.
     if (this._options.enableVariableRowHeight) {
-      rules.push(`.${this.uid} .slick-cell { height: calc(100% - ${this.cellHeightDiff}px); }`);
+      // `--slick-row-extra-height` lets a plugin reserve space below the cells of a taller row
+      // (e.g. the Row Detail panel), so those cells keep their base height.
+      rules.push(`.${this.uid} .slick-cell { height: calc(100% - var(--slick-row-extra-height, 0px) - ${this.cellHeightDiff}px); }`);
     } else {
       rules.push(`.${this.uid} .slick-cell { height: ${this._options.rowHeight! - this.cellHeightDiff}px; }`);
     }
@@ -6299,16 +6301,47 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-  * Invalidate all row heights (variable row height mode) and fully re-render the grid.
+  * Invalidate row heights (variable row height mode) and re-render.
   * Call this after the values driving `rowHeightProvider` (or, with the default provider, the
   * item metadata heights) have changed without a change in row count; the row position index
   * is then rebuilt with the new heights.
+  *
+  * @param {number[]} [rows] - The rows whose height changed. When provided, only those rows are
+  *   re-rendered and the other rendered rows are moved to their new positions; when omitted, the
+  *   whole grid is invalidated and re-rendered.
   */
-  invalidateRowHeights(): void {
-    if (this._options.enableVariableRowHeight) {
-      this.rowHeightsDirty = true;
-      this.invalidate();
+  invalidateRowHeights(rows?: number[]): void {
+    if (!this._options.enableVariableRowHeight) {
+      return;
     }
+    this.rowHeightsDirty = true;
+    if (!rows?.length) {
+      this.invalidate();
+      return;
+    }
+    // invalidateRows() keeps the heights dirty; render() then rebuilds the index, resizes the
+    // canvas when the total height changed and repositions the rows it did not re-render.
+    this.invalidateRows(rows);
+    this.render();
+  }
+
+  /**
+  * Rebuild the row position index when row heights were marked dirty (variable row height mode).
+  * A count-preserving sort or filter invalidates rows without calling `updateRowCount()`, which
+  * used to leave the index, and therefore every row position, stale until the next row count change.
+  */
+  protected refreshDirtyRowHeights(): void {
+    if (!this._options.enableVariableRowHeight || !this.rowHeightsDirty || !this.rowPositionIndexer) {
+      return;
+    }
+    const rowCount = this.getDataLengthIncludingAddNew();
+    const previousTotalHeight = this.getRowPosition(rowCount);
+    this.ensureRowPositionIndexer(rowCount);
+    if (this.getRowPosition(rowCount) !== previousTotalHeight) {
+      // the canvas height (and possibly the vertical scrollbar and pinned rows) depends on the total
+      this.updateRowCount();
+    }
+    this.updateRowPositions();
   }
 
   /** Update the dataset row count */
@@ -6847,6 +6880,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   render(): void {
     if (this.initialized) {
       this.scrollThrottle.dequeue();
+      this.refreshDirtyRowHeights();
       if (this.rowDockingStale) {
         // A sort or filter can move referenced rows without changing the row count; re-resolve
         // ids to indexes and re-dock before the rows are rendered.
