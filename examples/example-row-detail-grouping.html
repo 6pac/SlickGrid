@@ -538,9 +538,7 @@
         process: simulateServerCall,
         useRowClick: true,
 
-        // how many grid rows do we want to use for the detail panel
-        // also note that the detail view adds an extra 1 row for padding purposes
-        // example, if you choosed 6 panelRows, the display will in fact use 5 rows
+        // height of the detail panel, the expanded row grows by that height (use \"panelHeight\" for an exact pixel height)
         panelRows: 6,
       });
 
@@ -566,10 +564,8 @@
 
       detailView.onAfterRowDetailToggle.subscribe(function (e, args) {
         console.log('after toggling row detail', args.item);
-        if (args.item._collapsed) {
+        if (!args.expanded) {
           destroyAssigneeOnClick(args.item.id);
-        } else {
-
         }
       });
 

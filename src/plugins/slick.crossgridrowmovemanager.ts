@@ -138,7 +138,8 @@ export class SlickCrossGridRowMoveManager {
 
     selectedRows.sort((a, b) => a - b);
 
-    const rowHeight = this._grid.getOptions().rowHeight;
+    // sum the actual row heights, rows can have their own height (variable row height, expanded row detail, ...)
+    const selectedRowsHeight = selectedRows.reduce((height, row) => height + this._grid.getRowHeight(row), 0);
 
     dd.fromGrid = this._grid;
     dd.toGrid = this._toGrid;
@@ -150,7 +151,7 @@ export class SlickCrossGridRowMoveManager {
     dd.selectionProxy.style.position = 'absolute';
     dd.selectionProxy.style.zIndex = '99999';
     dd.selectionProxy.style.width = `${this._toCanvas.clientWidth}px`;
-    dd.selectionProxy.style.height = `${rowHeight! * selectedRows.length}px`;
+    dd.selectionProxy.style.height = `${selectedRowsHeight}px`;
     this._toCanvas.appendChild(dd.selectionProxy);
 
     dd.guide = document.createElement('div');
@@ -183,7 +184,7 @@ export class SlickCrossGridRowMoveManager {
       dd.clonedSlickRow.style.display = 'block';
     }
 
-    const insertBefore = Math.max(0, Math.min(Math.round(top / this._toGrid.getOptions().rowHeight!), this._toGrid.getDataLength()));
+    const insertBefore = this.getInsertBeforeRow(top);
     if (insertBefore !== dd.insertBefore) {
       const eventData = {
         fromGrid: this._grid,
@@ -209,11 +210,22 @@ export class SlickCrossGridRowMoveManager {
       if (!dd.canMove) {
         dd.guide.style.top = '-1000px';
       } else {
-        dd.guide.style.top = `${insertBefore * (this._toGrid.getOptions().rowHeight || 0)}px`;
+        dd.guide.style.top = `${this._toGrid.getRowTop(insertBefore)}px`;
       }
 
       dd.insertBefore = insertBefore;
     }
+  }
+
+  /**
+   * The target grid row boundary nearest to a target canvas position, i.e. the row before which the dragged rows would be inserted.
+   * Rows can have their own height (variable row height mode), so this goes by row positions rather than a fixed row height.
+   */
+  protected getInsertBeforeRow(top: number): number {
+    const dataLength = this._toGrid.getDataLength();
+    const row = Math.max(0, this._toGrid.getCellFromPoint(0, Math.max(0, top)).row);
+    const insertBefore = top - this._toGrid.getRowTop(row) >= this._toGrid.getRowHeight(row) / 2 ? row + 1 : row;
+    return Math.max(0, Math.min(insertBefore, dataLength));
   }
 
   protected handleDragEnd(e: SlickEventData_, dd: DragRowMove) {

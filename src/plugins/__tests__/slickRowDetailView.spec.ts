@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Column, GridOption, RowDetailViewOption } from '../../models';
 import { SlickEvent, SlickEventData } from '../../slick.core';
-import type { SlickDataView } from '../../slick.dataview';
 import type { SlickGrid } from '../../slick.grid';
 import { SlickRowDetailView } from '../slick.rowdetailview';
 
@@ -14,65 +13,64 @@ const columns: Column[] = [
 
 const items: DetailItem[] = [];
 const dataView = {
-  beginUpdate: vi.fn(),
-  deleteItem: vi.fn((id: number | string) => {
-    const index = items.findIndex((item) => String(item.id) === String(id));
-    if (index >= 0) items.splice(index, 1);
-  }),
-  endUpdate: vi.fn(),
   getIdPropertyName: vi.fn(() => 'id'),
-  getIdxById: vi.fn((id: number | string) => items.findIndex((item) => String(item.id) === String(id))),
-  getItemById: vi.fn((id: number | string) => items.find((item) => String(item.id) === String(id))),
-  getItemByIdx: vi.fn((index: number) => items[index]),
-  getRowById: vi.fn((id: number | string) => items.findIndex((item) => String(item.id) === String(id))),
-  insertItem: vi.fn((index: number, item: DetailItem) => items.splice(index, 0, item)),
+  getItemById: vi.fn((id: number | string) => items.find((item) => item.id === id)),
+  getRowById: vi.fn((id: number | string) => {
+    const index = items.findIndex((item) => item.id === id);
+    return index >= 0 ? index : undefined;
+  }),
   updateItem: vi.fn((id: number | string, item: DetailItem) => {
-    const index = items.findIndex((existing) => String(existing.id) === String(id));
+    const index = items.findIndex((existing) => existing.id === id);
     if (index >= 0) items[index] = item;
   }),
   onRowCountChanged: new SlickEvent(),
-  onRowsChanged: new SlickEvent(),
-  onSetItemsCalled: new SlickEvent(),
-} as unknown as SlickDataView;
+  onRowsChanged: new SlickEvent<{ rows: number[] }>(),
+};
+/** what `grid.getData()` returns: the DataView-like provider by default, a plain array in some tests */
+let gridData: any = dataView;
 
-const gridOptions: GridOption = { rowHeight: 25, minRowBuffer: 4 };
+let gridOptions: GridOption;
 const editorLock = { commitCurrentEdit: vi.fn(() => true), isActive: vi.fn(() => false) };
 const canvas = document.createElement('div');
+canvas.className = 'grid-canvas';
 Object.defineProperty(canvas, 'clientWidth', { configurable: true, value: 600 });
 const viewport = document.createElement('div');
 Object.defineProperty(viewport, 'clientWidth', { configurable: true, value: 500 });
 const gridElement = document.createElement('div');
 gridElement.className = 'row-detail-grid';
-canvas.className = 'grid-canvas';
-gridElement.appendChild(canvas);
 gridElement.appendChild(viewport);
+viewport.appendChild(canvas);
 document.body.appendChild(gridElement);
+
+/** rendered rows, by row index, as the grid row cache exposes them */
+let rowCache: Record<number, { rowNode: HTMLElement[] }> = {};
 
 const grid = {
   getCanvases: vi.fn(() => [canvas]),
-  getCellNodeBox: vi.fn((row: number) => ({ top: row * 25 })),
   getCellNode: vi.fn(),
-  getColumnIndex: vi.fn(() => 0),
   getColumns: vi.fn(() => columns),
-  getData: vi.fn(() => dataView),
+  getData: vi.fn(() => gridData),
   getDataItem: vi.fn((row: number) => items[row]),
+  getDataLength: vi.fn(() => items.length),
   getEditorLock: vi.fn(() => editorLock),
   getOptions: vi.fn(() => gridOptions),
   getPubSubService: vi.fn(),
-  getRenderedRange: vi.fn(() => ({ top: 0, bottom: 20, leftPx: 0, rightPx: 600 })),
-  getRowHeight: vi.fn(() => 25),
-  getRowTop: vi.fn((row: number) => row * 25),
+  getRowCache: vi.fn(() => rowCache),
+  getRowHeight: vi.fn((row: number) => gridOptions.rowHeightProvider?.(grid, row, items[row]) ?? gridOptions.rowHeight!),
   getUID: () => 'row-detail-grid',
   getViewportNode: vi.fn(() => viewport),
+  invalidateRowHeights: vi.fn(),
   invalidateRows: vi.fn(),
   render: vi.fn(),
   sanitizeHtmlString: vi.fn((html: string) => html),
+  setOptions: vi.fn((options: Partial<GridOption>) => Object.assign(gridOptions, options)),
   updateRowCount: vi.fn(),
-  onBeforeEditCell: new SlickEvent(),
+  onBeforeDestroy: new SlickEvent(),
   onClick: new SlickEvent(),
   onKeyDown: new SlickEvent(),
   onRendered: new SlickEvent(),
   onScroll: new SlickEvent(),
+  onSetOptions: new SlickEvent(),
   onSort: new SlickEvent(),
 } as unknown as SlickGrid;
 
@@ -83,22 +81,22 @@ describe('SlickRowDetailView', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    items.splice(0, items.length, { id: 1, name: 'First' }, { id: 2, name: 'Second' });
-    gridOptions.minRowBuffer = 4;
+    items.splice(0, items.length, { id: 1, name: 'First' }, { id: 2, name: 'Second' }, { id: 3, name: 'Third' });
+    gridData = dataView;
+    gridOptions = { rowHeight: 25, explicitInitialization: true };
     editorLock.isActive.mockReturnValue(false);
     editorLock.commitCurrentEdit.mockReturnValue(true);
-    vi.mocked(grid.getRenderedRange).mockImplementation(() => ({ top: 0, bottom: 20, leftPx: 0, rightPx: 600 }));
     vi.mocked(dataView.getIdPropertyName).mockImplementation(() => 'id');
     item = items[0];
-    options = { panelRows: 2, process: vi.fn().mockResolvedValue(undefined) };
+    options = { panelRows: 2, process: vi.fn() };
     plugin = new SlickRowDetailView(options);
     canvas.replaceChildren();
+    rowCache = {};
   });
 
   afterEach(() => {
     plugin.destroy();
     canvas.replaceChildren();
-    vi.useRealTimers();
   });
 
   const keyEvent = (key: string, target?: EventTarget) =>
@@ -110,10 +108,31 @@ describe('SlickRowDetailView', () => {
     target.className = 'detailView-toggle';
     return target;
   };
-  const mountPanels = () => grid.onRendered.notify({ startRow: 0, endRow: 20, grid });
-  const panelOf = (id: number | string) => canvas.querySelector<HTMLElement>(`.row-detail-${id}`);
 
-  const init = () => plugin.init(grid);
+  /** Simulate a grid render: (re)create the row nodes of the given rows, drop the others, then notify onRendered. */
+  const renderRows = (rows: number[] = items.map((_item, row) => row)) => {
+    rowCache = {};
+    canvas.replaceChildren();
+    rows.forEach((row) => {
+      const rowNode = document.createElement('div');
+      rowNode.className = 'slick-row';
+      canvas.appendChild(rowNode);
+      rowCache[row] = { rowNode: [rowNode] };
+    });
+    grid.onRendered.notify({ startRow: 0, endRow: 20, grid });
+  };
+  const rowNodeOf = (row: number) => rowCache[row]?.rowNode[0];
+  const panelOf = (id: number | string) => canvas.querySelector<HTMLElement>(`.row-detail-${id}`);
+  const respond = (detail: DetailItem, detailView?: any) => plugin.onAsyncResponse.notify({ item: detail, itemDetail: detail, detailView, grid });
+
+  /** Initialize the plugin with the test's current `options` (tests tweak them after the plugin was constructed). */
+  const init = () => {
+    plugin.setOptions(options);
+    plugin.init(grid);
+  };
+
+  // the panelRows: 2 default of these tests => Math.ceil(2 * 26 / 25) * 25 = 75px
+  const PANEL_HEIGHT = 75;
 
   it('exposes default options and builds the detail selector column', () => {
     const column = plugin.getColumnDefinition();
@@ -124,7 +143,7 @@ describe('SlickRowDetailView', () => {
       cssClass: 'detailView-toggle',
       panelRows: 2,
       width: 30,
-      collapseAllOnSort: true,
+      collapseAllOnSort: false,
       loadOnce: false,
     }));
     expect(column).toEqual(expect.objectContaining({
@@ -137,368 +156,578 @@ describe('SlickRowDetailView', () => {
     }));
   });
 
-  it('initializes the data view, subscribes to grid events, and expands the row buffer', () => {
-    init();
-
-    expect(gridOptions.minRowBuffer).toBe(5);
-    dataView.onRowCountChanged.notify({ previous: 2, current: 2, itemCount: 2, dataView, callingOnRowsChanged: false });
-    expect(grid.updateRowCount).toHaveBeenCalledOnce();
-    expect(grid.render).toHaveBeenCalledOnce();
-  });
-
   it('requires a grid instance during initialization', () => {
     expect(() => plugin.init(null as unknown as SlickGrid)).toThrow(/requires the Grid instance/);
   });
 
-  it('supports option updates and collapses existing details when singleRowExpand is enabled', () => {
-    init();
-    plugin.expandDetailView(item);
-    const collapse = vi.spyOn(plugin, 'collapseAll');
-
-    plugin.setOptions({ singleRowExpand: true, columnId: 'detail-toggle' });
-
-    expect(plugin.getOptions().columnId).toBe('detail-toggle');
-    expect(collapse).toHaveBeenCalledOnce();
-  });
-
-  it('initializes collapsed metadata in the formatter and honors expandableOverride', () => {
-    init();
-    const formatter = plugin.getColumnDefinition().formatter!;
-    const collapsed = formatter(0, 0, null, columns[0], item, grid) as HTMLElement;
-
-    expect(collapsed.className).toContain('detailView-toggle');
-    expect(collapsed.className).toContain('expand');
-    expect(collapsed.getAttribute('aria-expanded')).toBe('false');
-    expect(collapsed.getAttribute('aria-label')).toBe('Expand row details');
-    expect(item._collapsed).toBe(true);
-    expect(formatter(0, 0, null, columns[0], { ...item, _isPadding: true }, grid)).toBe('');
-
-    plugin.destroy();
-    plugin = new SlickRowDetailView({ ...options, expandableOverride: () => false });
-    expect(plugin.getColumnDefinition().formatter!(0, 0, null, columns[0], item, grid)).toBe('');
-  });
-
-  it('activates the row detail toggle from the selector cell with Space', () => {
-    init();
-    const cell = document.createElement('div');
-    const toggle = document.createElement('div');
-    toggle.dataset.rowDetailToggle = '';
-    cell.appendChild(toggle);
-    vi.mocked(grid.getCellNode).mockReturnValue(cell);
-    const click = vi.spyOn(toggle, 'click');
-    const event = Object.assign(new SlickEventData(), { key: ' ', preventDefault: vi.fn(), stopImmediatePropagation: vi.fn() });
-    grid.onKeyDown.notify({ row: 0, cell: 0, grid }, event);
-    expect(click).toHaveBeenCalledOnce();
-    expect(event.preventDefault).toHaveBeenCalledOnce();
-  });
-
-  it('leaves Space and Enter alone when they are typed inside a row detail panel', () => {
-    init();
-    const cell = document.createElement('div');
-    const toggle = document.createElement('div');
-    toggle.dataset.rowDetailToggle = '';
-    cell.appendChild(toggle);
-    vi.mocked(grid.getCellNode).mockReturnValue(cell);
-    const click = vi.spyOn(toggle, 'click');
-    const panel = document.createElement('div');
-    panel.className = 'slick-row-detail-container row-detail-0';
-    const input = panel.appendChild(document.createElement('input'));
-
-    for (const key of [' ', 'Enter']) {
-      const event = Object.assign(new SlickEventData(), { key, target: input, preventDefault: vi.fn(), stopImmediatePropagation: vi.fn() });
-      grid.onKeyDown.notify({ row: 0, cell: 0, grid }, event);
-      expect(event.preventDefault).not.toHaveBeenCalled();
-      expect(event.stopImmediatePropagation).not.toHaveBeenCalled();
-    }
-    expect(click).not.toHaveBeenCalled();
-  });
-
-  it('expands a detail row, inserts padding rows, and starts the async process', () => {
-    init();
-
-    plugin.expandDetailView(item);
-
-    expect(item._collapsed).toBe(false);
-    expect(item._sizePadding).toBe(3);
-    expect(items).toHaveLength(5);
-    expect(dataView.insertItem).toHaveBeenCalledTimes(3);
-    expect(options.process).toHaveBeenCalledWith(item);
-    expect(plugin.getExpandedRows()).toEqual([item]);
-  });
-
-  it('caps padding row insertion with maxRows', () => {
-    plugin = new SlickRowDetailView({ ...options, maxRows: 2 });
-    init();
-
-    plugin.expandDetailView(item);
-
-    expect(item._sizePadding).toBe(2);
-    expect(items).toHaveLength(4);
-    expect(dataView.insertItem).toHaveBeenCalledTimes(2);
-  });
-
-  it('updates detail content and notifies when an async response arrives', () => {
-    init();
-    plugin.expandDetailView(item);
-    const asyncEnd = vi.fn();
-    plugin.onAsyncEndUpdate.subscribe((_event: SlickEventData, args: { grid: SlickGrid; item: DetailItem; itemDetail: DetailItem }) => asyncEnd(args));
-
-    plugin.onAsyncResponse.notify({ item, detailView: '<strong>Loaded</strong>', grid }, new SlickEventData());
-
-    expect(item._detailContent).toBe('<strong>Loaded</strong>');
-    expect(item._detailViewLoaded).toBe(true);
-    expect(dataView.updateItem).toHaveBeenCalledWith(item.id, item);
-    expect(asyncEnd).toHaveBeenCalledWith({ grid, item, itemDetail: item });
-  });
-
-  it('collapses an expanded row and removes its padding rows', () => {
-    init();
-    plugin.expandDetailView(item);
-
-    plugin.collapseDetailView(item);
-
-    expect(item._collapsed).toBe(true);
-    expect(item._sizePadding).toBe(0);
-    expect(items).toHaveLength(2);
-    expect(plugin.getExpandedRows()).toEqual([]);
-    expect(dataView.beginUpdate).toHaveBeenCalledOnce();
-    expect(dataView.endUpdate).toHaveBeenCalledOnce();
-  });
-
-  it('collapses all expanded rows when requested or when the grid sorts', () => {
-    init();
-    plugin.expandDetailView(item);
-    plugin.expandDetailView(items[4]);
-
-    grid.onSort.notify({ grid, columnId: 'name', sortAsc: true });
-
-    expect(plugin.getExpandedRows()).toEqual([]);
-    expect(items).toHaveLength(2);
-  });
-
-  it('does not collapse all on sort when collapseAllOnSort is disabled', () => {
-    plugin = new SlickRowDetailView({ ...options, collapseAllOnSort: false });
-    init();
-    plugin.expandDetailView(item);
-
-    grid.onSort.notify({ grid, columnId: 'name', sortAsc: true });
-
-    expect(plugin.getExpandedRows()).toEqual([item]);
-  });
-
-  it('toggles from the detail selector click and honors the before-toggle event', () => {
-    init();
-    const beforeToggle = vi.fn(() => false);
-    plugin.onBeforeRowDetailToggle.subscribe(beforeToggle);
-    const target = document.createElement('div');
-    target.className = 'detailView-toggle';
-    const event = Object.assign(new SlickEventData(), { target, stopPropagation: vi.fn(), stopImmediatePropagation: vi.fn() });
-
-    grid.onClick.notify({ row: 0, cell: 0, grid }, event);
-
-    expect(beforeToggle).toHaveBeenCalledOnce();
-    expect(plugin.getExpandedRows()).toEqual([]);
-    expect(event.stopPropagation).not.toHaveBeenCalled();
-  });
-
-  it('expands from a row click when useRowClick is enabled', () => {
-    plugin = new SlickRowDetailView({ ...options, useRowClick: true });
-    init();
-    plugin.getColumnDefinition().formatter!(0, 0, null, columns[0], item, grid);
-    const event = Object.assign(new SlickEventData(), { target: document.createElement('div'), stopPropagation: vi.fn(), stopImmediatePropagation: vi.fn() });
-
-    grid.onClick.notify({ row: 0, cell: 1, grid }, event);
-
-    expect(plugin.getExpandedRows()).toEqual([item]);
-    expect(event.stopPropagation).toHaveBeenCalledOnce();
-  });
-
-  it('returns the parent item for padding rows in filtering', () => {
-    init();
-    const paddingItem = { id: '1.1', _isPadding: true, _parent: item };
-
-    expect(plugin.getFilterItem(paddingItem)).toBe(item);
-    expect(plugin.getFilterItem(item)).toBe(item);
-  });
-
-  it('invalidates rows and rerenders when the data view reports changed rows', () => {
-    init();
-
-    dataView.onRowsChanged.notify({ rows: [1, 2], itemCount: 2, dataView, calledOnRowCountChanged: false });
-
-    expect(grid.invalidateRows).toHaveBeenCalledWith([1, 2]);
-    expect(grid.render).toHaveBeenCalledOnce();
-  });
-
-  it('mounts, positions, and removes a detail overlay panel with its parent row', () => {
-    init();
-    plugin.expandDetailView(item);
-    item._detailContent = '<div>Details</div>';
-
-    grid.onRendered.notify({ startRow: 0, endRow: 20, grid });
-    const panel = canvas.querySelector<HTMLElement>('.row-detail-1');
-
-    expect(panel?.innerHTML).toBe('<div>Details</div>');
-    expect(panel?.style.top).toBe('25px');
-    expect(panel?.style.height).toBe('75px');
-    plugin.collapseDetailView(item);
-    expect(canvas.querySelector('.row-detail-1')).toBeNull();
-  });
-
-  it('cleans up subscriptions and mounted panels when destroyed', () => {
-    init();
-    plugin.expandDetailView(item);
-    grid.onRendered.notify({ startRow: 0, endRow: 20, grid });
-    expect(canvas.querySelector('.row-detail-1')).not.toBeNull();
-
-    plugin.destroy();
-    grid.onRendered.notify({ startRow: 0, endRow: 20, grid });
-
-    expect(canvas.querySelector('.row-detail-1')).toBeNull();
-  });
-  describe('keyboard toggle', () => {
-    let toggle: HTMLDivElement;
-
-    beforeEach(() => {
+  describe('row height provider', () => {
+    it('turns on variable row height in place on a grid that is not initialized yet, and wraps the row height provider', () => {
       init();
-      const cell = document.createElement('div');
-      toggle = cell.appendChild(document.createElement('div'));
-      toggle.dataset.rowDetailToggle = '';
-      vi.mocked(grid.getCellNode).mockReturnValue(cell);
+
+      expect(gridOptions.enableVariableRowHeight).toBe(true);
+      expect(gridOptions.rowHeightProvider).toEqual(expect.any(Function));
+      expect(grid.setOptions).not.toHaveBeenCalled();
+      expect(grid.invalidateRowHeights).not.toHaveBeenCalled();
     });
 
-    it('activates the toggle with Enter as well as Space', () => {
-      const click = vi.spyOn(toggle, 'click');
-      const event = keyEvent('Enter');
+    it('goes through setOptions on an initialized grid so it rebuilds its variable row height cell rule', () => {
+      gridOptions.explicitInitialization = false;
+      init();
 
-      grid.onKeyDown.notify({ row: 0, cell: 0, grid }, event);
-
-      expect(click).toHaveBeenCalledOnce();
-      expect(event.preventDefault).toHaveBeenCalledOnce();
-      expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
+      expect(grid.setOptions).toHaveBeenCalledWith({ enableVariableRowHeight: true });
+      expect(gridOptions.rowHeightProvider).toEqual(expect.any(Function));
     });
 
-    it('ignores keys other than Enter and Space', () => {
-      const click = vi.spyOn(toggle, 'click');
-      const event = keyEvent('a');
+    it('only re-measures the rows when variable row height is already enabled', () => {
+      gridOptions.enableVariableRowHeight = true;
+      init();
 
-      grid.onKeyDown.notify({ row: 0, cell: 0, grid }, event);
-
-      expect(click).not.toHaveBeenCalled();
-      expect(event.preventDefault).not.toHaveBeenCalled();
-      expect(grid.getCellNode).not.toHaveBeenCalled();
+      expect(grid.setOptions).not.toHaveBeenCalled();
+      expect(grid.invalidateRowHeights).toHaveBeenCalledWith();
     });
 
-    it('ignores Enter when the active cell is not the detail selector column', () => {
-      const click = vi.spyOn(toggle, 'click');
-      const event = keyEvent('Enter');
+    it('adds the panel height to the expanded rows only, on top of the user provider height', () => {
+      const userProvider = vi.fn((_grid: SlickGrid, row: number) => (row === 0 ? 40 : undefined));
+      gridOptions.rowHeightProvider = userProvider;
+      init();
+      const provider = gridOptions.rowHeightProvider!;
 
-      grid.onKeyDown.notify({ row: 0, cell: 1, grid }, event);
+      plugin.expandDetailView(items[0]);
+      plugin.expandDetailView(items[1]);
 
-      expect(click).not.toHaveBeenCalled();
-      expect(event.preventDefault).not.toHaveBeenCalled();
+      expect(provider(grid, 0, items[0])).toBe(40 + PANEL_HEIGHT);
+      expect(provider(grid, 1, items[1])).toBe(25 + PANEL_HEIGHT);
+      expect(provider(grid, 2, items[2])).toBeUndefined();
+      expect(provider(grid, 3, undefined)).toBeUndefined();
+      expect(userProvider).toHaveBeenCalledWith(grid, 0, items[0]);
     });
 
-    it('ignores Enter while an editor is active', () => {
-      editorLock.isActive.mockReturnValue(true);
-      const click = vi.spyOn(toggle, 'click');
-      const event = keyEvent('Enter');
+    it('wraps a provider set later with grid.setOptions', () => {
+      init();
+      const wrapper = gridOptions.rowHeightProvider!;
+      plugin.expandDetailView(item);
 
-      grid.onKeyDown.notify({ row: 0, cell: 0, grid }, event);
+      // the grid has already merged the new provider when it notifies onSetOptions
+      gridOptions.rowHeightProvider = () => 50;
+      grid.onSetOptions.notify({ optionsBefore: {}, optionsAfter: gridOptions, grid });
 
-      expect(click).not.toHaveBeenCalled();
-      expect(event.preventDefault).not.toHaveBeenCalled();
+      expect(gridOptions.rowHeightProvider).toBe(wrapper);
+      expect(wrapper(grid, 0, item)).toBe(50 + PANEL_HEIGHT);
+
+      // an option change that keeps our wrapper leaves the wrapped provider alone
+      grid.onSetOptions.notify({ optionsBefore: {}, optionsAfter: gridOptions, grid });
+      expect(wrapper(grid, 0, item)).toBe(50 + PANEL_HEIGHT);
     });
 
-    it('does nothing when the selector cell has no toggle (non-expandable row)', () => {
-      vi.mocked(grid.getCellNode).mockReturnValueOnce(document.createElement('div'));
-      const event = keyEvent(' ');
+    it('sizes the panel from panelRows, panelHeight and maxRows', () => {
+      init();
+      const provider = gridOptions.rowHeightProvider!;
 
-      grid.onKeyDown.notify({ row: 0, cell: 0, grid }, event);
+      plugin.setOptions({ panelRows: 6 }); // Math.ceil(6 * 26 / 25) * 25
+      plugin.expandDetailView(items[0]);
+      expect(provider(grid, 0, items[0])).toBe(25 + 175);
 
-      expect(event.preventDefault).not.toHaveBeenCalled();
-      expect(event.stopImmediatePropagation).not.toHaveBeenCalled();
+      plugin.setOptions({ panelHeight: 120 });
+      plugin.expandDetailView(items[1]);
+      expect(provider(grid, 1, items[1])).toBe(25 + 120);
+
+      plugin.setOptions({ maxRows: 2 });
+      plugin.expandDetailView(items[2]);
+      expect(provider(grid, 2, items[2])).toBe(25 + 50);
+    });
+  });
+
+  describe('expand and collapse', () => {
+    it('expands a row without touching the data, re-measures its row height and starts the async process', () => {
+      options.preTemplate = () => '<span class="loading">Loading</span>';
+      init();
+      const keysBefore = Object.keys(item);
+
+      plugin.expandDetailView(item);
+
+      expect(plugin.isExpanded(item)).toBe(true);
+      expect(plugin.isExpanded(1)).toBe(true);
+      expect(plugin.isExpanded(items[1])).toBe(false);
+      expect(plugin.getExpandedRows()).toEqual([item]);
+      expect(items).toHaveLength(3);
+      expect(Object.keys(item)).toEqual(keysBefore);
+      expect(dataView.updateItem).not.toHaveBeenCalled();
+      expect(grid.invalidateRowHeights).toHaveBeenCalledWith([0]);
+      expect(options.process).toHaveBeenCalledWith(item);
+
+      renderRows();
+      expect(panelOf(1)?.querySelector('.loading')?.textContent).toBe('Loading');
     });
 
-    it('handles a key typed outside any detail panel when the target has no closest()', () => {
-      const click = vi.spyOn(toggle, 'click');
-      const event = keyEvent('Enter', {} as EventTarget);
+    it('ignores expanding a row that is already expanded or has no id', () => {
+      init();
+      plugin.expandDetailView(item);
+      vi.mocked(grid.invalidateRowHeights).mockClear();
 
-      grid.onKeyDown.notify({ row: 0, cell: 0, grid }, event);
+      plugin.expandDetailView(item);
+      plugin.expandDetailView({ name: 'no id' });
+      plugin.expandDetailView(undefined);
 
-      expect(click).toHaveBeenCalledOnce();
+      expect(grid.invalidateRowHeights).not.toHaveBeenCalled();
+      expect(options.process).toHaveBeenCalledOnce();
+    });
+
+    it('does not re-measure anything when the expanded row is not in the grid (filtered out)', () => {
+      init();
+      plugin.expandDetailView({ id: 99, name: 'filtered out' });
+
+      expect(plugin.isExpanded(99)).toBe(true);
+      expect(grid.invalidateRowHeights).not.toHaveBeenCalled();
+    });
+
+    it('collapses an expanded row, removes its panel and re-measures its row', () => {
+      init();
+      plugin.expandDetailView(item);
+      renderRows();
+      vi.mocked(grid.invalidateRowHeights).mockClear();
+
+      plugin.collapseDetailView(item);
+
+      expect(plugin.isExpanded(item)).toBe(false);
+      expect(panelOf(1)).toBeNull();
+      expect(grid.invalidateRowHeights).toHaveBeenCalledWith([0]);
+
+      // collapsing a row that is not expanded does nothing
+      plugin.collapseDetailView(item);
+      expect(grid.invalidateRowHeights).toHaveBeenCalledOnce();
+    });
+
+    it('collapses every expanded row with a single row height refresh', () => {
+      init();
+      plugin.expandDetailView(items[0]);
+      plugin.expandDetailView(items[2]);
+      vi.mocked(grid.invalidateRowHeights).mockClear();
+
+      plugin.collapseAll();
+
+      expect(plugin.getExpandedRows()).toEqual([]);
+      expect(grid.invalidateRowHeights).toHaveBeenCalledExactlyOnceWith([0, 2]);
+
+      plugin.collapseAll();
+      expect(grid.invalidateRowHeights).toHaveBeenCalledOnce();
+    });
+
+    it('keeps only one row open when singleRowExpand is enabled', () => {
+      options.singleRowExpand = true;
+      init();
+      plugin.expandDetailView(items[0]);
+      vi.mocked(grid.invalidateRowHeights).mockClear();
+
+      plugin.expandDetailView(items[1]);
+
+      expect(plugin.getExpandedRows()).toEqual([items[1]]);
+      expect(grid.invalidateRowHeights).toHaveBeenCalledExactlyOnceWith([0, 1]);
+    });
+
+    it('collapses existing details when setOptions turns singleRowExpand on, and not otherwise', () => {
+      init();
+      plugin.expandDetailView(item);
+      const collapse = vi.spyOn(plugin, 'collapseAll');
+
+      plugin.setOptions({ columnId: 'detail-toggle' });
+      expect(collapse).not.toHaveBeenCalled();
+
+      plugin.setOptions({ singleRowExpand: true });
+      expect(collapse).toHaveBeenCalledOnce();
+      expect(plugin.getExpandedRows()).toEqual([]);
+    });
+
+    it('stays open through sorting by default, and collapses all on sort with collapseAllOnSort', () => {
+      init();
+      plugin.expandDetailView(item);
+      grid.onSort.notify({ grid } as any);
+      expect(plugin.isExpanded(item)).toBe(true);
+      plugin.destroy();
+
+      plugin = new SlickRowDetailView({ ...options, collapseAllOnSort: true });
+      init();
+      plugin.expandDetailView(item);
+      grid.onSort.notify({ grid } as any);
+      expect(plugin.isExpanded(item)).toBe(false);
+    });
+
+    it('reuses the saved detail view on re-expand when loadOnce is enabled', () => {
+      options.loadOnce = true;
+      options.postTemplate = (detail) => `<input class="detail-input" value="${detail.name}">`;
+      init();
+      const asyncResponse = vi.fn();
+      plugin.onAsyncResponse.subscribe((_e, args) => asyncResponse(args.detailView));
+
+      plugin.expandDetailView(item);
+      respond(item);
+      renderRows();
+      panelOf(1)!.querySelector('input')!.setAttribute('value', 'edited');
+      plugin.collapseDetailView(item);
+
+      plugin.expandDetailView(item);
+      renderRows();
+
+      expect(options.process).toHaveBeenCalledOnce();
+      expect(asyncResponse).toHaveBeenLastCalledWith('<input class="detail-input" value="edited">');
+      expect(panelOf(1)!.querySelector('input')!.getAttribute('value')).toBe('edited');
+    });
+
+    it('reuses an async response received while collapsed when loadOnce is enabled', () => {
+      options.loadOnce = true;
+      options.postTemplate = (detail) => `<b>${detail.name}</b>`;
+      init();
+      respond(item);
+
+      plugin.expandDetailView(item);
+      renderRows();
+
+      expect(options.process).not.toHaveBeenCalled();
+      expect(panelOf(1)!.innerHTML).toBe('<b>First</b>');
+    });
+  });
+
+  describe('async response', () => {
+    it('renders the postTemplate in the mounted panel and notifies the end of the update', () => {
+      options.preTemplate = () => 'loading';
+      options.postTemplate = (detail) => `<b>${detail.name}</b>`;
+      init();
+      const endUpdate = vi.fn();
+      plugin.onAsyncEndUpdate.subscribe((_e, args) => endUpdate(args.item));
+      plugin.expandDetailView(item);
+      renderRows();
+      expect(panelOf(1)!.textContent).toBe('loading');
+
+      respond(item);
+
+      expect(panelOf(1)!.innerHTML).toBe('<b>First</b>');
+      expect(endUpdate).toHaveBeenCalledWith(item);
+      expect(dataView.updateItem).not.toHaveBeenCalled();
+    });
+
+    it('uses an explicit detailView and accepts the response as itemDetail', () => {
+      init();
+      plugin.expandDetailView(item);
+      renderRows();
+
+      plugin.onAsyncResponse.notify({ itemDetail: item, detailView: '<i>direct</i>' } as any);
+
+      expect(panelOf(1)!.innerHTML).toBe('<i>direct</i>');
+    });
+
+    it('throws when the response has no item', () => {
+      init();
+      expect(() => plugin.onAsyncResponse.notify({} as any)).toThrow(/requires the onAsyncResponse\(\) to supply "args.item"/);
+      expect(() => plugin.onAsyncResponse.notify(undefined as any)).toThrow(/args.item/);
+    });
+
+    it('replaces the row item when the process responds with a new item object', () => {
+      options.postTemplate = (detail) => detail.assignee;
+      init();
+      plugin.expandDetailView(item);
+      const detail = { ...item, assignee: 'Jane' };
+
+      respond(detail);
+      renderRows();
+
+      expect(dataView.updateItem).toHaveBeenCalledWith(1, detail);
+      expect(plugin.getExpandedRows()).toEqual([detail]);
+      expect(panelOf(1)!.textContent).toBe('Jane');
+    });
+
+    it('renders an HTMLElement detail content as a child of the panel', () => {
+      init();
+      plugin.expandDetailView(item);
+      const content = document.createElement('section');
+      respond(item, content);
+      renderRows();
+
+      expect(panelOf(1)!.firstElementChild).toBe(content);
+    });
+  });
+
+  describe('panel mounting', () => {
+    it('renders the panel inside its row, below the cells, and keeps the cells at the base row height', () => {
+      init();
+      plugin.expandDetailView(items[1]);
+      renderRows();
+
+      const rowNode = rowNodeOf(1);
+      const panel = panelOf(2)!;
+      expect(panel.parentElement).toBe(rowNode);
+      expect(panel.getAttribute('role')).toBe('region');
+      expect(rowNode.classList.contains('slick-row-detail-expanded')).toBe(true);
+      expect(rowNode.style.getPropertyValue('--slick-row-extra-height')).toBe(`${PANEL_HEIGHT}px`);
+      expect(panel.style.top).toBe('25px');
+      expect(panel.style.height).toBe(`${PANEL_HEIGHT}px`);
+      expect(rowNodeOf(0).classList.contains('slick-row-detail-expanded')).toBe(false);
+    });
+
+    it('moves the same panel element into a re-created row node, keeping its live content', () => {
+      options.postTemplate = () => '<input class="detail-input">';
+      init();
+      plugin.expandDetailView(item);
+      respond(item);
+      renderRows();
+      const panel = panelOf(1)!;
+      const input = panel.querySelector('input')!;
+      input.value = 'typed';
+      const sanitizeCalls = vi.mocked(grid.sanitizeHtmlString).mock.calls.length;
+
+      renderRows(); // the grid rebuilt every row
+
+      expect(panelOf(1)).toBe(panel);
+      expect(panel.parentElement).toBe(rowNodeOf(0));
+      expect(panel.querySelector('input')).toBe(input);
+      expect(input.value).toBe('typed');
+      expect(vi.mocked(grid.sanitizeHtmlString).mock.calls.length).toBe(sanitizeCalls);
+    });
+
+    it('does nothing on render when no row is expanded', () => {
+      init();
+      renderRows();
+      expect(canvas.querySelector('.slick-row-detail-container')).toBeNull();
+    });
+
+    it('anchors the panel to the visible part of the viewport', () => {
+      init();
+      plugin.expandDetailView(item);
+      renderRows();
+      vi.spyOn(viewport, 'getBoundingClientRect').mockReturnValue({ left: 100 } as DOMRect);
+      vi.spyOn(rowNodeOf(0), 'getBoundingClientRect').mockReturnValue({ left: -50 } as DOMRect);
+
+      grid.onScroll.notify({ scrollLeft: 150, scrollTop: 0, grid } as any);
+
+      expect(panelOf(1)!.style.left).toBe('150px');
+      expect(panelOf(1)!.style.width).toBe('500px');
+    });
+
+    it('repositions the panels on a horizontal scroll only', () => {
+      init();
+      plugin.expandDetailView(item);
+      renderRows();
+      const rowRect = vi.spyOn(rowNodeOf(0), 'getBoundingClientRect');
+
+      grid.onScroll.notify({ scrollLeft: 0, scrollTop: 100, grid } as any);
+      expect(rowRect).toHaveBeenCalledOnce(); // first scroll event: scrollLeft unknown until now
+
+      grid.onScroll.notify({ scrollLeft: 0, scrollTop: 200, grid } as any);
+      expect(rowRect).toHaveBeenCalledOnce();
+
+      grid.onScroll.notify({ scrollLeft: 30, scrollTop: 200, grid } as any);
+      expect(rowRect).toHaveBeenCalledTimes(2);
+    });
+
+    it('keeps the keys typed in the panel away from the grid keyboard navigation', () => {
+      init();
+      plugin.expandDetailView(item);
+      renderRows();
+      const gridKeyDown = vi.fn();
+      canvas.addEventListener('keydown', gridKeyDown);
+
+      panelOf(1)!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+      rowNodeOf(0).dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+
+      expect(gridKeyDown).toHaveBeenCalledOnce();
+      canvas.removeEventListener('keydown', gridKeyDown);
+    });
+  });
+
+  describe('viewport range notifications', () => {
+    it('notifies when an expanded row stops being rendered and when it comes back with its panel', () => {
+      init();
+      plugin.expandDetailView(item);
+      renderRows();
+      const panel = panelOf(1)!;
+      const out = vi.fn();
+      const back = vi.fn();
+      plugin.onRowOutOfViewportRange.subscribe((_e, args) => out({ rowId: args.rowId, rowIndex: args.rowIndex, ids: [...args.rowIdsOutOfViewport], expanded: args.expandedRows }));
+      plugin.onRowBackToViewportRange.subscribe((_e, args) => back({ rowId: args.rowId, rowIndex: args.rowIndex, ids: [...args.rowIdsOutOfViewport], inDom: !!panelOf(1) }));
+
+      renderRows([1, 2]);
+      expect(out).toHaveBeenCalledExactlyOnceWith({ rowId: 1, rowIndex: 0, ids: [1], expanded: [item] });
+      expect(panel.isConnected).toBe(false);
+
+      renderRows([2]);
+      expect(out).toHaveBeenCalledOnce();
+
+      renderRows([0, 1]);
+      expect(back).toHaveBeenCalledExactlyOnceWith({ rowId: 1, rowIndex: 0, ids: [], inDom: true });
+      expect(panelOf(1)).toBe(panel);
+    });
+
+    it('saves the detail view of a row leaving the rendered range unless saveDetailViewOnScroll is off', () => {
+      options.postTemplate = () => 'content';
+      init();
+      const save = vi.spyOn(plugin, 'saveDetailView');
+      plugin.expandDetailView(item);
+      respond(item);
+      renderRows();
+
+      renderRows([2]);
+      expect(save).toHaveBeenCalledWith(item);
+      plugin.destroy();
+
+      plugin = new SlickRowDetailView({ ...options, saveDetailViewOnScroll: false });
+      init();
+      const noSave = vi.spyOn(plugin, 'saveDetailView');
+      plugin.expandDetailView(item);
+      renderRows();
+      renderRows([2]);
+      expect(noSave).not.toHaveBeenCalled();
+    });
+
+    it('reports a row index of -1 for an expanded row that is no longer in the grid', () => {
+      init();
+      const out = vi.fn();
+      plugin.onRowOutOfViewportRange.subscribe((_e, args) => out(args.rowIndex));
+      plugin.expandDetailView({ id: 99, name: 'gone' });
+
+      renderRows();
+
+      expect(out).toHaveBeenCalledWith(-1);
+    });
+
+    it('forgets the out-of-viewport state of a collapsed row', () => {
+      init();
+      plugin.expandDetailView(item);
+      renderRows([1]);
+      const back = vi.fn();
+      plugin.onRowBackToViewportRange.subscribe(back);
+
+      plugin.collapseDetailView(item);
+      plugin.expandDetailView(item);
+      renderRows();
+
+      expect(back).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('saveDetailView and resizeDetailView', () => {
+    it('saves the panel HTML without re-rendering the live panel, even while its row is not rendered', () => {
+      init();
+      plugin.expandDetailView(item);
+      renderRows();
+      const panel = panelOf(1)!;
+      panel.innerHTML = '<p>edited</p>';
+      renderRows([1]);
+
+      plugin.saveDetailView(item);
+      renderRows();
+
+      expect(panelOf(1)).toBe(panel);
+      expect(panel.innerHTML).toBe('<p>edited</p>');
+      plugin.saveDetailView(items[1]); // not expanded: nothing to save
+    });
+
+    it('ignores resize requests without an item or a mounted panel', () => {
+      init();
+      plugin.resizeDetailView(undefined);
+      plugin.resizeDetailView(item);
+      plugin.expandDetailView(item);
+      vi.mocked(grid.invalidateRowHeights).mockClear();
+      plugin.resizeDetailView(item);
+
+      expect(grid.invalidateRowHeights).not.toHaveBeenCalled();
+    });
+
+    it('resizes the panel to its content height, capped by maxRows, and re-measures the row only when it changed', () => {
+      init();
+      plugin.expandDetailView(item);
+      renderRows();
+      const panel = panelOf(1)!;
+      panel.scrollTop = 0;
+      Object.defineProperty(panel, 'scrollHeight', { configurable: true, value: 140 });
+      vi.mocked(grid.invalidateRowHeights).mockClear();
+
+      plugin.resizeDetailView(item);
+      expect(grid.invalidateRowHeights).toHaveBeenCalledExactlyOnceWith([0]);
+      expect(gridOptions.rowHeightProvider!(grid, 0, item)).toBe(25 + 140);
+
+      plugin.resizeDetailView(item);
+      expect(grid.invalidateRowHeights).toHaveBeenCalledOnce();
+
+      plugin.setOptions({ maxRows: 4 });
+      plugin.resizeDetailView(item);
+      expect(gridOptions.rowHeightProvider!(grid, 0, item)).toBe(25 + 100);
     });
   });
 
   describe('detail selector formatter', () => {
+    const format = (row: number, dataContext: any) =>
+      (plugin.getColumnDefinition().formatter as any)(row, 0, null, columns[0], dataContext, grid);
+
+    it('renders an accessible expand button for a collapsed row without writing to the item', () => {
+      init();
+      const keysBefore = Object.keys(item);
+      const toggle = format(0, item) as HTMLElement;
+
+      expect(toggle.className).toBe('detailView-toggle expand ');
+      expect(toggle.getAttribute('aria-expanded')).toBe('false');
+      expect(toggle.dataset.rowDetailToggle).toBe('');
+      expect(Object.keys(item)).toEqual(keysBefore);
+    });
+
     it('renders an accessible collapse button for an expanded row, with the expandedClass', () => {
-      plugin = new SlickRowDetailView({ ...options, expandedClass: 'is-open', collapsedClass: 'is-closed' });
+      options.expandedClass = 'is-open';
+      options.collapsedClass = 'is-closed';
       init();
-      const formatter = plugin.getColumnDefinition().formatter!;
-      const collapsed = formatter(0, 0, null, columns[0], item, grid) as HTMLElement;
-      expect(collapsed.className).toBe('detailView-toggle expand is-closed');
+      expect((format(1, items[1]) as HTMLElement).className).toBe('detailView-toggle expand is-closed');
 
       plugin.expandDetailView(item);
-      const result = formatter(0, 0, null, columns[0], item, grid) as { html: HTMLElement };
+      const result = format(0, item) as { html: HTMLElement };
 
-      expect(result.html).toBeInstanceOf(HTMLElement);
       expect(result.html.className).toBe('detailView-toggle collapse is-open');
-      expect(result.html.getAttribute('role')).toBe('button');
-      expect(result.html.getAttribute('aria-label')).toBe('Collapse row details');
       expect(result.html.getAttribute('aria-expanded')).toBe('true');
-      expect(result.html.dataset.rowDetailToggle).toBe('');
     });
 
-    it('renders the expanded toggle without extra classes by default and nothing for padding rows', () => {
+    it('renders nothing for rows rejected by an expandableOverride', () => {
+      options.expandableOverride = (row) => row !== 1;
+      plugin = new SlickRowDetailView(options);
       init();
-      plugin.expandDetailView(item);
-      const formatter = plugin.getColumnDefinition().formatter!;
 
-      const result = formatter(0, 0, null, columns[0], item, grid) as { html: HTMLElement };
-      expect(result.html.className).toBe('detailView-toggle collapse ');
-      expect(formatter(1, 0, null, columns[0], items[1], grid)).toBe('');
-    });
-
-    it('keeps existing metadata of an item already initialized by the formatter', () => {
-      init();
-      const formatter = plugin.getColumnDefinition().formatter!;
-      formatter(0, 0, null, columns[0], item, grid);
-      item._sizePadding = 7;
-
-      formatter(0, 0, null, columns[0], item, grid);
-
-      expect(item._sizePadding).toBe(7);
+      expect(format(1, items[1])).toBe('');
+      expect(format(0, item)).not.toBe('');
     });
   });
 
   describe('click toggle', () => {
-    it('expands then collapses on successive selector clicks and reports the expanded rows after each toggle', () => {
+    it('expands then collapses on successive selector clicks and reports the new state after each toggle', () => {
       init();
+      const before = vi.fn();
       const after = vi.fn();
-      plugin.onAfterRowDetailToggle.subscribe((_e, args) => after(args.expandedRows.map((row: DetailItem) => row.id)));
-      formatterInit();
+      plugin.onBeforeRowDetailToggle.subscribe((_e, args) => before(args.expanded));
+      plugin.onAfterRowDetailToggle.subscribe((_e, args) => after({ expanded: args.expanded, rows: args.expandedRows.map((row: DetailItem) => row.id) }));
 
       grid.onClick.notify({ row: 0, cell: 0, grid }, clickEvent(toggleTarget()));
-      expect(plugin.getExpandedRows()).toEqual([item]);
-      expect(items).toHaveLength(5);
+      grid.onClick.notify({ row: 0, cell: 0, grid }, clickEvent(toggleTarget()));
+
+      expect(before.mock.calls).toEqual([[true], [false]]);
+      expect(after.mock.calls).toEqual([[{ expanded: true, rows: [1] }], [{ expanded: false, rows: [] }]]);
+    });
+
+    it('does not toggle when the before-toggle event returns false', () => {
+      init();
+      plugin.onBeforeRowDetailToggle.subscribe(() => false);
 
       grid.onClick.notify({ row: 0, cell: 0, grid }, clickEvent(toggleTarget()));
-      expect(plugin.getExpandedRows()).toEqual([]);
-      expect(items).toHaveLength(2);
-      expect(after.mock.calls).toEqual([[[1]], [[]]]);
+
+      expect(plugin.isExpanded(item)).toBe(false);
     });
 
     it('ignores clicks on the selector cell that are not on the toggle, and clicks on other columns', () => {
       init();
-      const before = vi.fn();
-      plugin.onBeforeRowDetailToggle.subscribe(before);
-      formatterInit();
-
-      grid.onClick.notify({ row: 0, cell: 0, grid }, clickEvent(document.createElement('div')));
+      grid.onClick.notify({ row: 0, cell: 0, grid }, clickEvent(document.createElement('span')));
       grid.onClick.notify({ row: 0, cell: 1, grid }, clickEvent(toggleTarget()));
 
-      expect(before).not.toHaveBeenCalled();
-      expect(plugin.getExpandedRows()).toEqual([]);
+      expect(plugin.isExpanded(item)).toBe(false);
+    });
+
+    it('expands from any column with useRowClick', () => {
+      options.useRowClick = true;
+      init();
+      grid.onClick.notify({ row: 1, cell: 1, grid }, clickEvent(document.createElement('span')));
+
+      expect(plugin.isExpanded(items[1])).toBe(true);
     });
 
     it('does not toggle and stops the event when the active edit cannot be committed', () => {
@@ -509,572 +738,201 @@ describe('SlickRowDetailView', () => {
 
       grid.onClick.notify({ row: 0, cell: 0, grid }, event);
 
-      expect(plugin.getExpandedRows()).toEqual([]);
-      expect(event.preventDefault).toHaveBeenCalledOnce();
-      expect(event.stopImmediatePropagation).toHaveBeenCalledOnce();
+      expect(plugin.isExpanded(item)).toBe(false);
+      expect(event.preventDefault).toHaveBeenCalled();
     });
 
     it('commits an active edit and then toggles', () => {
       init();
-      formatterInit();
       editorLock.isActive.mockReturnValue(true);
 
       grid.onClick.notify({ row: 0, cell: 0, grid }, clickEvent(toggleTarget()));
 
-      expect(editorLock.commitCurrentEdit).toHaveBeenCalledOnce();
-      expect(plugin.getExpandedRows()).toEqual([item]);
+      expect(editorLock.commitCurrentEdit).toHaveBeenCalled();
+      expect(plugin.isExpanded(item)).toBe(true);
     });
 
     it('does not toggle rows rejected by an expandableOverride set after construction', () => {
       init();
-      const override = vi.fn((row: number) => row !== 0);
-      plugin.expandableOverride(override);
-      const formatter = plugin.getColumnDefinition().formatter!;
+      plugin.expandableOverride((row) => row !== 0);
 
       grid.onClick.notify({ row: 0, cell: 0, grid }, clickEvent(toggleTarget()));
+      expect(plugin.isExpanded(item)).toBe(false);
 
-      expect(override).toHaveBeenCalledWith(0, item, grid);
-      expect(plugin.getExpandedRows()).toEqual([]);
-      expect(formatter(0, 0, null, columns[0], item, grid)).toBe('');
-      expect(formatter(1, 0, null, columns[0], items[1], grid)).toBeInstanceOf(HTMLElement);
+      // the toggle itself also checks the override (e.g. when a click handler calls it directly)
+      (plugin as any).toggleRowSelection(0, item);
+      expect(plugin.isExpanded(item)).toBe(false);
     });
 
     it('notifies the after-toggle event without toggling when a row click has no data item', () => {
-      plugin = new SlickRowDetailView({ ...options, useRowClick: true });
+      options.useRowClick = true;
       init();
       const after = vi.fn();
-      plugin.onAfterRowDetailToggle.subscribe(after);
+      plugin.onAfterRowDetailToggle.subscribe((_e, args) => after(args.expanded));
 
-      grid.onClick.notify({ row: 99, cell: 1, grid }, clickEvent(document.createElement('div')));
+      grid.onClick.notify({ row: 9, cell: 1, grid }, clickEvent(document.createElement('span')));
 
-      expect(after).toHaveBeenCalledOnce();
-      expect(dataView.insertItem).not.toHaveBeenCalled();
-    });
-
-    function formatterInit() {
-      plugin.getColumnDefinition().formatter!(0, 0, null, columns[0], item, grid);
-    }
-  });
-
-  describe('expand and collapse', () => {
-    it('builds padding rows that copy the parent column values and point back to the parent', () => {
-      init();
-      plugin.expandDetailView(item);
-
-      expect(items.map((row) => row.id)).toEqual([1, '1.1', '1.2', '1.3', 2]);
-      expect(items[2]).toEqual(expect.objectContaining({
-        id: '1.2', name: 'First', _collapsed: true, _isPadding: true, _parent: item, _offset: 2,
-      }));
-      expect(plugin.getFilterItem(items[2])).toBe(item);
-    });
-
-    it('renders the preTemplate while the async process runs', () => {
-      const preTemplate = vi.fn(() => '<span>Loading</span>');
-      plugin = new SlickRowDetailView({ ...options, preTemplate });
-      init();
-
-      plugin.expandDetailView(item);
-
-      expect(preTemplate).toHaveBeenCalledWith(item);
-      expect(item._detailContent).toBe('<span>Loading</span>');
-      expect(item._detailViewLoaded).toBe(false);
-    });
-
-    it('applies the postTemplate once a Promise-based process notifies its response', async () => {
-      const process = vi.fn(async (row: DetailItem) => {
-        await Promise.resolve();
-        plugin.onAsyncResponse.notify({ item: { ...row, extra: 'loaded' }, grid });
-      });
-      plugin = new SlickRowDetailView({
-        ...options,
-        process,
-        preTemplate: () => 'Loading',
-        postTemplate: (row: DetailItem) => `<b>${row.extra}</b>`,
-      });
-      init();
-      const asyncEnd = vi.fn();
-      plugin.onAsyncEndUpdate.subscribe((_e, args) => asyncEnd(args.item));
-
-      plugin.expandDetailView(item);
-      expect(item._detailContent).toBe('Loading');
-      await process.mock.results[0].value;
-
-      const loaded = plugin.getExpandedRows()[0];
-      expect(loaded).not.toBe(item);
-      expect(loaded).toEqual(expect.objectContaining({ id: 1, extra: 'loaded', _detailContent: '<b>loaded</b>', _detailViewLoaded: true }));
-      expect(items[0]).toBe(loaded);
-      expect(asyncEnd).toHaveBeenCalledWith(loaded);
-    });
-
-    it('keeps the preTemplate when a Promise-based process rejects', async () => {
-      const failure = Promise.reject(new Error('server down'));
-      failure.catch(() => { /* handled by the caller's own code */ });
-      const asyncEnd = vi.fn();
-      plugin = new SlickRowDetailView({ ...options, process: vi.fn(() => failure), preTemplate: () => 'Loading' });
-      init();
-      plugin.onAsyncEndUpdate.subscribe(asyncEnd);
-
-      expect(() => plugin.expandDetailView(item)).not.toThrow();
-      await expect(failure).rejects.toThrow('server down');
-
-      expect(item._detailContent).toBe('Loading');
-      expect(item._detailViewLoaded).toBe(false);
-      expect(plugin.getExpandedRows()).toEqual([item]);
-      expect(asyncEnd).not.toHaveBeenCalled();
-    });
-
-    it('accepts the response as itemDetail and throws when the response has no item', () => {
-      plugin = new SlickRowDetailView({ ...options, postTemplate: (row: DetailItem) => `<i>${row.name}</i>` });
-      init();
-      plugin.expandDetailView(item);
-      const second = items[4];
-      plugin.expandDetailView(second);
-
-      plugin.onAsyncResponse.notify({ itemDetail: item, grid } as any);
-      expect(item._detailContent).toBe('<i>First</i>');
-      expect(plugin.getExpandedRows()).toEqual([item, second]);
-      expect(second._detailViewLoaded).toBe(false);
-
-      let thrown: unknown;
-      try {
-        plugin.onAsyncResponse.notify({ grid } as any);
-      } catch (error) {
-        thrown = error;
-      }
-      expect(thrown).toMatch(/requires the onAsyncResponse\(\) to supply "args.item"/);
-    });
-
-    it('keeps only one row open when singleRowExpand is enabled', () => {
-      plugin = new SlickRowDetailView({ ...options, singleRowExpand: true });
-      init();
-      const second = items[1];
-
-      plugin.expandDetailView(item);
-      plugin.expandDetailView(second);
-
-      expect(plugin.getExpandedRows()).toEqual([second]);
-      expect(item._collapsed).toBe(true);
-      expect(items.map((row) => row.id)).toEqual([1, 2, '2.1', '2.2', '2.3']);
-    });
-
-    it('collapses every expanded row in a single data view update', () => {
-      init();
-      plugin.expandDetailView(item);
-      plugin.expandDetailView(items[4]);
-      vi.mocked(dataView.beginUpdate).mockClear();
-      vi.mocked(dataView.endUpdate).mockClear();
-
-      plugin.collapseAll();
-
-      expect(plugin.getExpandedRows()).toEqual([]);
-      expect(items.map((row) => row.id)).toEqual([1, 2]);
-      expect(dataView.beginUpdate).toHaveBeenCalledOnce();
-      expect(dataView.endUpdate).toHaveBeenCalledOnce();
-    });
-
-    it('does not collapse anything when setOptions leaves singleRowExpand off', () => {
-      init();
-      plugin.expandDetailView(item);
-
-      plugin.setOptions({ panelRows: 4 });
-
-      expect(plugin.getOptions().panelRows).toBe(4);
-      expect(plugin.getExpandedRows()).toEqual([item]);
-    });
-
-    it('reloads the detail when it was marked loaded but has no content', () => {
-      plugin = new SlickRowDetailView({ ...options, loadOnce: true, preTemplate: () => 'Loading' });
-      init();
-      item._detailViewLoaded = true;
-
-      plugin.expandDetailView(item);
-
-      expect(item._detailViewLoaded).toBe(false);
-      expect(item._detailContent).toBe('Loading');
-      expect(options.process).toHaveBeenCalledOnce();
-    });
-
-    it('reuses the saved detail view on re-expand when loadOnce is enabled', () => {
-      plugin = new SlickRowDetailView({ ...options, loadOnce: true, preTemplate: () => 'Loading', postTemplate: (row: DetailItem) => `<p>${row.name}</p>` });
-      init();
-      plugin.expandDetailView(item);
-      plugin.onAsyncResponse.notify({ item, grid });
-      mountPanels();
-      panelOf(1)!.querySelector('p')!.textContent = 'Edited';
-
-      plugin.collapseDetailView(item);
-      expect(item._detailContent).toBe('<p>Edited</p>');
-      expect(panelOf(1)).toBeNull();
-
-      const asyncResponse = vi.fn();
-      plugin.onAsyncResponse.subscribe((_e, args) => asyncResponse(args.detailView));
-      plugin.expandDetailView(item);
-
-      expect(options.process).toHaveBeenCalledOnce();
-      expect(asyncResponse).toHaveBeenCalledWith('<p>Edited</p>');
-      expect(item._detailContent).toBe('<p>Edited</p>');
-      expect(items.map((row) => row.id)).toEqual([1, '1.1', '1.2', '1.3', 2]);
-    });
-
-    it('stores all plugin metadata under a custom keyPrefix', () => {
-      plugin = new SlickRowDetailView({ ...options, keyPrefix: '__' });
-      init();
-
-      plugin.expandDetailView(item);
-
-      expect(item).toEqual(expect.objectContaining({ __collapsed: false, __sizePadding: 3, __height: 75 }));
-      expect(item._collapsed).toBeUndefined();
-      expect(items[1]).toEqual(expect.objectContaining({ __isPadding: true, __parent: item, __offset: 1 }));
-      expect(plugin.getFilterItem(items[1])).toBe(item);
-
-      plugin.collapseDetailView(item);
-      expect(item.__collapsed).toBe(true);
-      expect(items).toHaveLength(2);
-    });
-
-    it('uses the data view id property name once items are set', () => {
-      init();
-      vi.mocked(dataView.getIdPropertyName).mockReturnValue('uid');
-      dataView.onSetItemsCalled.notify({ idProperty: 'uid', itemCount: 2 } as any);
-      item.uid = 'u1';
-
-      plugin.expandDetailView(item);
-      expect(dataView.insertItem).toHaveBeenCalledWith(expect.any(Number), expect.objectContaining({ uid: 'u1.1' }));
-
-      plugin.collapseDetailView(item);
-      expect(dataView.deleteItem).toHaveBeenCalledWith('u1.1');
-      expect(plugin.getExpandedRows()).toEqual([]);
+      expect(after).toHaveBeenCalledWith(false);
     });
   });
 
-  describe('overlay panels', () => {
-    it('renders an HTMLElement detail content as a child of the panel', () => {
-      init();
-      plugin.expandDetailView(item);
-      const content = document.createElement('section');
-      item._detailContent = content;
-
-      mountPanels();
-
-      expect(panelOf(1)!.firstChild).toBe(content);
-    });
-
-    it('re-renders the panel content only when the detail content changes', () => {
-      init();
-      plugin.expandDetailView(item);
-      item._detailContent = 'first';
-      mountPanels();
-      const panel = panelOf(1)!;
-      const input = panel.appendChild(document.createElement('input'));
-
-      mountPanels();
-      expect(panel.contains(input)).toBe(true);
-
-      item._detailContent = 'second';
-      mountPanels();
-      expect(panelOf(1)).toBe(panel);
-      expect(panel.innerHTML).toBe('second');
-      expect(grid.sanitizeHtmlString).toHaveBeenLastCalledWith('second');
-    });
-
-    it('removes the panel when its padding rows leave the rendered range and remounts it when they return', () => {
-      init();
-      plugin.expandDetailView(item);
-      mountPanels();
-      expect(panelOf(1)).not.toBeNull();
-
-      vi.mocked(grid.getRenderedRange).mockReturnValue({ top: 10, bottom: 30, leftPx: 0, rightPx: 600 });
-      mountPanels();
-      expect(panelOf(1)).toBeNull();
-
-      vi.mocked(grid.getRenderedRange).mockReturnValue({ top: 3, bottom: 30, leftPx: 0, rightPx: 600 });
-      mountPanels();
-      expect(panelOf(1)).not.toBeNull();
-    });
-
-    it('removes the panel of an expanded row that is no longer in the data view', () => {
-      init();
-      plugin.expandDetailView(item);
-      mountPanels();
-
-      items.splice(0, 4);
-      mountPanels();
-
-      expect(panelOf(1)).toBeNull();
-    });
-
-    it('skips rendering when the grid has no canvas', () => {
-      init();
-      plugin.expandDetailView(item);
-      vi.mocked(grid.getCanvases).mockReturnValueOnce([] as any);
-
-      mountPanels();
-
-      expect(panelOf(1)).toBeNull();
-    });
-
-    it('falls back to the row top when the first padding cell has no node box', () => {
-      init();
-      plugin.expandDetailView(item);
-      vi.mocked(grid.getCellNodeBox).mockReturnValueOnce(null);
-      vi.mocked(grid.getRowTop).mockReturnValueOnce(40);
-
-      mountPanels();
-
-      expect(panelOf(1)!.style.top).toBe('40px');
-    });
-
-    it('anchors the panel to the visible part of the canvas', () => {
-      init();
-      plugin.expandDetailView(item);
-      const viewportRect = vi.spyOn(viewport, 'getBoundingClientRect').mockReturnValue({ left: 100 } as DOMRect);
-      const canvasRect = vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({ left: -50 } as DOMRect);
-
-      try {
-        mountPanels();
-        expect(panelOf(1)!.style.left).toBe('150px');
-        expect(panelOf(1)!.style.width).toBe('500px');
-      } finally {
-        viewportRect.mockRestore();
-        canvasRect.mockRestore();
-      }
-    });
-
-    it('re-renders the panels on a horizontal scroll only', () => {
-      init();
-      plugin.expandDetailView(item);
-      mountPanels();
-      grid.onScroll.notify({ scrollLeft: 0, scrollTop: 0, grid } as any);
-      const panel = panelOf(1)!;
-
-      panel.remove();
-      grid.onScroll.notify({ scrollLeft: 0, scrollTop: 50, grid } as any);
-      expect(panel.isConnected).toBe(false);
-
-      grid.onScroll.notify({ scrollLeft: 120, scrollTop: 50, grid } as any);
-      expect(panel.parentElement).toBe(canvas);
-
-      panel.remove();
-      grid.onScroll.notify({ scrollLeft: 120, scrollTop: 80, grid } as any);
-      expect(panel.isConnected).toBe(false);
-    });
-  });
-
-  describe('saveDetailView and resizeDetailView', () => {
-    it('saves the mounted panel HTML into the item without re-rendering the live panel', () => {
-      init();
-      plugin.expandDetailView(item);
-      item._detailContent = '<input>';
-      mountPanels();
-      const input = panelOf(1)!.querySelector('input')!;
-      input.setAttribute('value', 'typed');
-
-      plugin.saveDetailView(item);
-      mountPanels();
-
-      expect(item._detailContent).toBe('<input value="typed">');
-      expect(panelOf(1)!.querySelector('input')).toBe(input);
-    });
-
-    it('leaves the item untouched when its panel is not mounted', () => {
-      init();
-      plugin.expandDetailView(item);
-      item._detailContent = 'original';
-
-      plugin.saveDetailView(item);
-
-      expect(item._detailContent).toBe('original');
-    });
-
-    it('ignores resize requests without an item or a mounted panel', () => {
-      init();
-      plugin.expandDetailView(item);
-      vi.mocked(dataView.deleteItem).mockClear();
-
-      plugin.resizeDetailView(undefined);
-      plugin.resizeDetailView(item);
-
-      expect(dataView.deleteItem).not.toHaveBeenCalled();
-      expect(item._sizePadding).toBe(3);
-    });
-
-    it('recomputes padding rows from the panel content height and grows the row buffer', () => {
-      init();
-      plugin.expandDetailView(item);
-      item._detailContent = '<div>Tall</div>';
-      mountPanels();
-      const panel = panelOf(1)!;
-      panel.scrollTop = 0;
-      Object.defineProperty(panel, 'scrollHeight', { configurable: true, value: 200 });
-
-      plugin.resizeDetailView(item);
-
-      // 200px / 25px = 8 rows -> ceil(8 * 2 * 13 / 25) = 9 padding rows
-      expect(item._sizePadding).toBe(9);
-      expect(item._height).toBe(200);
-      expect(items).toHaveLength(11);
-      expect(items[9]).toEqual(expect.objectContaining({ id: '1.9', _parent: item }));
-      expect(gridOptions.minRowBuffer).toBe(12);
-      expect(panel.style.top).toBe('25px');
-      expect(panel.style.height).toBe('225px');
-      expect(item._detailContent).toBe('<div>Tall</div>');
-    });
-
-    it('caps resized padding with maxRows and keeps the row buffer when it is large enough', () => {
-      plugin = new SlickRowDetailView({ ...options, maxRows: 2 });
-      init();
-      plugin.expandDetailView(item);
-      mountPanels();
-      Object.defineProperty(panelOf(1)!, 'scrollHeight', { configurable: true, value: 500 });
-
-      plugin.resizeDetailView(item);
-
-      expect(item._sizePadding).toBe(2);
-      expect(items.map((row) => row.id)).toEqual([1, '1.1', '1.2', 2]);
-      expect(gridOptions.minRowBuffer).toBe(5);
-      expect(panelOf(1)!.style.height).toBe('50px');
-    });
-  });
-
-  describe('viewport range notifications', () => {
-    const scrollTo = (top: number, bottom: number) => {
-      vi.mocked(grid.getRenderedRange).mockReturnValue({ top, bottom, leftPx: 0, rightPx: 600 });
-      grid.onScroll.notify({ scrollLeft: 0, scrollTop: top * 25, grid } as any);
+  describe('keyboard toggle', () => {
+    const toggleCell = () => {
+      const cell = document.createElement('div');
+      const toggle = toggleTarget();
+      toggle.dataset.rowDetailToggle = '';
+      cell.appendChild(toggle);
+      vi.mocked(grid.getCellNode).mockReturnValue(cell as HTMLDivElement);
+      return toggle;
     };
 
-    it('notifies when a row scrolls out of the top and comes back when scrolling up', () => {
-      vi.useFakeTimers();
+    it('activates the toggle with Enter or Space on the selector cell', () => {
       init();
-      plugin.expandDetailView(item);
-      mountPanels();
-      const out = vi.fn();
-      const back = vi.fn();
-      plugin.onRowOutOfViewportRange.subscribe((_e, args) => out({ rowId: args.rowId, rowIndex: args.rowIndex, ids: [...args.rowIdsOutOfViewport] }));
-      plugin.onRowBackToViewportRange.subscribe((_e, args) => back({ rowId: args.rowId, ids: [...args.rowIdsOutOfViewport] }));
+      const toggle = toggleCell();
+      const click = vi.spyOn(toggle, 'click');
+      const enter = keyEvent('Enter');
+      const space = keyEvent(' ');
 
-      scrollTo(10, 30);
-      expect(out).toHaveBeenCalledWith({ rowId: 1, rowIndex: 0, ids: [1] });
+      grid.onKeyDown.notify({ row: 0, cell: 0, grid }, enter);
+      grid.onKeyDown.notify({ row: 0, cell: 0, grid }, space);
 
-      scrollTo(10, 30);
-      expect(out).toHaveBeenCalledOnce();
-
-      scrollTo(0, 20);
-      mountPanels(); // the grid renders after the scroll and remounts the panel
-      expect(back).not.toHaveBeenCalled();
-      vi.advanceTimersByTime(100);
-      expect(back).toHaveBeenCalledWith({ rowId: 1, ids: [] });
+      expect(click).toHaveBeenCalledTimes(2);
+      expect(enter.preventDefault).toHaveBeenCalled();
+      expect(space.stopImmediatePropagation).toHaveBeenCalled();
     });
 
-    it('does not report a row back in range until its panel exists in the DOM', () => {
-      vi.useFakeTimers();
+    it('ignores other keys, other columns, an active editor, panel targets and rows without a toggle', () => {
       init();
-      plugin.expandDetailView(item);
-      const back = vi.fn();
-      plugin.onRowBackToViewportRange.subscribe(back);
+      const toggle = toggleCell();
+      const click = vi.spyOn(toggle, 'click');
+      const panel = document.createElement('div');
+      panel.className = 'slick-row-detail-container';
+      const input = document.createElement('input');
+      panel.appendChild(input);
 
-      scrollTo(10, 30);
-      scrollTo(0, 20);
-      vi.advanceTimersByTime(100);
+      grid.onKeyDown.notify({ row: 0, cell: 0, grid }, keyEvent('a'));
+      grid.onKeyDown.notify({ row: 0, cell: 1, grid }, keyEvent('Enter'));
+      grid.onKeyDown.notify({ row: 0, cell: 0, grid }, keyEvent('Enter', input));
+      editorLock.isActive.mockReturnValue(true);
+      grid.onKeyDown.notify({ row: 0, cell: 0, grid }, keyEvent('Enter'));
+      editorLock.isActive.mockReturnValue(false);
+      vi.mocked(grid.getCellNode).mockReturnValue(document.createElement('div') as HTMLDivElement);
+      const noToggle = keyEvent('Enter', {} as EventTarget);
+      grid.onKeyDown.notify({ row: 0, cell: 0, grid }, noToggle);
 
-      expect(back).not.toHaveBeenCalled();
-    });
-
-    it('notifies when a row scrolls out of the bottom while scrolling up and back in while scrolling down', () => {
-      vi.useFakeTimers();
-      init();
-      const second = items[1];
-      plugin.expandDetailView(second);
-      const out = vi.fn();
-      const back = vi.fn();
-      plugin.onRowOutOfViewportRange.subscribe((_e, args) => out(args.rowId));
-      plugin.onRowBackToViewportRange.subscribe((_e, args) => back(args.rowId));
-
-      scrollTo(0, 20);
-      expect(out).not.toHaveBeenCalled();
-
-      scrollTo(0, 3);
-      expect(out).toHaveBeenCalledWith(2);
-
-      scrollTo(1, 8);
-      mountPanels();
-      vi.advanceTimersByTime(100);
-      expect(back).toHaveBeenCalledWith(2);
-    });
-
-    it('saves the detail view of rows near the buffer edge when saveDetailViewOnScroll is on', () => {
-      init();
-      plugin.expandDetailView(item);
-      item._detailContent = 'initial';
-      mountPanels();
-      panelOf(1)!.innerHTML = 'edited';
-
-      scrollTo(2, 22);
-
-      expect(item._detailContent).toBe('edited');
-    });
-
-    it('does not save the detail view on scroll when saveDetailViewOnScroll is off', () => {
-      plugin = new SlickRowDetailView({ ...options, saveDetailViewOnScroll: false });
-      init();
-      plugin.expandDetailView(item);
-      item._detailContent = 'initial';
-      mountPanels();
-      panelOf(1)!.innerHTML = 'edited';
-
-      scrollTo(2, 22);
-      scrollTo(0, 2);
-
-      expect(item._detailContent).toBe('initial');
-    });
-
-    it('uses the rendered row count with useSimpleViewportCalc', () => {
-      vi.useFakeTimers();
-      plugin = new SlickRowDetailView({ ...options, useSimpleViewportCalc: true });
-      init();
-      plugin.expandDetailView(item);
-      grid.onRendered.notify({ startRow: 0, endRow: 10, grid });
-      const out = vi.fn();
-      const back = vi.fn();
-      plugin.onRowOutOfViewportRange.subscribe((_e, args) => out([...args.rowIdsOutOfViewport]));
-      plugin.onRowBackToViewportRange.subscribe((_e, args) => back([...args.rowIdsOutOfViewport]));
-
-      // |bottom - rowBuffer(4) - rowIndex(0)| must exceed twice the 10 rendered rows
-      scrollTo(5, 24);
-      expect(out).not.toHaveBeenCalled();
-
-      scrollTo(30, 50);
-      expect(out).toHaveBeenCalledWith([1]);
-
-      scrollTo(0, 20);
-      mountPanels();
-      vi.advanceTimersByTime(100);
-      expect(back).toHaveBeenCalledWith([]);
-    });
-
-    it('ignores rendered events without an end row for the simple viewport calculation', () => {
-      plugin = new SlickRowDetailView({ ...options, useSimpleViewportCalc: true });
-      init();
-      plugin.expandDetailView(item);
-      grid.onRendered.notify({ startRow: 0, endRow: 0, grid });
-      const out = vi.fn();
-      plugin.onRowOutOfViewportRange.subscribe(out);
-
-      // with no rendered row count every row away from the bottom edge is out of range
-      scrollTo(0, 5);
-
-      expect(out).toHaveBeenCalledOnce();
+      expect(click).not.toHaveBeenCalled();
+      expect(noToggle.preventDefault).not.toHaveBeenCalled();
     });
   });
 
-  it('stops reacting to grid and data view events once destroyed', () => {
-    init();
-    plugin.getColumnDefinition().formatter!(0, 0, null, columns[0], item, grid);
+  describe('data providers', () => {
+    it('uses the data view id property name', () => {
+      vi.mocked(dataView.getIdPropertyName).mockReturnValue('num');
+      items.splice(0, items.length, { id: 'a', num: 10, name: 'Ten' } as DetailItem);
+      init();
 
-    plugin.destroy();
-    grid.onClick.notify({ row: 0, cell: 0, grid }, clickEvent(toggleTarget()));
-    dataView.onRowCountChanged.notify({ previous: 2, current: 2, itemCount: 2, dataView, callingOnRowsChanged: false });
+      plugin.expandDetailView(items[0]);
 
-    expect(plugin.getExpandedRows()).toEqual([]);
-    expect(grid.updateRowCount).not.toHaveBeenCalled();
+      expect(plugin.isExpanded(10)).toBe(true);
+      expect(plugin.isExpanded('a')).toBe(false);
+    });
+
+    it('works with a plain array provider, looking rows up by id', () => {
+      gridData = items;
+      init();
+
+      plugin.expandDetailView(items[2]);
+      expect(grid.invalidateRowHeights).toHaveBeenCalledWith([2]);
+
+      plugin.expandDetailView({ id: 99, name: 'missing' });
+      expect(grid.invalidateRowHeights).toHaveBeenCalledOnce();
+
+      renderRows();
+      expect(panelOf(3)?.parentElement).toBe(rowNodeOf(2));
+    });
+
+    it('wires the DataView change events to the grid', () => {
+      init();
+
+      dataView.onRowCountChanged.notify({} as any);
+      expect(grid.updateRowCount).toHaveBeenCalledOnce();
+      expect(grid.render).toHaveBeenCalledOnce();
+
+      dataView.onRowsChanged.notify({ rows: [1, 2] });
+      expect(grid.invalidateRows).toHaveBeenCalledWith([1, 2]);
+      expect(grid.render).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not wire anything for a provider without the DataView events', () => {
+      gridData = items;
+      init();
+      dataView.onRowCountChanged.notify({} as any);
+      expect(grid.updateRowCount).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getFilterItem (deprecated)', () => {
+    it('returns the item unchanged and warns once', () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      init();
+
+      expect(plugin.getFilterItem(item)).toBe(item);
+      expect(plugin.getFilterItem(items[1])).toBe(items[1]);
+      expect(warn).toHaveBeenCalledOnce();
+      warn.mockRestore();
+    });
+  });
+
+  describe('destroy', () => {
+    it('removes the panels, restores the user row height provider and re-measures the rows', () => {
+      const userProvider = vi.fn(() => 30);
+      gridOptions.rowHeightProvider = userProvider;
+      init();
+      plugin.expandDetailView(item);
+      renderRows();
+      vi.mocked(grid.invalidateRowHeights).mockClear();
+
+      plugin.destroy();
+
+      expect(panelOf(1)).toBeNull();
+      expect(gridOptions.rowHeightProvider).toBe(userProvider);
+      expect(grid.invalidateRowHeights).toHaveBeenCalledExactlyOnceWith();
+      expect(plugin.getExpandedRows()).toEqual([]);
+    });
+
+    it('does not re-measure the rows while the grid itself is being destroyed or when nothing was expanded', () => {
+      init();
+      plugin.destroy();
+      expect(grid.invalidateRowHeights).not.toHaveBeenCalled();
+
+      plugin = new SlickRowDetailView(options);
+      init();
+      plugin.expandDetailView(item);
+      vi.mocked(grid.invalidateRowHeights).mockClear();
+      grid.onBeforeDestroy.notify({ grid });
+      plugin.destroy();
+      expect(grid.invalidateRowHeights).not.toHaveBeenCalled();
+    });
+
+    it('leaves a provider replaced by someone else alone', () => {
+      init();
+      const other = () => 10;
+      gridOptions.rowHeightProvider = other;
+      plugin.destroy();
+      expect(gridOptions.rowHeightProvider).toBe(other);
+    });
+
+    it('stops reacting to grid and data view events once destroyed', () => {
+      init();
+      plugin.destroy();
+
+      grid.onClick.notify({ row: 0, cell: 0, grid }, clickEvent(toggleTarget()));
+      dataView.onRowsChanged.notify({ rows: [0] });
+      plugin.expandDetailView(item);
+      renderRows();
+
+      expect(grid.invalidateRows).not.toHaveBeenCalled();
+      expect(panelOf(1)).toBeNull();
+    });
   });
 });

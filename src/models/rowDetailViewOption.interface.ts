@@ -5,7 +5,10 @@ export interface RowDetailViewOption {
   /** Defaults to True, do we always render/reRender the column */
   alwaysRenderColumn?: boolean;
 
-  /** Defaults to true, which will collapse all row detail views when user calls a sort. Unless user implements a sort to deal with padding */
+  /**
+   * Defaults to false. When enabled, all row detail views are collapsed whenever the grid sorts.
+   * @deprecated Expanded rows are tracked by id and stay open through sorting and filtering, so this is no longer needed.
+   */
   collapseAllOnSort?: boolean;
 
   /** Extra classes to be added to the collapse Toggle */
@@ -27,21 +30,27 @@ export interface RowDetailViewOption {
   /** Extra classes to be added to the expanded Toggle */
   expandedClass?: string;
 
-  /** Defaults to '_', prefix used for all the plugin metadata added to the item object (meta e.g.: padding, collapsed, parent) */
+  /**
+   * @deprecated No longer used: the plugin keeps its expanded state by row id and writes nothing onto the items.
+   * Use `isExpanded(item)` or the `expanded` property of the toggle events instead of reading `item._collapsed`.
+   */
   keyPrefix?: string;
 
   /** Defaults to false, when True will load the data once and then reuse it. */
   loadOnce?: boolean;
 
-  /** Defaults to null, do we want to defined a maximum number of rows to show. */
+  /** Defaults to undefined, caps the detail panel height at `maxRows * rowHeight` pixels. */
   maxRows?: number;
 
   /**
-   * How many grid rows do we want to use for the detail panel view
-   * also note that the detail view adds an extra 1 row for padding purposes
-   * so if you choose 4 panelRows, the display will in fact use 5 rows
+   * Size of the detail panel, expressed in template lines (13px each, twice the line count, rounded
+   * up to whole grid rows): the panel is `Math.ceil(panelRows * 26 / rowHeight) * rowHeight` pixels tall.
+   * The expanded row grows by that height; no extra rows are inserted in the data. Ignored when `panelHeight` is set.
    */
   panelRows: number;
+
+  /** Optional exact detail panel height in pixels; takes precedence over `panelRows` (still capped by `maxRows`). */
+  panelHeight?: number;
 
   /**
    * Optionally pass your Parent Component reference to your Child Component (row detail component).
@@ -61,7 +70,10 @@ export interface RowDetailViewOption {
   /** Defaults to false, which will limit expanded row to only 1 at a time (it will close all other rows before opening new one). */
   singleRowExpand?: boolean;
 
-  /** Defaults to false, which will use a simpler way of calculating when rows become out (or back) of viewport range. */
+  /**
+   * @deprecated No longer used: an expanded row is a single grid row, so it is out of the viewport range exactly
+   * when the grid stops rendering it, and only that calculation remains.
+   */
   useSimpleViewportCalc?: boolean;
 
   /** no defaults, show a tooltip text while hovering the row detail icon */
@@ -126,6 +138,9 @@ export interface OnAfterRowDetailToggleArgs {
   /** Item data context object */
   item: any;
 
+  /** Whether the row detail is now expanded */
+  expanded: boolean;
+
   /** Array of the Expanded Row Ids */
   expandedRows: Array<number | string>;
 
@@ -137,6 +152,9 @@ export interface OnAfterRowDetailToggleArgs {
 export interface OnBeforeRowDetailToggleArgs {
   /** Item data context object */
   item: any;
+
+  /** Whether the row detail is about to be expanded (`true`) or collapsed (`false`) */
+  expanded: boolean;
 
   /** Reference to the Slick grid object */
   grid: SlickGrid;

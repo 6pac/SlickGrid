@@ -107,7 +107,8 @@
         <li>User can override the logic to display the expandable icon with "expandableOverride". e.g. every 2nd rows is selectable.</li>
         <li>"useRowClick: True" to toggle from any column.</li>
         <li>"useRowClick: False" to toggle from the toggle icon only.</li>
-        <li>"panelRows: 4" DetailView is (RowHeight * 4).</li>
+        <li>An expanded row is a single, taller grid row (variable row height): sorting and filtering keep the details open.</li>
+        <li>"panelRows: 6" sets the panel height (or use "panelHeight" in pixels).</li>
         <li>"loadOnce: True" Try to shrink and reopen the same row.</li>
         <li>"loadOnce: False DEFAULT" Will call load every time row is expanded.</li>
         <li>"singleRowExpand: True" Multiple rows can be expanded at any time.</li>
@@ -268,10 +269,6 @@
         if (columnId !== undefined && columnFilters[columnId] !== "") {
           var column = grid.getColumns()[grid.getColumnIndex(columnId)];
 
-          // IMPORTANT with Row Detail View plugin
-          // if the row is a padding row, we just get the value we're filtering on from it's parent
-          item = detailView.getFilterItem(item);
-
           if (item[column.field] !== undefined) {
             var filterResult = typeof item[column.field].indexOf === 'function'
               ? (item[column.field].indexOf(columnFilters[columnId]) === -1)
@@ -396,9 +393,7 @@
         process: simulateServerCall,
         useRowClick: true,
 
-        // how many grid rows do we want to use for the detail panel
-        // also note that the detail view adds an extra 1 row for padding purposes
-        // example, if you choosed 6 panelRows, the display will in fact use 5 rows
+        // height of the detail panel, the expanded row grows by that height (use "panelHeight" for an exact pixel height)
         panelRows: 6,
 
         // make only every 2nd row an expandable row,
@@ -429,10 +424,8 @@
 
       detailView.onAfterRowDetailToggle.subscribe(function(e, args) {
         console.log('after toggling row detail', args.item);
-        if (args.item._collapsed) {
+        if (!args.expanded) {
           destroyAssigneeOnClick(args.item.id);
-        } else {
-
         }
       });
 

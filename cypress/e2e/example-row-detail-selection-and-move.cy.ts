@@ -31,13 +31,16 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
     });
 
     it('should drag opened Row Detail to another valid position in the grid', () => {
-        cy.get('[style*="transform: translateY(25px);"] > .slick-cell.cell-reorder').as('moveIconTask1');
+        // the expanded Task 3 is a single row of 25px + its 200px panel (no padding rows below it)
+        cy.get('[style*="transform: translateY(75px);"]').should('have.class', 'slick-row-detail-expanded').and('have.css', 'height', '225px');
         cy.get('[style*="transform: translateY(75px);"] > .slick-cell.cell-reorder').as('moveIconTask3');
-        cy.get('[style*="transform: translateY(100px);"]').as('expandIconTask4');
 
         cy.get('@moveIconTask3')
             .trigger('mousedown', { button: 0, force: true })
             .trigger('mousemove', 'bottomRight');
+
+        // the example collapses the row details as soon as a move starts, which brings Task 4 back to 100px
+        cy.get('.slick-row-detail-expanded:not(.slick-reorder-shadow-row)').should('not.exist');
 
         cy.get('[style*="transform: translateY(100px);"]')
             .trigger('mousemove', 'bottomRight', { force: true });

@@ -5813,6 +5813,95 @@ describe('SlickGrid core file', () => {
         expect(grid.getRowHeight(1)).toBe(70);
       });
 
+      it('should only re-render the given rows and move the others when invalidateRowHeights() receives rows', () => {
+        const providerHeights = [25, 25, 25];
+        const rowHeightProvider = (_grid: SlickGrid, row: number) => providerHeights[row];
+        grid = new SlickGrid<any, Column>(
+          container,
+          [
+            { id: 0, firstName: 'John' },
+            { id: 1, firstName: 'Jane' },
+            { id: 2, firstName: 'Jack' },
+          ],
+          [{ id: 'firstName', field: 'firstName', name: 'First Name' }] as Column[],
+          { ...defaultOptions, enableVariableRowHeight: true, rowHeight: 25, rowHeightProvider }
+        );
+        const rowNode = (row: number) => container.querySelector(`.slick-row[data-row="${row}"]`) as HTMLDivElement;
+        const row0 = rowNode(0);
+        const row2 = rowNode(2);
+        const canvasHeight = (container.querySelector('.grid-canvas') as HTMLDivElement).style.height;
+        const invalidateSpy = vi.spyOn(grid, 'invalidate');
+
+        providerHeights[1] = 100;
+        grid.invalidateRowHeights([1]);
+
+        expect(invalidateSpy).not.toHaveBeenCalled();
+        expect(grid.getRowHeight(1)).toBe(100);
+        expect(rowNode(1).style.height).toBe('100px');
+        // the rows that were not invalidated keep their DOM node but move to their new position
+        expect(rowNode(0)).toBe(row0);
+        expect(rowNode(2)).toBe(row2);
+        expect(grid.getRowTop(2)).toBe(125);
+        expect(row2.style.transform || row2.style.top).toContain('125px');
+        expect((container.querySelector('.grid-canvas') as HTMLDivElement).style.height).not.toBe(canvasHeight);
+      });
+
+      it('should fully invalidate when invalidateRowHeights() receives no or empty rows, and do nothing in fixed row height mode', () => {
+        grid = new SlickGrid<any, Column>(container, [{ id: 0, firstName: 'John' }], [{ id: 'firstName', field: 'firstName', name: 'First Name' }] as Column[], {
+          ...defaultOptions,
+          enableVariableRowHeight: true,
+        });
+        const invalidateSpy = vi.spyOn(grid, 'invalidate');
+        grid.invalidateRowHeights([]);
+        expect(invalidateSpy).toHaveBeenCalledOnce();
+
+        grid.setOptions({ enableVariableRowHeight: false });
+        const invalidateRowsSpy = vi.spyOn(grid, 'invalidateRows');
+        grid.invalidateRowHeights([0]);
+        grid.invalidateRowHeights();
+        expect(invalidateRowsSpy).not.toHaveBeenCalled();
+        expect(invalidateSpy).toHaveBeenCalledOnce();
+      });
+
+      it('should rebuild the row height index on render after a count-preserving invalidateRows() (e.g. a sort)', () => {
+        const heightsById: Record<number, number> = { 0: 25, 1: 60 };
+        const items = [
+          { id: 0, firstName: 'John' },
+          { id: 1, firstName: 'Jane' },
+        ];
+        grid = new SlickGrid<any, Column>(container, items, [{ id: 'firstName', field: 'firstName', name: 'First Name' }] as Column[], {
+          ...defaultOptions,
+          enableVariableRowHeight: true,
+          rowHeight: 25,
+          rowHeightProvider: (_grid, _row, item) => heightsById[item?.id],
+        });
+        expect(grid.getRowHeight(0)).toBe(25);
+        expect(grid.getRowHeight(1)).toBe(60);
+        const updateRowCountSpy = vi.spyOn(grid, 'updateRowCount');
+
+        // "sort": same row count and total height, different order
+        items.reverse();
+        grid.invalidateRows([0, 1]);
+        grid.render();
+
+        expect(grid.getRowHeight(0)).toBe(60);
+        expect(grid.getRowHeight(1)).toBe(25);
+        expect(grid.getRowTop(1)).toBe(60);
+        // the total height did not change, so the canvas does not need a resize
+        expect(updateRowCountSpy).not.toHaveBeenCalled();
+      });
+
+      it('should let the --slick-row-extra-height variable keep the cells of a taller row at their base height', () => {
+        grid = new SlickGrid<any, Column>(container, [{ id: 0, firstName: 'John' }], [{ id: 'firstName', field: 'firstName', name: 'First Name' }] as Column[], {
+          ...defaultOptions,
+          enableVariableRowHeight: true,
+        });
+        const styleText = [...document.querySelectorAll('style')].map((style) => style.textContent).join(' ')
+          + [...document.styleSheets].flatMap((sheet) => [...sheet.cssRules].map((rule) => rule.cssText)).join(' ');
+
+        expect(styleText).toMatch(/\.slick-cell \{ height: calc\(100% - var\(--slick-row-extra-height, 0px\) - \d+px\); \}/);
+      });
+
       it('should rebuild row height index when rowHeightProvider is changed via setOptions()', () => {
         const providerA = vi.fn((_grid: SlickGrid, row: number) => [25, 40][row]);
         const providerB = vi.fn((_grid: SlickGrid, row: number) => [25, 80][row]);
