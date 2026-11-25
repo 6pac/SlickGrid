@@ -288,6 +288,21 @@ describe('SlickCheckboxSelectColumn', () => {
     expect(setRows).toHaveBeenCalledWith([], 'click.cleanup');
   });
 
+  it('passes the grid row to a row-based selectableOverride when the selected rows change', () => {
+    gridStub.getDataLength = vi.fn(() => 4) as any;
+    gridStub.getSelectedRows = vi.fn(() => [0, 3]) as any;
+    gridStub.getDataItem = vi.fn((row: number) => ({ id: row })) as any;
+    const override = vi.fn((row: number) => row !== 0);
+    plugin = new SlickCheckboxSelectColumn({ selectableOverride: override });
+    plugin.init(gridStub);
+    const setRows = vi.spyOn(gridStub, 'setSelectedRows');
+
+    gridStub.onSelectedRowsChanged.notify({ rows: [0, 3], previousSelectedRows: [] } as any);
+
+    expect(override.mock.calls.map(c => c[0])).toEqual([0, 1, 2, 3, 0, 3]);
+    expect(setRows).toHaveBeenCalledWith([3], 'click.cleanup');
+  });
+
   it('updates the header checkbox when DataView selection ids change', () => {
     gridStub.getData = vi.fn(() => dataViewStub) as any;
     gridStub.getDataLength = vi.fn(() => 2) as any;
